@@ -23,13 +23,8 @@ dependencies {
     compile 'io.requery:requery-kotlin:1.6.0'
     implementation 'org.postgresql:postgresql:42.2.6'
     implementation 'org.json:json:20090211'
-    implementation 'org.xerial:sqlite-jdbc:3.20.1'
     implementation 'net.harawata:appdirs:1.0.0'
-    implementation 'net.java.dev.jna:platform:3.5.2'
     implementation 'joda-time:joda-time:2.9.9'
-    implementation 'com.github.kittinunf.fuel:fuel:2.1.0'
-    implementation 'de.jensd:fontawesomefx-materialicons:2.2.0-9.1.2'
-    implementation 'org.apache.pdfbox:pdfbox:2.0.13'
 
     kapt 'io.requery:requery-processor:1.6.0'
     kapt 'javax.annotation:jsr250-api:1.0'
