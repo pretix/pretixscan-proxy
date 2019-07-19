@@ -1,5 +1,6 @@
 package eu.pretix.pretixscan.scanproxy
 
+import eu.pretix.libpretixsync.api.PretixApi
 import eu.pretix.libpretixsync.config.ConfigStore
 import java.io.File
 import java.util.prefs.Preferences
@@ -12,6 +13,7 @@ class PretixScanConfig(private var data_dir: String) : ConfigStore {
     private val PREFS_KEY_API_KEY = "pretix_api_key"
     private val PREFS_KEY_API_DEVICE_ID = "pretix_api_device_id"
     private val PREFS_KEY_ORGANIZER_SLUG = "pretix_api_organizer_slug"
+    private val PREFS_KEY_API_VERSION = "pretix_api_version"
     private val PREFS_KEY_LAST_SYNC = "last_sync"
     private val PREFS_KEY_LAST_FAILED_SYNC = "last_failed_sync"
     private val PREFS_KEY_LAST_FAILED_SYNC_MSG = "last_failed_sync_msg"
@@ -22,9 +24,7 @@ class PretixScanConfig(private var data_dir: String) : ConfigStore {
         url: String,
         key: String,
         orga_slug: String,
-        device_id: Long,
-        serial: String,
-        sent_version: Int
+        device_id: Long
     ) {
         prefs.put(PREFS_KEY_API_URL, url)
         prefs.put(PREFS_KEY_API_KEY, key)
@@ -117,7 +117,7 @@ class PretixScanConfig(private var data_dir: String) : ConfigStore {
     }
 
     override fun getApiVersion(): Int {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return prefs.getInt(PREFS_KEY_API_VERSION, PretixApi.SUPPORTED_API_VERSION)
     }
 
     override fun getEventSlug(): String {

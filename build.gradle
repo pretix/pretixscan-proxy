@@ -20,6 +20,7 @@ version '1.0-SNAPSHOT'
 
 apply plugin: 'base'
 apply plugin: 'kotlin'
+apply plugin: 'java'
 apply plugin: 'kotlin-kapt'
 apply plugin: 'net.ltgt.apt-idea'
 
