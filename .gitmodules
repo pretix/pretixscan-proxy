@@ -1,0 +1,3 @@
+[submodule "libpretixsync-repo"]
+	path = libpretixsync-repo
+	url = https://github.com/pretix/libpretixsync.git

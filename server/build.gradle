@@ -1,0 +1,45 @@
+group 'eu.pretix.pretixscan'
+version '1.0-SNAPSHOT'
+
+apply plugin: 'application'
+apply plugin: 'kotlin'
+apply plugin: 'kotlin-kapt'
+apply plugin: 'net.ltgt.apt-idea'
+
+repositories {
+    mavenCentral()
+    jcenter()
+}
+
+dependencies {
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+
+    implementation "io.javalin:javalin:3.1.0"
+    implementation "com.fasterxml.jackson.core:jackson-databind:2.9.9"
+    implementation "com.fasterxml.jackson.module:jackson-module-kotlin:2.9.9"
+    implementation"org.slf4j:slf4j-simple:1.7.26"
+
+    implementation 'org.json:json:20090211'
+    implementation 'org.xerial:sqlite-jdbc:3.20.1'
+    implementation 'net.harawata:appdirs:1.0.0'
+    implementation 'net.java.dev.jna:platform:3.5.2'
+    implementation 'joda-time:joda-time:2.9.9'
+    implementation 'com.github.kittinunf.fuel:fuel:2.1.0'
+    implementation 'de.jensd:fontawesomefx-materialicons:2.2.0-9.1.2'
+    implementation 'org.apache.pdfbox:pdfbox:2.0.13'
+
+    implementation(project(':libpretixsync')) {
+        transitive = false
+    }
+
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+}
+
+mainClassName = "eu.pretix.pretixscan.scanproxy.Server"
+
+compileKotlin {
+    kotlinOptions.jvmTarget = "1.8"
+}
+compileTestKotlin {
+    kotlinOptions.jvmTarget = "1.8"
+}
