@@ -15,7 +15,7 @@ data class SetupDownstreamInitResponse(
 object SetupDownstreamInit : Handler {
     private val charPool: List<Char> = ('a'..'z') + ('A'..'Z') + ('0'..'9')
     override fun handle(ctx: Context) {
-        val configStore = PretixScanConfig(Server.dataDir)
+        val configStore = PretixScanConfig(Server.dataDir, "", 0)
         if (!configStore.isConfigured) {
             throw ServiceUnavailableResponse("Not configured")
         }
@@ -54,7 +54,7 @@ data class SetupDownstreamResponse(
 object SetupDownstream : JsonBodyHandler<SetupDownstreamRequest>(SetupDownstreamRequest::class.java) {
     private val charPool: List<Char> = ('a'..'z') + ('A'..'Z') + ('0'..'9')
     override fun handle(ctx: Context, body: SetupDownstreamRequest) {
-        val configStore = PretixScanConfig(Server.dataDir)
+        val configStore = PretixScanConfig(Server.dataDir, "", 0)
         if (!configStore.isConfigured) {
             throw ServiceUnavailableResponse("Not configured")
         }

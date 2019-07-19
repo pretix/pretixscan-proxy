@@ -1,16 +1,16 @@
 package eu.pretix.pretixscan.scanproxy.db
 
+import eu.pretix.pretixscan.scanproxy.Models
 import io.requery.sql.SchemaModifier
 import io.requery.sql.TableCreationMode
 import java.sql.Connection
-import java.sql.ResultSet
 import java.sql.SQLException
 import java.sql.Statement
 import javax.sql.DataSource
 
 object Migrations {
     private val model = Models.DEFAULT
-    var CURRENT_VERSION = 3
+    var CURRENT_VERSION = 4
 
     @Throws(SQLException::class)
     private fun createVersionTable(c: Connection, version: Int) {
@@ -59,6 +59,7 @@ object Migrations {
         if (db_version < 3) {
             create_drop(dataSource)
         }
+        create_notexists(dataSource)
 
         updateVersionTable(c, CURRENT_VERSION)
     }

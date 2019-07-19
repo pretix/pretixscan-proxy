@@ -2,11 +2,12 @@ package eu.pretix.pretixscan.scanproxy
 
 import eu.pretix.libpretixsync.api.PretixApi
 import eu.pretix.libpretixsync.config.ConfigStore
+import eu.pretix.libpretixsync.db.AbstractSubEvent
 import java.io.File
 import java.util.prefs.Preferences
 
 
-class PretixScanConfig(private var data_dir: String) : ConfigStore {
+class PretixScanConfig(private var data_dir: String, private val eventSlug: String, private val subEvent: Long) : ConfigStore {
     private val prefs = Preferences.userNodeForPackage(PretixScanConfig::class.java)
 
     private val PREFS_KEY_API_URL = "pretix_api_url"
@@ -121,11 +122,11 @@ class PretixScanConfig(private var data_dir: String) : ConfigStore {
     }
 
     override fun getEventSlug(): String {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return eventSlug
     }
 
     override fun getSubEventId(): Long {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return subEvent
     }
 
 }

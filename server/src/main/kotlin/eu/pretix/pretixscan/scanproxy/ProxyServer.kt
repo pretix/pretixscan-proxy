@@ -2,12 +2,11 @@ package eu.pretix.pretixscan.scanproxy
 
 import com.fasterxml.jackson.databind.module.SimpleModule
 import eu.pretix.pretixscan.scanproxy.db.Migrations
-import eu.pretix.pretixscan.scanproxy.db.Models
+import eu.pretix.pretixscan.scanproxy.Models
 import eu.pretix.pretixscan.scanproxy.endpoints.SetupDownstream
-import eu.pretix.libpretixsync.db.Migrations as PSMigrations
-import eu.pretix.libpretixsync.db.Models as PSModels
 import eu.pretix.pretixscan.scanproxy.endpoints.SetupDownstreamInit
 import eu.pretix.pretixscan.scanproxy.endpoints.SetupUpstream
+import eu.pretix.pretixscan.scanproxy.endpoints.SyncNow
 import eu.pretix.pretixscan.scanproxy.serialization.JSONArraySerializer
 import eu.pretix.pretixscan.scanproxy.serialization.JSONObjectSerializer
 import io.javalin.Javalin
@@ -26,6 +25,8 @@ import org.json.JSONObject
 import org.postgresql.ds.PGSimpleDataSource
 import org.slf4j.LoggerFactory
 import java.sql.DriverManager
+import eu.pretix.libpretixsync.db.Migrations as PSMigrations
+import eu.pretix.libpretixsync.db.Models as PSModels
 
 
 private fun makeSyncDataStore(): EntityDataStore<Persistable> {
@@ -125,6 +126,7 @@ object Server {
             path("proxyapi/v1") {
                 post("configure", SetupUpstream)
                 post("init", SetupDownstreamInit)
+                post("sync", SyncNow)
             }
         }
 

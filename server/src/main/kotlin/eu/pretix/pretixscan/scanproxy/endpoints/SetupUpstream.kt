@@ -24,7 +24,7 @@ object SetupUpstream : JsonBodyHandler<SetupUpstreamRequest>(SetupUpstreamReques
             DefaultHttpClientFactory()
         )
 
-        val configStore = PretixScanConfig(Server.dataDir)
+        val configStore = PretixScanConfig(Server.dataDir, "", 0)
 
         if (configStore.isConfigured) {
             throw BadRequestResponse("Already configured")
