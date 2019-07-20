@@ -12,6 +12,11 @@ import net.harawata.appdirs.AppDirsFactory
 import org.json.JSONArray
 import org.json.JSONObject
 import org.slf4j.LoggerFactory
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.Executors
+import java.util.concurrent.ScheduledExecutorService
+
+
 
 
 object Server {
@@ -27,9 +32,9 @@ object Server {
     fun main(args: Array<String>) {
         val app = Javalin.create { config ->
             config.requestLogger { ctx, executionTimeMs ->
-                LOG.info("[${ctx.ip()}] ${ctx.method()} ${ctx.path()} returned ${ctx.status()}")
+                LOG.info("[${ctx.ip()}] ${ctx.method()} ${ctx.path()} -> ${ctx.status()}")
             }
-        }.start(7000)
+        }
 
         // Map between org.json and Jackson
         val module = SimpleModule()
@@ -75,5 +80,16 @@ object Server {
             }
         }
 
+        val webthread = Thread {
+            app.start(7000)
+        }
+
+        val executor = Executors.newSingleThreadScheduledExecutor()
+        val periodicTask = Runnable {
+            syncAllEvents()
+        }
+        executor.scheduleWithFixedDelay(periodicTask, 0, 10, TimeUnit.SECONDS)
+
+        webthread.start()
     }
 }
