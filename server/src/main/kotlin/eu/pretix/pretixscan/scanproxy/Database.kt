@@ -11,7 +11,7 @@ import org.postgresql.ds.PGSimpleDataSource
 import org.slf4j.LoggerFactory
 import java.sql.DriverManager
 import eu.pretix.libpretixsync.db.Migrations as PSMigrations
-import eu.pretix.libpretixsync.db.Models as PSModels
+import eu.pretix.libpretixsync.Models as PSModels
 
 internal fun makeSyncDataStore(): EntityDataStore<Persistable> {
     val LOG = LoggerFactory.getLogger(Server::class.java)

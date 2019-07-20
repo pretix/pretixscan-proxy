@@ -1,5 +1,6 @@
 package eu.pretix.pretixscan.scanproxy
 
+import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.module.SimpleModule
 import eu.pretix.pretixscan.scanproxy.endpoints.*
 import eu.pretix.libpretixsync.serialization.JSONArraySerializer
@@ -35,6 +36,7 @@ object Server {
         module.addSerializer(JSONObject::class.java, JSONObjectSerializer())
         module.addSerializer(JSONArray::class.java, JSONArraySerializer())
         JavalinJackson.getObjectMapper().registerModule(module)
+        JavalinJackson.getObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
 
         app.routes {
             path("api/v1") {
@@ -46,9 +48,11 @@ object Server {
                         get(EventsEndpoint)
                         path (":event") {
                             get(EventEndpoint)
-                            get("categories/", CategoryEndpoint)
+                            //get("categories/", CategoryEndpoint)
+                            get("categories/", EmptyResourceEndpoint)
                             get("items/", ItemEndpoint)
-                            get("questions/", QuestionEndpoint)
+                            //get("questions/", QuestionEndpoint)
+                            get("questions/", EmptyResourceEndpoint)
                             get("badgelayouts/", BadgeLayoutEndpoint)
                             get("checkinlists/", CheckInListEndpoint)
                             get("orders/", EmptyResourceEndpoint)
@@ -65,6 +69,8 @@ object Server {
                 path("rpc/:event/:list/") {
                     before(DeviceAuth)
                     get("status/", StatusEndpoint)
+                    post("search/", SearchEndpoint)
+                    post("check/", CheckEndpoint)
                 }
             }
         }
