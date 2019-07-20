@@ -11,26 +11,26 @@ repositories {
 }
 
 dependencies {
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
 
-    implementation "io.javalin:javalin:3.1.0"
-    implementation "com.fasterxml.jackson.core:jackson-databind:2.9.9"
-    implementation "com.fasterxml.jackson.module:jackson-module-kotlin:2.9.9"
-    implementation "org.slf4j:slf4j-simple:1.7.26"
+    compile "io.javalin:javalin:3.1.0"
+    compile "com.fasterxml.jackson.core:jackson-databind:2.9.9"
+    compile "com.fasterxml.jackson.module:jackson-module-kotlin:2.9.9"
+    compile "org.slf4j:slf4j-simple:1.7.26"
 
-    implementation 'com.squareup.okhttp3:okhttp:3.12.1'
+    compile 'com.squareup.okhttp3:okhttp:3.12.1'
     compile 'io.requery:requery:1.6.0'
     compile 'io.requery:requery-kotlin:1.6.0'
-    implementation 'org.postgresql:postgresql:42.2.6'
-    implementation 'org.json:json:20090211'
-    implementation 'net.harawata:appdirs:1.0.0'
-    implementation 'joda-time:joda-time:2.9.9'
-    implementation 'net.sourceforge.streamsupport:streamsupport-cfuture:1.7.0'
+    compile 'org.postgresql:postgresql:42.2.6'
+    compile 'org.json:json:20090211'
+    compile 'net.harawata:appdirs:1.0.0'
+    compile 'joda-time:joda-time:2.9.9'
+    compile 'net.sourceforge.streamsupport:streamsupport-cfuture:1.7.0'
 
     kapt 'io.requery:requery-processor:1.6.0'
     kapt 'javax.annotation:jsr250-api:1.0'
 
-    implementation(project(':libpretixsync')) {
+    compile(project(':libpretixsync')) {
         transitive = false
     }
 
@@ -38,6 +38,16 @@ dependencies {
 }
 
 mainClassName = "eu.pretix.pretixscan.scanproxy.Server"
+
+jar {
+    manifest {
+        attributes "Main-Class": mainClassName
+    }
+
+    from {
+        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+}
 
 compileKotlin {
     kotlinOptions.jvmTarget = "1.8"
