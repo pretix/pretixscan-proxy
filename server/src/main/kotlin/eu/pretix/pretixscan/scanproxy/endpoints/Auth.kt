@@ -13,7 +13,7 @@ object DeviceAuth : Handler {
             throw ServiceUnavailableResponse("Not configured")
         }
 
-        if (configStore.organizerSlug != ctx.pathParam("organizer")) {
+        if (ctx.pathParamMap().containsKey("organizer") && configStore.organizerSlug != ctx.pathParam("organizer")) {
             throw NotFoundResponse("Unknown organizer")
         }
 

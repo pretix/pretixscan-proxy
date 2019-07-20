@@ -98,6 +98,24 @@ object BadgeLayoutEndpoint : ResourceEndpoint() {
 }
 
 
+object EventsEndpoint : ResourceEndpoint() {
+    override fun query(ctx: Context): List<RemoteObject> {
+        // TODO: Only future
+        return Server.syncData.select(Event::class.java)
+            .get().toList()
+    }
+}
+
+
+object SubEventsEndpoint : ResourceEndpoint() {
+    override fun query(ctx: Context): List<RemoteObject> {
+        // TODO: Only future
+        return Server.syncData.select(SubEvent::class.java)
+            .get().toList()
+    }
+}
+
+
 object CheckInListEndpoint : CachedResourceEndpoint() {
     override val resourceName = "checkinlists"
     override fun query(ctx: Context): List<RemoteObject> {

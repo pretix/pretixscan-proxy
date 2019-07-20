@@ -2,8 +2,8 @@ package eu.pretix.pretixscan.scanproxy
 
 import com.fasterxml.jackson.databind.module.SimpleModule
 import eu.pretix.pretixscan.scanproxy.endpoints.*
-import eu.pretix.pretixscan.scanproxy.serialization.JSONArraySerializer
-import eu.pretix.pretixscan.scanproxy.serialization.JSONObjectSerializer
+import eu.pretix.libpretixsync.serialization.JSONArraySerializer
+import eu.pretix.libpretixsync.serialization.JSONObjectSerializer
 import io.javalin.Javalin
 import io.javalin.apibuilder.ApiBuilder.*
 import io.javalin.plugin.json.JavalinJackson
@@ -41,15 +41,19 @@ object Server {
                 post("device/initialize", SetupDownstream)
                 path("organizers/:organizer") {
                     before(DeviceAuth)
-                    path("events/:event") {
-                        get(EventEndpoint)
-                        get("categories/", CategoryEndpoint)
-                        get("items/", ItemEndpoint)
-                        get("questions/", QuestionEndpoint)
-                        get("badgelayouts/", BadgeLayoutEndpoint)
-                        get("checkinlists/", CheckInListEndpoint)
-                        get("orders/", EmptyResourceEndpoint)
-                        get("badgeitems/", BadgeItemEndpoint)
+                    get("subevents", SubEventsEndpoint)
+                    path("events") {
+                        get(EventsEndpoint)
+                        path (":event") {
+                            get(EventEndpoint)
+                            get("categories/", CategoryEndpoint)
+                            get("items/", ItemEndpoint)
+                            get("questions/", QuestionEndpoint)
+                            get("badgelayouts/", BadgeLayoutEndpoint)
+                            get("checkinlists/", CheckInListEndpoint)
+                            get("orders/", EmptyResourceEndpoint)
+                            get("badgeitems/", BadgeItemEndpoint)
+                        }
                     }
                 }
             }
@@ -57,6 +61,11 @@ object Server {
                 post("configure", SetupUpstream)
                 post("init", SetupDownstreamInit)
                 post("sync", SyncNow)
+
+                path("rpc/:event/:list/") {
+                    before(DeviceAuth)
+                    get("status/", StatusEndpoint)
+                }
             }
         }
 

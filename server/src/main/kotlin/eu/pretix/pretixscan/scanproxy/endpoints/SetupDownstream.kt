@@ -26,7 +26,7 @@ object SetupDownstreamInit : Handler {
         }
         val d = DownstreamDeviceEntity()
         d.uuid = UUID.randomUUID().toString()
-        d.init_token = (1..16)
+        d.init_token = "proxy=" + (1..16)
             .map { i -> kotlin.random.Random.nextInt(0, charPool.size) }
             .map(charPool::get)
             .joinToString("")
