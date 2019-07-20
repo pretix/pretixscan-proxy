@@ -1,15 +1,11 @@
 package eu.pretix.pretixscan.scanproxy
 
 import com.fasterxml.jackson.databind.module.SimpleModule
-import eu.pretix.pretixscan.scanproxy.endpoints.SetupDownstream
-import eu.pretix.pretixscan.scanproxy.endpoints.SetupDownstreamInit
-import eu.pretix.pretixscan.scanproxy.endpoints.SetupUpstream
-import eu.pretix.pretixscan.scanproxy.endpoints.SyncNow
+import eu.pretix.pretixscan.scanproxy.endpoints.*
 import eu.pretix.pretixscan.scanproxy.serialization.JSONArraySerializer
 import eu.pretix.pretixscan.scanproxy.serialization.JSONObjectSerializer
 import io.javalin.Javalin
-import io.javalin.apibuilder.ApiBuilder.path
-import io.javalin.apibuilder.ApiBuilder.post
+import io.javalin.apibuilder.ApiBuilder.*
 import io.javalin.plugin.json.JavalinJackson
 import net.harawata.appdirs.AppDirsFactory
 import org.json.JSONArray
@@ -43,6 +39,19 @@ object Server {
         app.routes {
             path("api/v1") {
                 post("device/initialize", SetupDownstream)
+                path("organizers/:organizer") {
+                    before(DeviceAuth)
+                    path("events/:event") {
+                        get(EventEndpoint)
+                        get("categories/", CategoryEndpoint)
+                        get("items/", ItemEndpoint)
+                        get("questions/", QuestionEndpoint)
+                        get("badgelayouts/", BadgeLayoutEndpoint)
+                        get("checkinlists/", CheckInListEndpoint)
+                        get("orders/", EmptyResourceEndpoint)
+                        get("badgeitems/", BadgeItemEndpoint)
+                    }
+                }
             }
             path("proxyapi/v1") {
                 post("configure", SetupUpstream)

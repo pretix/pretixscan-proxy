@@ -10,15 +10,18 @@ import eu.pretix.pretixscan.scanproxy.db.DownstreamDeviceEntity
 import eu.pretix.pretixscan.scanproxy.db.SyncedEventEntity
 import io.javalin.http.*
 import io.requery.kotlin.eq
+import org.slf4j.LoggerFactory
 import java.io.File
 import java.util.*
 
 
 object SyncNow : Handler {
+    private val LOG = LoggerFactory.getLogger(SyncNow::class.java)
+
     override fun handle(ctx: Context) {
         val result = (Server.proxyData select (SyncedEventEntity::class)).get()
         for (ev in result) {
-            val configStore = PretixScanConfig(Server.dataDir, ev.slug, 0)
+            val configStore = PretixScanConfig(Server.dataDir, ev.slug, null)
             if (!configStore.isConfigured) {
                 throw ServiceUnavailableResponse("Not configured")
             }
@@ -33,7 +36,13 @@ object SyncNow : Handler {
                 30000,
                 false
             )
-            syncManager!!.sync(true)
+            syncManager!!.sync(true) {
+                LOG.info(it)
+            }
+            if (configStore.lastFailedSync > 0) {
+                LOG.info(configStore.lastFailedSyncMsg)
+                throw InternalServerErrorResponse(configStore.lastFailedSyncMsg)
+            }
         }
     }
 }

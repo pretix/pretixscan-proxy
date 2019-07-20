@@ -25,6 +25,7 @@ dependencies {
     implementation 'org.json:json:20090211'
     implementation 'net.harawata:appdirs:1.0.0'
     implementation 'joda-time:joda-time:2.9.9'
+    implementation 'net.sourceforge.streamsupport:streamsupport-cfuture:1.7.0'
 
     kapt 'io.requery:requery-processor:1.6.0'
     kapt 'javax.annotation:jsr250-api:1.0'

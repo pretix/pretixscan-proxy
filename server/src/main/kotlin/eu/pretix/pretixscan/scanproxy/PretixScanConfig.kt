@@ -7,7 +7,7 @@ import java.io.File
 import java.util.prefs.Preferences
 
 
-class PretixScanConfig(private var data_dir: String, private val eventSlug: String, private val subEvent: Long) : ConfigStore {
+class PretixScanConfig(private var data_dir: String, private val eventSlug: String, private val subEvent: Long?) : ConfigStore {
     private val prefs = Preferences.userNodeForPackage(PretixScanConfig::class.java)
 
     private val PREFS_KEY_API_URL = "pretix_api_url"
@@ -125,7 +125,7 @@ class PretixScanConfig(private var data_dir: String, private val eventSlug: Stri
         return eventSlug
     }
 
-    override fun getSubEventId(): Long {
+    override fun getSubEventId(): Long? {
         return subEvent
     }
 
