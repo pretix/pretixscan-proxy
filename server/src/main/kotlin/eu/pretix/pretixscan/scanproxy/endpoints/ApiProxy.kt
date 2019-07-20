@@ -1,6 +1,7 @@
 package eu.pretix.pretixscan.scanproxy.endpoints
 
 import eu.pretix.libpretixsync.db.*
+import eu.pretix.pretixscan.scanproxy.ProxyFileStorage
 import eu.pretix.pretixscan.scanproxy.Server
 import io.javalin.http.Context
 import io.javalin.http.Handler
@@ -89,11 +90,41 @@ object QuestionEndpoint : CachedResourceEndpoint() {
 }
 
 
+object DownloadEndpoint : Handler {
+    override fun handle(ctx: Context) {
+        val fname = ctx.pathParam("filename")
+        if (fname.contains("/")) {
+            throw NotFoundResponse()
+        }
+        val f = ProxyFileStorage().getFile(fname)
+        if (!f.exists()) {
+            throw NotFoundResponse()
+        }
+        ctx.result(f.readText())
+    }
+}
+
 object BadgeLayoutEndpoint : ResourceEndpoint() {
     override fun query(ctx: Context): List<RemoteObject> {
         return Server.syncData.select(BadgeLayout::class.java)
             .where(BadgeLayout.EVENT_SLUG.eq(ctx.pathParam("event")))
             .get().toList()
+    }
+
+    override fun handle(ctx: Context) {
+        val res = query(ctx)
+        ctx.json(mapOf(
+            "count" to res.size,
+            "next" to null,
+            "previous" to null,
+            "results" to res.map {
+                val d = it.json
+                if ((it as BadgeLayout).getBackground_filename() != null) {
+                    d.put("background", "${ctx.scheme()}://${ctx.host()}/download/${it.getBackground_filename()}")
+                }
+                return@map d
+            }
+        ))
     }
 }
 

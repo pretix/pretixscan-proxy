@@ -26,7 +26,7 @@ object Server {
     val proxyData = makeProxyDataStore()
 
     val appDirs = AppDirsFactory.getInstance()!!
-    val dataDir = appDirs.getUserDataDir("pretixscan", "1", "pretix")
+    val dataDir = appDirs.getUserDataDir("pretixscanproxy", "1", "pretix")
 
     @JvmStatic
     fun main(args: Array<String>) {
@@ -77,6 +77,10 @@ object Server {
                     post("search/", SearchEndpoint)
                     post("check/", CheckEndpoint)
                 }
+            }
+            path("download") {
+                before(DeviceAuth)
+                get(":filename", DownloadEndpoint)
             }
         }
 
