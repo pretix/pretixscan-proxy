@@ -6,7 +6,10 @@ import eu.pretix.pretixscan.scanproxy.Server
 import io.javalin.http.Context
 import io.javalin.http.Handler
 import io.javalin.http.NotFoundResponse
-import io.requery.Persistable
+import java.text.SimpleDateFormat
+import java.time.LocalDate
+import java.util.*
+
 
 object EventEndpoint : Handler {
     override fun handle(ctx: Context) {
@@ -43,7 +46,7 @@ abstract class CachedResourceEndpoint : ResourceEndpoint() {
             .get().firstOrNull()
         if (rlm != null) {
             ctx.header("Last-Modified", rlm.getLast_modified())
-            if (ctx.header("If-Modified-Since") == rlm.getLast_modified()){
+            if (ctx.header("If-Modified-Since") == rlm.getLast_modified()) {
                 ctx.status(304)
                 return
             }
@@ -131,8 +134,15 @@ object BadgeLayoutEndpoint : ResourceEndpoint() {
 
 object EventsEndpoint : ResourceEndpoint() {
     override fun query(ctx: Context): List<RemoteObject> {
-        // TODO: Only future
+        val cutoff = SimpleDateFormat("yyyy-MM-dd").parse((LocalDate.now().minusDays(5).toString()))
         return Server.syncData.select(Event::class.java)
+            .where(
+                Event.DATE_TO.gte(cutoff)
+                    .or(
+                        Event.DATE_TO.isNull()
+                            .and(Event.DATE_FROM.gte(cutoff))
+                    )
+            ).and(Event.HAS_SUBEVENTS.eq(false))
             .get().toList()
     }
 }
@@ -140,8 +150,15 @@ object EventsEndpoint : ResourceEndpoint() {
 
 object SubEventsEndpoint : ResourceEndpoint() {
     override fun query(ctx: Context): List<RemoteObject> {
-        // TODO: Only future
+        val cutoff = SimpleDateFormat("yyyy-MM-dd").parse((LocalDate.now().minusDays(5).toString()))
         return Server.syncData.select(SubEvent::class.java)
+            .where(
+                SubEvent.DATE_TO.gte(cutoff)
+                    .or(
+                        SubEvent.DATE_TO.isNull()
+                            .and(SubEvent.DATE_FROM.gte(cutoff))
+                    )
+            )
             .get().toList()
     }
 }
