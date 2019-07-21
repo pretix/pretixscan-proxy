@@ -36,6 +36,14 @@ var app = new Vue({
                 app.reload()
             }, err_handler);
         },
+        synceventlist: function () {
+            this.loading++;
+            Vue.http.post("/proxyapi/v1/synceventlist").then(function (response) {
+                app.loading--;
+                alert("Sync complete");
+                app.reload()
+            }, err_handler);
+        },
         reload: function () {
             this.loading++;
             Vue.http.get("/proxyapi/v1/state").then(function (response) {

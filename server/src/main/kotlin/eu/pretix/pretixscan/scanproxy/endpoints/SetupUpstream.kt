@@ -5,6 +5,9 @@ import eu.pretix.libpretixsync.setup.*
 import eu.pretix.pretixscan.scanproxy.PretixScanConfig
 import eu.pretix.pretixscan.scanproxy.Server
 import eu.pretix.pretixscan.scanproxy.Server.VERSION
+import eu.pretix.pretixscan.scanproxy.db.SyncedEvent
+import eu.pretix.pretixscan.scanproxy.db.SyncedEventEntity
+import eu.pretix.pretixscan.scanproxy.syncEventList
 import io.javalin.http.BadRequestResponse
 import io.javalin.http.Context
 import io.javalin.http.Handler
@@ -35,6 +38,7 @@ object SetupUpstream : JsonBodyHandler<SetupUpstreamRequest>(SetupUpstreamReques
         try {
             val init = setupm.initialize(body.url, body.token)
             configStore.setDeviceConfig(init.url, init.api_token, init.organizer, init.device_id)
+            syncEventList()
             ctx.status(200)
         } catch (e: SSLException) {
             throw BadRequestResponse("SSL error")
@@ -61,7 +65,10 @@ object ConfigState : Handler {
             "lastSync" to Date(configStore.lastSync).toString(),
             "lastFailedSync" to Date(configStore.lastFailedSync).toString(),
             "lastFailedSyncMsg" to configStore.lastFailedSyncMsg,
-            "lastDownload" to Date(configStore.lastDownload).toString()
+            "lastDownload" to Date(configStore.lastDownload).toString(),
+            "syncedEvents" to (Server.proxyData select(SyncedEventEntity::class)).get().map {
+                it.slug
+            }.joinToString(",")
         ))
     }
 }

@@ -156,6 +156,16 @@ object CheckInListEndpoint : CachedResourceEndpoint() {
     }
 }
 
+object SubEventEndpoint : Handler {
+    override fun handle(ctx: Context) {
+        val event = Server.syncData.select(SubEvent::class.java)
+            .where(SubEvent.EVENT_SLUG.eq(ctx.pathParam("event")))
+            .and(SubEvent.SERVER_ID.eq(ctx.pathParam("id").toLong()))
+            .get().firstOrNull() ?: throw NotFoundResponse("Subevent not found")
+        ctx.json(event.json)
+    }
+}
+
 
 object BadgeItemEndpoint : ResourceEndpoint() {
     override fun query(ctx: Context): List<RemoteObject> {

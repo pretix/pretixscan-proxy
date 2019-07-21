@@ -29,7 +29,9 @@
         <strong>Last download:</strong> {{state.lastDownload}}<br>
         <strong>Last failed sync:</strong> {{state.lastFailedSync}}<br>
         <strong>Last failed sync message:</strong> {{state.lastFailedSyncMsg}}<br>
-        <button type="button" @click="sync">Trigger Sync</button><br><br>
+        <strong>Synchronized events:</strong> {{state.syncedEvents}}<br>
+        <button type="button" @click="sync">Trigger Sync</button>
+        <button type="button" @click="synceventlist">Sync list of events</button><br><br>
         <button type="button" @click="newdevice">Create a new device</button>
     </section>
     <div v-if="loading > 0">

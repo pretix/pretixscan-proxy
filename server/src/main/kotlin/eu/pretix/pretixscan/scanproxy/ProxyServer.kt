@@ -54,6 +54,7 @@ object Server {
                     path("events") {
                         get(EventsEndpoint)
                         path (":event") {
+                            before(EventRegister)
                             get(EventEndpoint)
                             //get("categories/", CategoryEndpoint)
                             get("categories/", EmptyResourceEndpoint)
@@ -64,6 +65,7 @@ object Server {
                             get("checkinlists/", CheckInListEndpoint)
                             get("orders/", EmptyResourceEndpoint)
                             get("badgeitems/", BadgeItemEndpoint)
+                            get("subevents/:id/", SubEventEndpoint)
                         }
                     }
                 }
@@ -73,6 +75,7 @@ object Server {
                 get("state", ConfigState)
                 post("init", SetupDownstreamInit)
                 post("sync", SyncNow)
+                post("synceventlist", SyncEventList)
 
                 path("rpc/:event/:list/") {
                     before(DeviceAuth)

@@ -2,6 +2,8 @@ package eu.pretix.pretixscan.scanproxy
 
 import eu.pretix.libpretixsync.DummySentryImplementation
 import eu.pretix.libpretixsync.api.PretixApi
+import eu.pretix.libpretixsync.sync.AllEventsSyncAdapter
+import eu.pretix.libpretixsync.sync.AllSubEventsSyncAdapter
 import eu.pretix.libpretixsync.sync.SyncManager
 import eu.pretix.pretixscan.scanproxy.db.SyncedEventEntity
 import org.slf4j.LoggerFactory
@@ -10,13 +12,29 @@ import org.slf4j.LoggerFactory
 class UnconfiguredException : Exception()
 class SyncFailedException(message: String) : Exception(message)
 
+
+fun syncEventList() {
+    val fileStorage = ProxyFileStorage()
+    val configStore = PretixScanConfig(Server.dataDir, "", null)
+    val api = PretixApi.fromConfig(configStore)
+    if (!configStore.isConfigured) {
+        throw UnconfiguredException()
+    }
+
+    AllEventsSyncAdapter(Server.syncData, fileStorage, configStore.eventSlug, api, null)
+        .download()
+    AllSubEventsSyncAdapter(Server.syncData, fileStorage, configStore.eventSlug, api, null)
+        .download()
+}
+
+
 fun syncAllEvents(force: Boolean = false) {
     val LOG = LoggerFactory.getLogger("eu.pretix.pretixscan.scanproxy.syncAllEvents")
 
-    val result = (Server.proxyData select (SyncedEventEntity::class)).get()
+    val result = (Server.proxyData select (SyncedEventEntity::class)).get().map { it.slug }.toSortedSet()
     for (ev in result) {
-        LOG.info("Starting to sync ${ev.slug}…")
-        val configStore = PretixScanConfig(Server.dataDir, ev.slug, null)
+        LOG.info("Starting to sync ${ev}…")
+        val configStore = PretixScanConfig(Server.dataDir, ev, null)
         if (!configStore.isConfigured) {
             throw UnconfiguredException()
         }
