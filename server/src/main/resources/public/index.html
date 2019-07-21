@@ -1,0 +1,34 @@
+<html>
+<head>
+    <link rel="stylesheet" href="admin.css">
+    <meta charset="UTF-8">
+    <script src="vendor/vue.min.js"></script>
+    <script src="vendor/vue-resource.min.js"></script>
+    <style>
+        [v-cloak] {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+<section class="adminapp">
+    <header class="header">
+        <h1>Welcome to pretixSCAN-Proxy</h1>
+    </header>
+    <section class="main" v-if="!state.configured && state">
+        Upstream URL: <input v-model="config_url" placeholder="https://pretix.eu"><br>
+        Token: <input v-model="config_token"><br>
+        <button type="button" @click="configure">Configure</button>
+    </section>
+    <section class="main" v-if="state.configured">
+        <strong>Upstream URL:</strong> {{state.upstreamUrl}}<br>
+        <strong>Organizer:</strong> {{state.organizer}}<br>
+        <strong>Last sync:</strong> {{state.lastSync}}<br>
+        <strong>Last download:</strong> {{state.lastDownload}}<br>
+        <strong>Last failed sync:</strong> {{state.lastFailedSync}}<br>
+        <strong>Last failed sync message:</strong> {{state.lastFailedSyncMsg}}
+    </section>
+</section>
+<script src="admin.js"></script>
+</body>
+</html>

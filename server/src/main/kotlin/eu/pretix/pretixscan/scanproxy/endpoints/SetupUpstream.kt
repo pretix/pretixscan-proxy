@@ -11,6 +11,8 @@ import io.javalin.http.Handler
 import io.javalin.http.InternalServerErrorResponse
 import net.harawata.appdirs.AppDirsFactory
 import java.io.IOException
+import java.sql.Timestamp
+import java.util.*
 import javax.net.ssl.SSLException
 
 
@@ -45,5 +47,21 @@ object SetupUpstream : JsonBodyHandler<SetupUpstreamRequest>(SetupUpstreamReques
         } catch (e: SetupBadResponseException) {
             throw InternalServerErrorResponse("Bad Response")
         }
+    }
+}
+
+
+object ConfigState : Handler {
+    override fun handle(ctx: Context) {
+        val configStore = PretixScanConfig(Server.dataDir, "", 0)
+        ctx.json(mapOf(
+            "configured" to configStore.isConfigured,
+            "organizer" to configStore.organizerSlug,
+            "upstreamUrl" to configStore.apiUrl,
+            "lastSync" to Date(configStore.lastSync).toString(),
+            "lastFailedSync" to Date(configStore.lastFailedSync).toString(),
+            "lastFailedSyncMsg" to configStore.lastFailedSyncMsg,
+            "lastDownload" to Date(configStore.lastDownload).toString()
+        ))
     }
 }

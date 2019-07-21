@@ -34,6 +34,8 @@ object Server {
             config.requestLogger { ctx, executionTimeMs ->
                 LOG.info("[${ctx.ip()}] ${ctx.method()} ${ctx.path()} -> ${ctx.status()}")
             }
+            config.prefer405over404 = true
+            config.addStaticFiles("/public")
         }
 
         // Map between org.json and Jackson
@@ -68,6 +70,7 @@ object Server {
             }
             path("proxyapi/v1") {
                 post("configure", SetupUpstream)
+                get("state", ConfigState)
                 post("init", SetupDownstreamInit)
                 post("sync", SyncNow)
 
@@ -90,7 +93,11 @@ object Server {
 
         val executor = Executors.newSingleThreadScheduledExecutor()
         val periodicTask = Runnable {
-            syncAllEvents()
+            try {
+                syncAllEvents()
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         }
         executor.scheduleWithFixedDelay(periodicTask, 0, 10, TimeUnit.SECONDS)
 
