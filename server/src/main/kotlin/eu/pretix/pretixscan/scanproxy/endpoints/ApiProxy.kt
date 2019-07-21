@@ -116,6 +116,7 @@ object BadgeLayoutEndpoint : ResourceEndpoint() {
 
     override fun handle(ctx: Context) {
         val res = query(ctx)
+        val baseurl = System.getProperty("pretixscan.baseurl", "http://URLNOTSET")
         ctx.json(mapOf(
             "count" to res.size,
             "next" to null,
@@ -123,7 +124,7 @@ object BadgeLayoutEndpoint : ResourceEndpoint() {
             "results" to res.map {
                 val d = it.json
                 if ((it as BadgeLayout).getBackground_filename() != null) {
-                    d.put("background", "${ctx.scheme()}://${ctx.host()}/download/${it.getBackground_filename()}")
+                    d.put("background", "${baseurl}/download/${it.getBackground_filename()}")
                 }
                 return@map d
             }

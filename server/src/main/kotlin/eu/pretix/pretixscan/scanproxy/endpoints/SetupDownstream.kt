@@ -9,7 +9,8 @@ import java.util.*
 
 data class SetupDownstreamInitResponse(
     val token: String,
-    val url: String
+    val url: String,
+    val handshake_version: Int
 )
 
 
@@ -25,6 +26,7 @@ object SetupDownstreamInit : Handler {
         if (ctx.ip() != "127.0.0.1" && ctx.ip() != "0:0:0:0:0:0:0:1") {
             throw ForbiddenResponse("Only local access is allowed")
         }
+        val baseurl = System.getProperty("pretixscan.baseurl", "http://URLNOTSET")
         val d = DownstreamDeviceEntity()
         d.uuid = UUID.randomUUID().toString()
         d.init_token = "proxy=" + (1..16)
@@ -32,10 +34,13 @@ object SetupDownstreamInit : Handler {
             .map(charPool::get)
             .joinToString("")
         Server.proxyData.insert(d)
-        ctx.json(SetupDownstreamInitResponse(
-            token = d.init_token!!,
-            url = "${ctx.scheme()}://${ctx.host()}"
-        ))
+        ctx.json(
+            SetupDownstreamInitResponse(
+                token = d.init_token!!,
+                url = baseurl,
+                handshake_version = 1
+            )
+        )
     }
 }
 

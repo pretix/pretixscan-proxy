@@ -17,4 +17,4 @@ To build the project, just use:
     
 Then you can run the built JAR file:
 
-    java -Dpretixscan.database="jdbc:postgresql:scanproxy" -jar server/build/libs/server-1.0-SNAPSHOT.jar
+    java -Dpretixscan.database="jdbc:postgresql:scanproxy" -Dpretixscan.baseurl="https://local.baseurl.com" -jar server/build/libs/server-1.0-SNAPSHOT.jar
