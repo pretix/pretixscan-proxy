@@ -14,10 +14,17 @@ var app = new Vue({
         config_url: "https://pretix.eu",
         config_token: "",
         loading: 0,
+        init_data: null,
     },
 
     created: function () {
         this.reload()
+    },
+
+    computed: {
+        initqr: function () {
+            return JSON.stringify(this.init_data);
+        }
     },
 
     methods: {
@@ -27,14 +34,21 @@ var app = new Vue({
                 app.loading--;
                 alert("Sync complete");
                 app.reload()
-            });
+            }, err_handler);
         },
         reload: function () {
             this.loading++;
             Vue.http.get("/proxyapi/v1/state").then(function (response) {
                 app.loading--;
                 app.state = response.body;
-            });
+            }, err_handler);
+        },
+        newdevice: function () {
+            this.loading++;
+            Vue.http.post("/proxyapi/v1/init").then(function (response) {
+                app.loading--;
+                app.init_data = response.body;
+            }, err_handler);
         },
         configure: function () {
             this.loading++;

@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <script src="vendor/vue.min.js"></script>
     <script src="vendor/vue-resource.min.js"></script>
+    <script src="vendor/vue-qrcode.min.js"></script>
+    <script>Vue.component(VueQrcode.name, VueQrcode);</script>
     <style>
         [v-cloak] {
             display: none;
@@ -15,6 +17,21 @@
     <header class="header">
         <h1>Welcome to pretixSCAN-Proxy</h1>
     </header>
+    <section class="main" v-if="!state.configured && loading == 0">
+        Upstream URL: <input v-model="config_url" placeholder="https://pretix.eu"><br>
+        Token: <input v-model="config_token"><br>
+        <button type="button" @click="configure">Configure</button>
+    </section>
+    <section class="main" v-if="state.configured">
+        <strong>Upstream URL:</strong> {{state.upstreamUrl}}<br>
+        <strong>Organizer:</strong> {{state.organizer}}<br>
+        <strong>Last sync:</strong> {{state.lastSync}}<br>
+        <strong>Last download:</strong> {{state.lastDownload}}<br>
+        <strong>Last failed sync:</strong> {{state.lastFailedSync}}<br>
+        <strong>Last failed sync message:</strong> {{state.lastFailedSyncMsg}}<br>
+        <button type="button" @click="sync">Trigger Sync</button><br><br>
+        <button type="button" @click="newdevice">Create a new device</button>
+    </section>
     <div v-if="loading > 0">
         <svg width="120" height="30" viewBox="0 0 120 30" xmlns="http://www.w3.org/2000/svg" fill="#3b1c4a">
             <circle cx="15" cy="15" r="15">
@@ -49,19 +66,8 @@
             </circle>
         </svg>
     </div>
-    <section class="main" v-if="!state.configured && loading == 0">
-        Upstream URL: <input v-model="config_url" placeholder="https://pretix.eu"><br>
-        Token: <input v-model="config_token"><br>
-        <button type="button" @click="configure">Configure</button>
-    </section>
-    <section class="main" v-if="state.configured">
-        <strong>Upstream URL:</strong> {{state.upstreamUrl}}<br>
-        <strong>Organizer:</strong> {{state.organizer}}<br>
-        <strong>Last sync:</strong> {{state.lastSync}}<br>
-        <strong>Last download:</strong> {{state.lastDownload}}<br>
-        <strong>Last failed sync:</strong> {{state.lastFailedSync}}<br>
-        <strong>Last failed sync message:</strong> {{state.lastFailedSyncMsg}}<br>
-        <button type="button" @click="sync">Trigger Sync</button>
+    <section class="init-token" v-if="init_data">
+        <qrcode :value="initqr" :options="{ width: 300 }"></qrcode>
     </section>
 </section>
 <script src="admin.js"></script>

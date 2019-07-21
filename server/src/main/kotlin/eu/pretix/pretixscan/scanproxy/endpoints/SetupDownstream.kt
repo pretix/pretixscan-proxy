@@ -8,7 +8,8 @@ import io.requery.kotlin.eq
 import java.util.*
 
 data class SetupDownstreamInitResponse(
-    val token: String
+    val token: String,
+    val url: String
 )
 
 
@@ -31,7 +32,10 @@ object SetupDownstreamInit : Handler {
             .map(charPool::get)
             .joinToString("")
         Server.proxyData.insert(d)
-        ctx.json(SetupDownstreamInitResponse(token = d.init_token!!))
+        ctx.json(SetupDownstreamInitResponse(
+            token = d.init_token!!,
+            url = "${ctx.scheme()}://${ctx.host()}"
+        ))
     }
 }
 
