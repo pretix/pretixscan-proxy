@@ -70,6 +70,9 @@
     </div>
     <section class="init-token" v-if="init_data">
         <qrcode :value="initqr" :options="{ width: 300 }"></qrcode>
+        <br>
+        <strong>URL:</strong> {{init_data.url}}<br>
+        <strong>Token:</strong> {{init_data.token}}
     </section>
 </section>
 <script src="admin.js"></script>
