@@ -3,6 +3,14 @@ pretixSCAN Proxy
 
 On-site server component for larger-scale pretixSCAN deployments.
 
+A word of caution
+-----------------
+
+This is a tool for really advanced usage. The tool itself is made to be operated by people with comprehensive knowledge of the technical domain. Also, if you are in the situation of planning a rock-solid check-in process for thousands of participants, we **strongly advise you to get professional support** regardless of the tools in use. This is a **complex undertaking** and if you're not an expert with these things (or if you are an expert, but busy with other things during the event), **you are going to have a bad time**.
+
+If you think you need this, please reach out at **support@pretix.eu** and let's talk about your use case. 
+We're happy to provide you with rental hardware as well as remote or on-site support, so you can focus on your event.
+
 Motivation
 ----------
 
@@ -27,19 +35,11 @@ This is great for smaller events, because it just works without any infrastructu
 
 This allows you to get the best of both worlds – as long as there is a reliable local network (of course there's a catch): No data is stored on the devices, you can use a fast server for the local caching, internet connection is still optional and every ticket can only be scanned once *per proxy* (you could use multiple, if you want).
 
-A word of caution
------------------
-
-This is a tool for really advanced usage. It's made to be operated by people with deep technical knowledge. If you have thousands of tickets and need a rock-solid check-in process without internet connection, we **strongly advice you to get professional support**.
-
-If you think you need this, please reach out at support@pretix.eu and let's talk about your use case. 
-We're also happy to provide you with rental hardware as well as remote or on-site support, so you can focus on your event.
-
 Development status
 ------------------
 
 This seems to be working but hasn't been used in production yet.
-The API exposed by the proxy is currently supported by pretixSCAN on Android starting with version 1.0.2. It is not yet supported in pretixSCAN Desktop (but will be). Support for pretixSCAN on iOS is not planned.
+The API exposed by the proxy is currently supported by pretixSCAN on Android starting with version 1.0.2. and by pretixSCAN Desktop starting with version 1.1.0. Support for pretixSCAN on iOS is not planned.
 
 System requirements
 -------------------
