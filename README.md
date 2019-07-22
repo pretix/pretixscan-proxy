@@ -38,8 +38,7 @@ This allows you to get the best of both worlds – as long as there is a reliabl
 Development status
 ------------------
 
-This seems to be working but hasn't been used in production yet.
-The API exposed by the proxy is currently supported by pretixSCAN on Android starting with version 1.0.2. and by pretixSCAN Desktop starting with version 1.1.0. Support for pretixSCAN on iOS is not planned.
+Everything important seems to be working but this hasn't been used in production yet.
 
 System requirements
 -------------------
@@ -47,6 +46,8 @@ System requirements
 * Java 8 or newer
 
 * A PostgreSQL database
+
+The API exposed by the proxy is currently supported by pretixSCAN on Android starting with version 1.0.2. and by pretixSCAN Desktop starting with version 1.1.0. Support for pretixSCAN on iOS is not planned.
 
 Build and run
 -------------
@@ -61,3 +62,13 @@ Then you can run the built JAR file:
         -Dpretixscan.database="jdbc:postgresql:scanproxy" \
         -Dpretixscan.baseurl="https://local.baseurl.com" \
         -jar server/build/libs/server-1.0-SNAPSHOT.jar
+
+
+License
+-------
+
+Copyright 2019 Raphael Michel
+
+Released under the terms of the GNU General Public License v3
+
+Maintained by the pretix team <support@pretix.eu>.
