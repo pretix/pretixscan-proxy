@@ -2,3 +2,4 @@ rootProject.name = 'pretix-scanproxy'
 
 include ':server', ':libpretixsync'
 project(':libpretixsync').projectDir = new File('libpretixsync-repo/libpretixsync')
+project(':libpretixsync').buildFileName = 'build-postgres.gradle'
