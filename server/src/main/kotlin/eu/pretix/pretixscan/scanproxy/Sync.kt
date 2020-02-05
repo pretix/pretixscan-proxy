@@ -5,6 +5,8 @@ import eu.pretix.libpretixsync.api.PretixApi
 import eu.pretix.libpretixsync.sync.AllEventsSyncAdapter
 import eu.pretix.libpretixsync.sync.AllSubEventsSyncAdapter
 import eu.pretix.libpretixsync.sync.SyncManager
+import eu.pretix.pretixscan.scanproxy.Server.VERSION
+import eu.pretix.pretixscan.scanproxy.Server.VERSION_CODE
 import eu.pretix.pretixscan.scanproxy.db.SyncedEventEntity
 import org.slf4j.LoggerFactory
 
@@ -47,7 +49,12 @@ fun syncAllEvents(force: Boolean = false) {
             ProxyFileStorage(),
             1000,
             30000,
-            false
+            false,
+            VERSION_CODE,
+            System.getProperty("os.name"),
+            System.getProperty("os.version"),
+            "pretixSCANPROXY",
+            VERSION
         )
         syncManager!!.sync(force) {
             LOG.info(it)

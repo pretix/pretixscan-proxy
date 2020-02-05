@@ -20,6 +20,8 @@ class PretixScanConfig(private var data_dir: String, private val eventSlug: Stri
     private val PREFS_KEY_LAST_FAILED_SYNC_MSG = "last_failed_sync_msg"
     private val PREFS_KEY_LAST_DOWNLOAD = "last_download"
     private val PREFS_KEY_LAST_STATUS_DATA = "last_status_data"
+    private val PREFS_KEY_KNOWN_DEVICE_VERSION = "known_device_version"
+    private val PREFS_KEY_KNOWN_PRETIX_VERSION = "known_pretix_version"
 
     fun setDeviceConfig(
         url: String,
@@ -127,6 +129,24 @@ class PretixScanConfig(private var data_dir: String, private val eventSlug: Stri
 
     override fun getSubEventId(): Long? {
         return subEvent
+    }
+
+    override fun getDeviceKnownVersion(): Int {
+        return prefs.getInt(PREFS_KEY_KNOWN_DEVICE_VERSION, 0)
+    }
+
+    override fun setDeviceKnownVersion(value: Int) {
+        prefs.putInt(PREFS_KEY_KNOWN_DEVICE_VERSION, value)
+        prefs.flush()
+    }
+
+    override fun setKnownPretixVersion(value: Long) {
+        prefs.putLong(PREFS_KEY_KNOWN_PRETIX_VERSION, value)
+        prefs.flush()
+    }
+
+    override fun getKnownPretixVersion(): Long {
+        return prefs.getLong(PREFS_KEY_KNOWN_PRETIX_VERSION, 0)
     }
 
 }

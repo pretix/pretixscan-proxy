@@ -20,7 +20,8 @@ import java.util.concurrent.ScheduledExecutorService
 
 
 object Server {
-    val VERSION = "0.0.1"
+    val VERSION = "0.0.2"
+    val VERSION_CODE = 2
     private val LOG = LoggerFactory.getLogger(Server::class.java)
     val syncData = makeSyncDataStore()
     val proxyData = makeProxyDataStore()
