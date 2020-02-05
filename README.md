@@ -61,6 +61,7 @@ Then you can run the built JAR file:
     java \
         -Dpretixscan.database="jdbc:postgresql:scanproxy" \
         -Dpretixscan.baseurl="https://local.baseurl.com" \
+        -Dpretixscan.adminauth="admin:admin" \
         -jar server/build/libs/server-1.0-SNAPSHOT.jar
 
 

@@ -1,6 +1,8 @@
 package eu.pretix.pretixscan.scanproxy.endpoints
 
 import eu.pretix.libpretixsync.api.DefaultHttpClientFactory
+import eu.pretix.libpretixsync.db.CheckInList
+import eu.pretix.libpretixsync.db.QueuedCheckIn
 import eu.pretix.libpretixsync.setup.*
 import eu.pretix.pretixscan.scanproxy.PretixScanConfig
 import eu.pretix.pretixscan.scanproxy.Server
@@ -56,19 +58,49 @@ object SetupUpstream : JsonBodyHandler<SetupUpstreamRequest>(SetupUpstreamReques
 
 
 object ConfigState : Handler {
+    data class QueueState(
+        val event: String,
+        val list: String,
+        val count: Int
+    )
+
+    private fun queues(): List<QueueState> {
+        val res = mutableListOf<QueueState>()
+        val result = (Server.proxyData select (SyncedEventEntity::class)).get().map { it.slug }.toSortedSet()
+        for (ev in result) {
+            val lists =
+                Server.syncData.select(CheckInList::class.java).where(CheckInList.EVENT_SLUG.eq(ev)).get().toList()
+            for (l in lists) {
+                val cnt = Server.syncData.count(QueuedCheckIn::class.java)
+                    .where(QueuedCheckIn.CHECKIN_LIST_ID.eq(l.getServer_id())).get().value()
+                res.add(
+                    QueueState(
+                        ev,
+                        l.getName(),
+                        cnt ?: 0
+                    )
+                )
+            }
+        }
+        return res
+    }
+
     override fun handle(ctx: Context) {
         val configStore = PretixScanConfig(Server.dataDir, "", 0)
-        ctx.json(mapOf(
-            "configured" to configStore.isConfigured,
-            "organizer" to configStore.organizerSlug,
-            "upstreamUrl" to configStore.apiUrl,
-            "lastSync" to Date(configStore.lastSync).toString(),
-            "lastFailedSync" to Date(configStore.lastFailedSync).toString(),
-            "lastFailedSyncMsg" to configStore.lastFailedSyncMsg,
-            "lastDownload" to Date(configStore.lastDownload).toString(),
-            "syncedEvents" to (Server.proxyData select(SyncedEventEntity::class)).get().map {
-                it.slug
-            }.joinToString(",")
-        ))
+        ctx.json(
+            mapOf(
+                "configured" to configStore.isConfigured,
+                "organizer" to configStore.organizerSlug,
+                "upstreamUrl" to configStore.apiUrl,
+                "lastSync" to Date(configStore.lastSync).toString(),
+                "lastFailedSync" to Date(configStore.lastFailedSync).toString(),
+                "lastFailedSyncMsg" to configStore.lastFailedSyncMsg,
+                "lastDownload" to Date(configStore.lastDownload).toString(),
+                "syncedEvents" to (Server.proxyData select (SyncedEventEntity::class)).get().map {
+                    it.slug
+                }.joinToString(","),
+                "queues" to queues()
+            )
+        )
     }
 }

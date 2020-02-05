@@ -7,8 +7,22 @@
     <script src="vendor/vue-qrcode.min.js"></script>
     <script>Vue.component(VueQrcode.name, VueQrcode);</script>
     <style>
+        body {
+            font-family: Open Sans, sans-serif;
+        }
         [v-cloak] {
             display: none;
+        }
+        table {
+            border-collapse: collapse;
+        }
+        td, th {
+            border: 1px solid #eee;
+            text-align: left;
+            padding: 10px;
+        }
+        td:last-child, th:last-child {
+            text-align: right;
         }
     </style>
 </head>
@@ -31,7 +45,23 @@
         <strong>Last failed sync message:</strong> {{state.lastFailedSyncMsg}}<br>
         <strong>Synchronized events:</strong> {{state.syncedEvents}}<br>
         <button type="button" @click="sync">Trigger Sync</button>
-        <button type="button" @click="synceventlist">Sync list of events</button><br><br>
+        <button type="button" @click="synceventlist">Sync list of events</button>
+        <br><br>
+        <strong>Local checkins (not yet on upstream server):</strong>
+        <table>
+            <tr>
+                <th>Event</th>
+                <th>Check-in list</th>
+                <th>#</th>
+            </tr>
+            <tr v-for="q in state.queues">
+                <td>{{q.event}}</td>
+                <td>{{q.list}}</td>
+                <td>{{q.count}}</td>
+            </tr>
+        </table>
+
+        <hr>
         <button type="button" @click="newdevice">Create a new device</button>
     </section>
     <div v-if="loading > 0">

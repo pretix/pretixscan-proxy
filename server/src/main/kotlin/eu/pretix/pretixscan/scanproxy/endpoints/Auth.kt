@@ -45,3 +45,21 @@ object EventRegister : Handler {
         }
     }
 }
+
+object AdminAuth : Handler {
+    override fun handle(ctx: Context) {
+        val validauth = System.getProperty("pretixscan.adminauth", "nope")
+        if (validauth == "nope") {
+            if (ctx.ip() != "127.0.0.1" && ctx.ip() != "0:0:0:0:0:0:0:1") {
+                throw ForbiddenResponse("Only local access is allowed")
+            }
+        }
+        if (ctx.basicAuthCredentials() != null) {
+            if (ctx.basicAuthCredentials()?.username == validauth.split(":")[0] && ctx.basicAuthCredentials()?.password == validauth.split(":")[1]) {
+                return
+            }
+        }
+        ctx.header("WWW-Authenticate", "Basic realm=\"pretixSCAN proxy\"")
+        throw UnauthorizedResponse("Auth required")
+    }
+}

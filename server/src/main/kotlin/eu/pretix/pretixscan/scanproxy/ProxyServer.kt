@@ -71,12 +71,18 @@ object Server {
                     }
                 }
             }
+            path("") {
+                before(AdminAuth)
+            }
             path("proxyapi/v1") {
-                post("configure", SetupUpstream)
-                get("state", ConfigState)
-                post("init", SetupDownstreamInit)
-                post("sync", SyncNow)
-                post("synceventlist", SyncEventList)
+                path("") {
+                    before(AdminAuth)
+                    post("configure", SetupUpstream)
+                    get("state", ConfigState)
+                    post("init", SetupDownstreamInit)
+                    post("sync", SyncNow)
+                    post("synceventlist", SyncEventList)
+                }
 
                 path("rpc/:event/:list/") {
                     before(DeviceAuth)
