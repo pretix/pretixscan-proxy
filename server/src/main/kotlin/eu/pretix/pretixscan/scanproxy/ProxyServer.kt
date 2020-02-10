@@ -71,9 +71,7 @@ object Server {
                     }
                 }
             }
-            path("") {
-                before(AdminAuth)
-            }
+            before("/", AdminAuth)
             path("proxyapi/v1") {
                 path("") {
                     before(AdminAuth)
