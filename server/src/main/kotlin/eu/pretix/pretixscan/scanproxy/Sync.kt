@@ -9,9 +9,14 @@ import eu.pretix.pretixscan.scanproxy.Server.VERSION
 import eu.pretix.pretixscan.scanproxy.Server.VERSION_CODE
 import eu.pretix.pretixscan.scanproxy.db.SyncedEventEntity
 import org.slf4j.LoggerFactory
+import java.util.concurrent.locks.ReentrantLock
+import kotlin.concurrent.withLock
 
+
+val syncLock = ReentrantLock()
 
 class UnconfiguredException : Exception()
+class LockedException : Exception()
 class SyncFailedException(message: String) : Exception(message)
 
 
@@ -40,28 +45,33 @@ fun syncAllEvents(force: Boolean = false) {
         if (!configStore.isConfigured) {
             throw UnconfiguredException()
         }
+        if (syncLock.isLocked) {
+            throw LockedException()
+        }
 
-        val syncManager = SyncManager(
-            configStore,
-            PretixApi.fromConfig(configStore),
-            DummySentryImplementation(),
-            Server.syncData,
-            ProxyFileStorage(),
-            1000,
-            30000,
-            false,
-            VERSION_CODE,
-            System.getProperty("os.name"),
-            System.getProperty("os.version"),
-            "pretixSCANPROXY",
-            VERSION
-        )
-        syncManager!!.sync(force) {
-            LOG.info(it)
-        }
-        if (configStore.lastFailedSync > 0) {
-            LOG.info(configStore.lastFailedSyncMsg)
-            throw SyncFailedException(configStore.lastFailedSyncMsg)
-        }
+		syncLock.withLock {
+			val syncManager = SyncManager(
+				configStore,
+				PretixApi.fromConfig(configStore),
+				DummySentryImplementation(),
+				Server.syncData,
+				ProxyFileStorage(),
+				1000,
+				30000,
+				false,
+				VERSION_CODE,
+				System.getProperty("os.name"),
+				System.getProperty("os.version"),
+				"pretixSCANPROXY",
+				VERSION
+			)
+			syncManager!!.sync(force) {
+				LOG.info(it)
+			}
+			if (configStore.lastFailedSync > 0) {
+				LOG.info(configStore.lastFailedSyncMsg)
+				throw SyncFailedException(configStore.lastFailedSyncMsg)
+			}
+		}
     }
 }
