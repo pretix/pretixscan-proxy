@@ -72,8 +72,8 @@ object Server {
                 }
             }
             before("/", AdminAuth)
-            path("proxyapi/v1") {
-                path("") {
+            path("proxyapi/") {
+                path("v1/") {
                     before(AdminAuth)
                     post("configure", SetupUpstream)
                     get("state", ConfigState)
@@ -82,7 +82,7 @@ object Server {
                     post("synceventlist", SyncEventList)
                 }
 
-                path("rpc/:event/:list/") {
+                path("v1/rpc/:event/:list/") {
                     before(DeviceAuth)
                     get("status/", StatusEndpoint)
                     post("search/", SearchEndpoint)
