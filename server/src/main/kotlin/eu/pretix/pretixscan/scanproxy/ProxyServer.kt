@@ -72,21 +72,19 @@ object Server {
                 }
             }
             before("/", AdminAuth)
-            path("proxyapi/") {
-                path("v1/") {
-                    before("configure", AdminAuth)
-                    post("configure", SetupUpstream)
-                    before("state", AdminAuth)
-                    get("state", ConfigState)
-                    before("init", AdminAuth)
-                    post("init", SetupDownstreamInit)
-                    before("sync", AdminAuth)
-                    post("sync", SyncNow)
-                    before("synceventlist", AdminAuth)
-                    post("synceventlist", SyncEventList)
-                }
+            path("proxyapi/v1/") {
+				before("configure", AdminAuth)
+				post("configure", SetupUpstream)
+				before("state", AdminAuth)
+				get("state", ConfigState)
+				before("init", AdminAuth)
+				post("init", SetupDownstreamInit)
+				before("sync", AdminAuth)
+				post("sync", SyncNow)
+				before("synceventlist", AdminAuth)
+				post("synceventlist", SyncEventList)
 
-                path("v1/rpc/:event/:list/") {
+                path("rpc/:event/:list/") {
                     before(DeviceAuth)
                     get("status/", StatusEndpoint)
                     post("search/", SearchEndpoint)
