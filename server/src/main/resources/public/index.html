@@ -39,13 +39,26 @@
     <section class="main" v-if="state.configured">
         <strong>Upstream URL:</strong> {{state.upstreamUrl}}<br>
         <strong>Organizer:</strong> {{state.organizer}}<br>
-        <strong>Last sync:</strong> {{state.lastSync}}<br>
-        <strong>Last download:</strong> {{state.lastDownload}}<br>
-        <strong>Last failed sync:</strong> {{state.lastFailedSync}}<br>
-        <strong>Last failed sync message:</strong> {{state.lastFailedSyncMsg}}<br>
-        <strong>Synchronized events:</strong> {{state.syncedEvents}}<br>
         <button type="button" @click="sync">Trigger Sync</button>
         <button type="button" @click="synceventlist">Sync list of events</button>
+        <br><br>
+        <strong>Event synchronization:</strong>
+        <table>
+            <tr>
+                <th>Event</th>
+                <th>Last sync</th>
+                <th>Last download</th>
+                <th>Last failed sync</th>
+                <th>Last error message</th>
+            </tr>
+            <tr v-for="e in state.syncedEvents">
+                <td>{{e.slug}}</td>
+                <td>{{e.lastSync}}</td>
+                <td>{{e.lastDownload}}</td>
+                <td>{{e.lastFailedSync}}</td>
+                <td>{{e.lastFailedSyncMsg}}</td>
+            </tr>
+        </table>
         <br><br>
         <strong>Local checkins (not yet on upstream server):</strong>
         <table>

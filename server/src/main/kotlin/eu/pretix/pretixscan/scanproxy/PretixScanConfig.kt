@@ -40,13 +40,8 @@ class PretixScanConfig(private var data_dir: String, private val eventSlug: Stri
         prefs.flush()
     }
 
-    fun resetEventConfig() {
-        prefs.remove(PREFS_KEY_API_URL)
-        prefs.remove(PREFS_KEY_API_KEY)
-        prefs.remove(PREFS_KEY_LAST_DOWNLOAD)
-        prefs.remove(PREFS_KEY_LAST_SYNC)
-        prefs.remove(PREFS_KEY_LAST_FAILED_SYNC)
-        prefs.remove(PREFS_KEY_LAST_STATUS_DATA)
+    fun wipe() {
+        prefs.clear()
         val f = File(data_dir, PREFS_KEY_LAST_STATUS_DATA + ".json")
         if (f.exists()) {
             f.delete()
@@ -71,38 +66,38 @@ class PretixScanConfig(private var data_dir: String, private val eventSlug: Stri
     }
 
     override fun getLastDownload(): Long {
-        return prefs.getLong(PREFS_KEY_LAST_DOWNLOAD, 0)
+        return prefs.getLong(PREFS_KEY_LAST_DOWNLOAD + "_" + eventSlug, 0)
     }
 
     override fun setLastDownload(value: Long) {
-        prefs.putLong(PREFS_KEY_LAST_DOWNLOAD, value)
+        prefs.putLong(PREFS_KEY_LAST_DOWNLOAD + "_" + eventSlug, value)
         prefs.flush()
     }
 
     override fun getLastSync(): Long {
-        return prefs.getLong(PREFS_KEY_LAST_SYNC, 0)
+        return prefs.getLong(PREFS_KEY_LAST_SYNC + "_" + eventSlug, 0)
     }
 
     override fun setLastSync(value: Long) {
-        prefs.putLong(PREFS_KEY_LAST_SYNC, value)
+        prefs.putLong(PREFS_KEY_LAST_SYNC + "_" + eventSlug, value)
         prefs.flush()
     }
 
     override fun getLastFailedSync(): Long {
-        return prefs.getLong(PREFS_KEY_LAST_FAILED_SYNC, 0)
+        return prefs.getLong(PREFS_KEY_LAST_FAILED_SYNC + "_" + eventSlug, 0)
     }
 
     override fun setLastFailedSync(value: Long) {
-        prefs.putLong(PREFS_KEY_LAST_FAILED_SYNC, value)
+        prefs.putLong(PREFS_KEY_LAST_FAILED_SYNC + "_" + eventSlug, value)
         prefs.flush()
     }
 
     override fun getLastFailedSyncMsg(): String {
-        return prefs.get(PREFS_KEY_LAST_FAILED_SYNC_MSG, "")
+        return prefs.get(PREFS_KEY_LAST_FAILED_SYNC_MSG + "_" + eventSlug, "")
     }
 
     override fun setLastFailedSyncMsg(value: String?) {
-        prefs.put(PREFS_KEY_LAST_FAILED_SYNC_MSG, value)
+        prefs.put(PREFS_KEY_LAST_FAILED_SYNC_MSG + "_" + eventSlug, value)
         prefs.flush()
     }
 

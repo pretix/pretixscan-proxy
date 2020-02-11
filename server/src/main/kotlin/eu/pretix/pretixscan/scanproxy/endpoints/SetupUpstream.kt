@@ -7,16 +7,13 @@ import eu.pretix.libpretixsync.setup.*
 import eu.pretix.pretixscan.scanproxy.PretixScanConfig
 import eu.pretix.pretixscan.scanproxy.Server
 import eu.pretix.pretixscan.scanproxy.Server.VERSION
-import eu.pretix.pretixscan.scanproxy.db.SyncedEvent
 import eu.pretix.pretixscan.scanproxy.db.SyncedEventEntity
 import eu.pretix.pretixscan.scanproxy.syncEventList
 import io.javalin.http.BadRequestResponse
 import io.javalin.http.Context
 import io.javalin.http.Handler
 import io.javalin.http.InternalServerErrorResponse
-import net.harawata.appdirs.AppDirsFactory
 import java.io.IOException
-import java.sql.Timestamp
 import java.util.*
 import javax.net.ssl.SSLException
 
@@ -92,13 +89,16 @@ object ConfigState : Handler {
                 "configured" to configStore.isConfigured,
                 "organizer" to configStore.organizerSlug,
                 "upstreamUrl" to configStore.apiUrl,
-                "lastSync" to Date(configStore.lastSync).toString(),
-                "lastFailedSync" to Date(configStore.lastFailedSync).toString(),
-                "lastFailedSyncMsg" to configStore.lastFailedSyncMsg,
-                "lastDownload" to Date(configStore.lastDownload).toString(),
                 "syncedEvents" to (Server.proxyData select (SyncedEventEntity::class)).get().map {
-                    it.slug
-                }.joinToString(","),
+                    val localStore = PretixScanConfig(Server.dataDir, it.slug, null)
+                    return@map mapOf(
+                        "slug" to it.slug,
+                        "lastSync" to Date(localStore.lastSync).toString(),
+                        "lastFailedSync" to Date(localStore.lastFailedSync).toString(),
+                        "lastFailedSyncMsg" to localStore.lastFailedSyncMsg,
+                        "lastDownload" to Date(localStore.lastDownload).toString()
+                    )
+                }.toList(),
                 "queues" to queues()
             )
         )
