@@ -29,7 +29,8 @@ data class CheckInput(
     val ticketid: String,
     val answers: List<TicketCheckProvider.Answer>?,
     val ignore_unpaid: Boolean,
-    val with_badge_data: Boolean
+    val with_badge_data: Boolean,
+    val type: String?
 )
 
 object CheckEndpoint : JsonBodyHandler<CheckInput>(CheckInput::class.java) {
@@ -40,7 +41,8 @@ object CheckEndpoint : JsonBodyHandler<CheckInput>(CheckInput::class.java) {
             ctx.pathParam("list").toLong()
         )
         try {
-            ctx.json(acp.check(body.ticketid, body.answers, body.ignore_unpaid, body.with_badge_data))
+            val type = TicketCheckProvider.CheckInType.valueOf((body.type ?: "entry").toUpperCase())
+            ctx.json(acp.check(body.ticketid, body.answers, body.ignore_unpaid, body.with_badge_data, type))
         } catch (e: CheckException) {
             ctx.status(400).json(mapOf("title" to e.message))
         }
