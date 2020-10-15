@@ -58,6 +58,7 @@ fun syncAllEvents(force: Boolean = false) {
 				ProxyFileStorage(),
 				1000,
 				30000,
+				SyncManager.Profile.PRETIXSCAN,
 				false,
 				VERSION_CODE,
 				System.getProperty("os.name"),

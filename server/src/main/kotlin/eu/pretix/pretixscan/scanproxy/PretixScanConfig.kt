@@ -15,11 +15,13 @@ class PretixScanConfig(private var data_dir: String, private val eventSlug: Stri
     private val PREFS_KEY_API_DEVICE_ID = "pretix_api_device_id"
     private val PREFS_KEY_ORGANIZER_SLUG = "pretix_api_organizer_slug"
     private val PREFS_KEY_API_VERSION = "pretix_api_version"
+    private val PREFS_KEY_DEVICE_NAME = "device_name"
     private val PREFS_KEY_LAST_SYNC = "last_sync"
     private val PREFS_KEY_LAST_FAILED_SYNC = "last_failed_sync"
     private val PREFS_KEY_LAST_FAILED_SYNC_MSG = "last_failed_sync_msg"
     private val PREFS_KEY_LAST_DOWNLOAD = "last_download"
     private val PREFS_KEY_LAST_STATUS_DATA = "last_status_data"
+    private val PREFS_KEY_LAST_CLEANUP = "last_cleanup"
     private val PREFS_KEY_KNOWN_DEVICE_VERSION = "known_device_version"
     private val PREFS_KEY_KNOWN_PRETIX_VERSION = "known_pretix_version"
 
@@ -36,7 +38,9 @@ class PretixScanConfig(private var data_dir: String, private val eventSlug: Stri
         prefs.remove(PREFS_KEY_LAST_DOWNLOAD)
         prefs.remove(PREFS_KEY_LAST_SYNC)
         prefs.remove(PREFS_KEY_LAST_FAILED_SYNC)
+        prefs.remove(PREFS_KEY_LAST_CLEANUP)
         prefs.remove(PREFS_KEY_LAST_STATUS_DATA)
+        prefs.remove(PREFS_KEY_DEVICE_NAME)
         prefs.flush()
     }
 
@@ -142,6 +146,24 @@ class PretixScanConfig(private var data_dir: String, private val eventSlug: Stri
 
     override fun getKnownPretixVersion(): Long {
         return prefs.getLong(PREFS_KEY_KNOWN_PRETIX_VERSION, 0)
+    }
+
+    override fun getDeviceKnownName(): String {
+        return prefs.get(PREFS_KEY_DEVICE_NAME, "")
+    }
+
+    override fun setDeviceKnownName(value: String?) {
+        prefs.put(PREFS_KEY_DEVICE_NAME, value)
+        prefs.flush()
+    }
+
+    override fun getLastCleanup(): Long {
+        return prefs.getLong(PREFS_KEY_LAST_CLEANUP, 0)
+    }
+
+    override fun setLastCleanup(`val`: Long) {
+        prefs.putLong(PREFS_KEY_LAST_CLEANUP, `val`)
+        prefs.flush()
     }
 
 }
