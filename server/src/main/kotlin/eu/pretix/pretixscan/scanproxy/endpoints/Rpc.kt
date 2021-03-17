@@ -27,7 +27,7 @@ object StatusEndpoint : Handler {
 
 data class CheckInput(
     val ticketid: String,
-    val answers: List<TicketCheckProvider.Answer>?,
+    val answers: List<Answer>?,
     val ignore_unpaid: Boolean,
     val with_badge_data: Boolean,
     val type: String?

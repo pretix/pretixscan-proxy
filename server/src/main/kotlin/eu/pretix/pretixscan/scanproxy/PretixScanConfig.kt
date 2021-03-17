@@ -24,6 +24,7 @@ class PretixScanConfig(private var data_dir: String, private val eventSlug: Stri
     private val PREFS_KEY_LAST_CLEANUP = "last_cleanup"
     private val PREFS_KEY_KNOWN_DEVICE_VERSION = "known_device_version"
     private val PREFS_KEY_KNOWN_PRETIX_VERSION = "known_pretix_version"
+    private val PREFS_KEY_KNOWN_GATE_NAME = "known_gate_name"
 
     fun setDeviceConfig(
         url: String,
@@ -73,6 +74,10 @@ class PretixScanConfig(private var data_dir: String, private val eventSlug: Stri
         return prefs.getLong(PREFS_KEY_LAST_DOWNLOAD + "_" + eventSlug, 0)
     }
 
+    override fun getAutoSwitchRequested(): Boolean {
+        return false
+    }
+
     override fun setLastDownload(value: Long) {
         prefs.putLong(PREFS_KEY_LAST_DOWNLOAD + "_" + eventSlug, value)
         prefs.flush()
@@ -98,6 +103,15 @@ class PretixScanConfig(private var data_dir: String, private val eventSlug: Stri
 
     override fun getLastFailedSyncMsg(): String {
         return prefs.get(PREFS_KEY_LAST_FAILED_SYNC_MSG + "_" + eventSlug, "")
+    }
+
+    override fun getDeviceKnownGateName(): String {
+        return prefs.get(PREFS_KEY_KNOWN_GATE_NAME, "")
+    }
+
+    override fun setDeviceKnownGateName(value: String?) {
+        prefs.put(PREFS_KEY_KNOWN_GATE_NAME, value)
+        prefs.flush()
     }
 
     override fun setLastFailedSyncMsg(value: String?) {
