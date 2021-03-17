@@ -14,9 +14,6 @@ import org.json.JSONObject
 import org.slf4j.LoggerFactory
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.Executors
-import java.util.concurrent.ScheduledExecutorService
-
-
 
 
 object Server {
@@ -54,7 +51,7 @@ object Server {
                     get("subevents", SubEventsEndpoint)
                     path("events") {
                         get(EventsEndpoint)
-                        path (":event") {
+                        path(":event") {
                             before(EventRegister)
                             get(EventEndpoint)
                             //get("categories/", CategoryEndpoint)
@@ -73,16 +70,16 @@ object Server {
             }
             before("/", AdminAuth)
             path("proxyapi/v1/") {
-				before("configure", AdminAuth)
-				post("configure", SetupUpstream)
-				before("state", AdminAuth)
-				get("state", ConfigState)
-				before("init", AdminAuth)
-				post("init", SetupDownstreamInit)
-				before("sync", AdminAuth)
-				post("sync", SyncNow)
-				before("synceventlist", AdminAuth)
-				post("synceventlist", SyncEventList)
+                before("configure", AdminAuth)
+                post("configure", SetupUpstream)
+                before("state", AdminAuth)
+                get("state", ConfigState)
+                before("init", AdminAuth)
+                post("init", SetupDownstreamInit)
+                before("sync", AdminAuth)
+                post("sync", SyncNow)
+                before("synceventlist", AdminAuth)
+                post("synceventlist", SyncEventList)
 
                 path("rpc/:event/:list/") {
                     before(DeviceAuth)

@@ -1,7 +1,9 @@
 <html>
 <head>
-    <link rel="stylesheet" href="admin.css">
+    <link rel="stylesheet" href="vendor/bootstrap.min.css">
     <meta charset="UTF-8">
+    <script src="vendor/jquery.min.js"></script>
+    <script src="vendor/bootstrap.min.js"></script>
     <script src="vendor/vue.min.js"></script>
     <script src="vendor/vue-resource.min.js"></script>
     <script src="vendor/vue-qrcode.min.js"></script>
@@ -10,114 +12,137 @@
         body {
             font-family: Open Sans, sans-serif;
         }
+
         [v-cloak] {
             display: none;
         }
+
         table {
             border-collapse: collapse;
         }
+
         td, th {
             border: 1px solid #eee;
             text-align: left;
             padding: 10px;
         }
+
         td:last-child, th:last-child {
             text-align: right;
         }
     </style>
 </head>
 <body>
-<section class="adminapp">
-    <header class="header">
-        <h1>Welcome to pretixSCAN-Proxy</h1>
-    </header>
-    <section class="main" v-if="!state.configured && loading == 0">
-        Upstream URL: <input v-model="config_url" placeholder="https://pretix.eu"><br>
-        Token: <input v-model="config_token"><br>
-        <button type="button" @click="configure">Configure</button>
-    </section>
-    <section class="main" v-if="state.configured">
-        <strong>Upstream URL:</strong> {{state.upstreamUrl}}<br>
-        <strong>Organizer:</strong> {{state.organizer}}<br>
-        <button type="button" @click="sync">Trigger Sync</button>
-        <button type="button" @click="synceventlist">Sync list of events</button>
-        <br><br>
-        <strong>Event synchronization:</strong>
-        <table>
-            <tr>
-                <th>Event</th>
-                <th>Last sync</th>
-                <th>Last download</th>
-                <th>Last failed sync</th>
-                <th>Last error message</th>
-            </tr>
-            <tr v-for="e in state.syncedEvents">
-                <td>{{e.slug}}</td>
-                <td>{{e.lastSync}}</td>
-                <td>{{e.lastDownload}}</td>
-                <td>{{e.lastFailedSync}}</td>
-                <td>{{e.lastFailedSyncMsg}}</td>
-            </tr>
-        </table>
-        <br><br>
-        <strong>Local checkins (not yet on upstream server):</strong>
-        <table>
-            <tr>
-                <th>Event</th>
-                <th>Check-in list</th>
-                <th>#</th>
-            </tr>
-            <tr v-for="q in state.queues">
-                <td>{{q.event}}</td>
-                <td>{{q.list}}</td>
-                <td>{{q.count}}</td>
-            </tr>
-        </table>
+<div class="adminapp">
+    <nav class="navbar navbar-default navbar-static-top">
+        <div class="container">
+            <div class="navbar-header">
+                <a class="navbar-brand">pretixSCAN Proxy</a>
+            </div>
+            <div class="nav navbar-nav navbar-right">
+                <div v-if="loading > 0">
+                    <svg width="120" height="50" viewBox="0 0 120 30" xmlns="http://www.w3.org/2000/svg" fill="#3b1c4a">
+                        <circle cx="15" cy="15" r="15">
+                            <animate attributeName="r" from="15" to="15"
+                                     begin="0s" dur="0.8s"
+                                     values="15;9;15" calcMode="linear"
+                                     repeatCount="indefinite"/>
+                            <animate attributeName="fill-opacity" from="1" to="1"
+                                     begin="0s" dur="0.8s"
+                                     values="1;.5;1" calcMode="linear"
+                                     repeatCount="indefinite"/>
+                        </circle>
+                        <circle cx="60" cy="15" r="9" fill-opacity="0.3">
+                            <animate attributeName="r" from="9" to="9"
+                                     begin="0s" dur="0.8s"
+                                     values="9;15;9" calcMode="linear"
+                                     repeatCount="indefinite"/>
+                            <animate attributeName="fill-opacity" from="0.5" to="0.5"
+                                     begin="0s" dur="0.8s"
+                                     values=".5;1;.5" calcMode="linear"
+                                     repeatCount="indefinite"/>
+                        </circle>
+                        <circle cx="105" cy="15" r="15">
+                            <animate attributeName="r" from="15" to="15"
+                                     begin="0s" dur="0.8s"
+                                     values="15;9;15" calcMode="linear"
+                                     repeatCount="indefinite"/>
+                            <animate attributeName="fill-opacity" from="1" to="1"
+                                     begin="0s" dur="0.8s"
+                                     values="1;.5;1" calcMode="linear"
+                                     repeatCount="indefinite"/>
+                        </circle>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </nav>
+    <div class="container">
+        <section>
+            <header class="header">
+                <h1>Welcome to pretixSCAN-Proxy</h1>
+            </header>
+            <section class="main form-inline" v-if="!state.configured && loading == 0">
+                <label>Upstream URL<br>
+                    <input class="form-control" v-model="config_url" placeholder="https://pretix.eu">
+                </label>
+                <br>
+                <label>
+                    Token<br>
+                    <input class="form-control" v-model="config_token">
+                </label>
+                <button class="btn btn-primary" type="button" @click="configure">Configure</button>
+            </section>
+            <section class="main" v-if="state.configured">
+                <strong>Upstream URL:</strong> {{state.upstreamUrl}}<br>
+                <strong>Organizer:</strong> {{state.organizer}}<br>
+                <button class="btn btn-default" type="button" @click="sync">Trigger Sync</button>
+                <button class="btn btn-default" type="button" @click="synceventlist">Sync list of events</button>
+                <br><br>
+                <strong>Event synchronization:</strong>
+                <table>
+                    <tr>
+                        <th>Event</th>
+                        <th>Last sync</th>
+                        <th>Last download</th>
+                        <th>Last failed sync</th>
+                        <th>Last error message</th>
+                    </tr>
+                    <tr v-for="e in state.syncedEvents">
+                        <td>{{e.slug}}</td>
+                        <td>{{e.lastSync}}</td>
+                        <td>{{e.lastDownload}}</td>
+                        <td>{{e.lastFailedSync}}</td>
+                        <td>{{e.lastFailedSyncMsg}}</td>
+                    </tr>
+                </table>
+                <br><br>
+                <strong>Local checkins (not yet on upstream server):</strong>
+                <table>
+                    <tr>
+                        <th>Event</th>
+                        <th>Check-in list</th>
+                        <th>#</th>
+                    </tr>
+                    <tr v-for="q in state.queues">
+                        <td>{{q.event}}</td>
+                        <td>{{q.list}}</td>
+                        <td>{{q.count}}</td>
+                    </tr>
+                </table>
 
-        <hr>
-        <button type="button" @click="newdevice">Create a new device</button>
-    </section>
-    <div v-if="loading > 0">
-        <svg width="120" height="30" viewBox="0 0 120 30" xmlns="http://www.w3.org/2000/svg" fill="#3b1c4a">
-            <circle cx="15" cy="15" r="15">
-                <animate attributeName="r" from="15" to="15"
-                         begin="0s" dur="0.8s"
-                         values="15;9;15" calcMode="linear"
-                         repeatCount="indefinite"/>
-                <animate attributeName="fill-opacity" from="1" to="1"
-                         begin="0s" dur="0.8s"
-                         values="1;.5;1" calcMode="linear"
-                         repeatCount="indefinite"/>
-            </circle>
-            <circle cx="60" cy="15" r="9" fill-opacity="0.3">
-                <animate attributeName="r" from="9" to="9"
-                         begin="0s" dur="0.8s"
-                         values="9;15;9" calcMode="linear"
-                         repeatCount="indefinite"/>
-                <animate attributeName="fill-opacity" from="0.5" to="0.5"
-                         begin="0s" dur="0.8s"
-                         values=".5;1;.5" calcMode="linear"
-                         repeatCount="indefinite"/>
-            </circle>
-            <circle cx="105" cy="15" r="15">
-                <animate attributeName="r" from="15" to="15"
-                         begin="0s" dur="0.8s"
-                         values="15;9;15" calcMode="linear"
-                         repeatCount="indefinite"/>
-                <animate attributeName="fill-opacity" from="1" to="1"
-                         begin="0s" dur="0.8s"
-                         values="1;.5;1" calcMode="linear"
-                         repeatCount="indefinite"/>
-            </circle>
-        </svg>
+                <hr>
+                <button type="button" @click="newdevice">Create a new device</button>
+            </section>
+            <section class="init-token" v-if="init_data">
+                <qrcode :value="initqr" :options="{ width: 300 }"></qrcode>
+                <br>
+                <strong>URL:</strong> {{init_data.url}}<br>
+                <strong>Token:</strong> {{init_data.token}}
+            </section>
+        </section>
     </div>
-    <section class="init-token" v-if="init_data">
-        <qrcode :value="initqr" :options="{ width: 300 }"></qrcode>
-        <br>
-        <strong>URL:</strong> {{init_data.url}}<br>
-        <strong>Token:</strong> {{init_data.token}}
-    </section>
-</section>
+</div>
 <script src="admin.js"></script>
 </body>
 </html>
