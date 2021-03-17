@@ -3,6 +3,7 @@ package eu.pretix.pretixscan.scanproxy.endpoints
 import eu.pretix.pretixscan.scanproxy.PretixScanConfig
 import eu.pretix.pretixscan.scanproxy.Server
 import eu.pretix.pretixscan.scanproxy.db.DownstreamDeviceEntity
+import eu.pretix.pretixscan.scanproxy.db.SyncedEventEntity
 import io.javalin.http.*
 import io.requery.kotlin.eq
 import java.util.*
@@ -29,14 +30,47 @@ object SetupDownstreamInit : Handler {
         val baseurl = System.getProperty("pretixscan.baseurl", "http://URLNOTSET")
         val d = DownstreamDeviceEntity()
         d.uuid = UUID.randomUUID().toString()
+        d.added_datetime = System.currentTimeMillis().toString()
         d.init_token = "proxy=" + (1..16)
-            .map { i -> kotlin.random.Random.nextInt(0, charPool.size) }
-            .map(charPool::get)
+            .map { i -> kotlin.random.Random.nextInt(0, SetupDownstreamInit.charPool.size) }
+            .map(SetupDownstreamInit.charPool::get)
             .joinToString("")
         Server.proxyData.insert(d)
         ctx.json(
             SetupDownstreamInitResponse(
                 token = d.init_token!!,
+                url = baseurl,
+                handshake_version = 1
+            )
+        )
+    }
+}
+
+
+object SetupDownstreamInitReady : Handler {
+    private val charPool: List<Char> = ('a'..'z') + ('A'..'Z') + ('0'..'9')
+    override fun handle(ctx: Context) {
+        val configStore = PretixScanConfig(Server.dataDir, "", 0)
+        if (!configStore.isConfigured) {
+            throw ServiceUnavailableResponse("Not configured")
+        }
+
+        // TODO: Require some kind of proper authentication!!!
+        if (ctx.ip() != "127.0.0.1" && ctx.ip() != "0:0:0:0:0:0:0:1") {
+            throw ForbiddenResponse("Only local access is allowed")
+        }
+        val baseurl = System.getProperty("pretixscan.baseurl", "http://URLNOTSET")
+        val d = DownstreamDeviceEntity()
+        d.uuid = UUID.randomUUID().toString()
+        d.added_datetime = System.currentTimeMillis().toString()
+        d.api_token = (1..64)
+            .map { i -> kotlin.random.Random.nextInt(0, SetupDownstreamInitReady.charPool.size) }
+            .map(SetupDownstreamInitReady.charPool::get)
+            .joinToString("")
+        Server.proxyData.insert(d)
+        ctx.json(
+            SetupDownstreamInitResponse(
+                token = d.api_token!!,
                 url = baseurl,
                 handshake_version = 1
             )
@@ -91,5 +125,19 @@ object SetupDownstream : JsonBodyHandler<SetupDownstreamRequest>(SetupDownstream
                 name = "Downstream device"
             ))
         }
+    }
+}
+
+
+data class RemoveDeviceRequest(val uuid: String)
+
+object SetupDownstreamRemove : JsonBodyHandler<RemoveDeviceRequest>(RemoveDeviceRequest::class.java) {
+    override fun handle(ctx: Context, body: RemoveDeviceRequest) {
+        ctx.json(
+            mapOf(
+                "result" to (Server.proxyData delete (DownstreamDeviceEntity::class) where (DownstreamDeviceEntity.UUID eq body.uuid)).get()
+                    .value()
+            )
+        )
     }
 }

@@ -15,6 +15,7 @@ var app = new Vue({
         config_token: "",
         loading: 0,
         init_data: null,
+        addEventSlug: "",
     },
 
     created: function () {
@@ -23,11 +24,36 @@ var app = new Vue({
 
     computed: {
         initqr: function () {
-            return JSON.stringify(this.init_data);
+            if (this.init_data.token.startsWith("token="))
+                return JSON.stringify(this.init_data);
         }
     },
 
     methods: {
+        removeEvent: function (slug) {
+            this.loading++;
+            Vue.http.post("/proxyapi/v1/removeevent", {slug: slug}).then(function (response) {
+                app.loading--;
+                alert("Removed");
+                app.reload()
+            }, err_handler);
+        },
+        removeDevice: function (id) {
+            this.loading++;
+            Vue.http.post("/proxyapi/v1/remove", {uuid: id}).then(function (response) {
+                app.loading--;
+                alert("Removed");
+                app.reload()
+            }, err_handler);
+        },
+        addEvent: function () {
+            this.loading++;
+            Vue.http.post("/proxyapi/v1/addevent", {slug: this.addEventSlug}).then(function (response) {
+                app.loading--;
+                alert("Added");
+                app.reload()
+            }, err_handler);
+        },
         sync: function () {
             this.loading++;
             Vue.http.post("/proxyapi/v1/sync").then(function (response) {
@@ -56,6 +82,15 @@ var app = new Vue({
             Vue.http.post("/proxyapi/v1/init").then(function (response) {
                 app.loading--;
                 app.init_data = response.body;
+                app.reload();
+            }, err_handler);
+        },
+        newproxydevice: function () {
+            this.loading++;
+            Vue.http.post("/proxyapi/v1/initready").then(function (response) {
+                app.loading--;
+                app.init_data = response.body;
+                app.reload();
             }, err_handler);
         },
         configure: function () {

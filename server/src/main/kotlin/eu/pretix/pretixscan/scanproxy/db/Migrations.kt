@@ -1,5 +1,6 @@
 package eu.pretix.pretixscan.scanproxy.db
 
+import eu.pretix.libpretixsync.db.Migrations
 import eu.pretix.pretixscan.scanproxy.Models
 import io.requery.sql.SchemaModifier
 import io.requery.sql.TableCreationMode
@@ -10,7 +11,7 @@ import javax.sql.DataSource
 
 object Migrations {
     private val model = Models.DEFAULT
-    var CURRENT_VERSION = 4
+    var CURRENT_VERSION = 5
 
     @Throws(SQLException::class)
     private fun createVersionTable(c: Connection, version: Int) {
@@ -30,6 +31,20 @@ object Migrations {
         val s3 = c.createStatement()
         s3.execute("INSERT INTO _scanproxy_version (version) VALUES ($version);")
         s3.close()
+    }
+
+    @Throws(SQLException::class)
+    private fun execIgnore(c: Connection, sql: String, ignoreMatch: String) {
+        val s1 = c.createStatement()
+        try {
+            s1.execute(sql)
+        } catch (e: SQLException) {
+            if (!e.message!!.contains(ignoreMatch)) {
+                throw e
+            }
+        } finally {
+            s1.close()
+        }
     }
 
     @Throws(SQLException::class)
@@ -58,10 +73,21 @@ object Migrations {
         }
         if (db_version < 3) {
             create_drop(dataSource)
+            updateVersionTable(c, 3)
         }
-        create_notexists(dataSource)
+        if (db_version < 4) {
+            create_notexists(dataSource)
+            updateVersionTable(c, 4)
+        }
+        if (db_version < 5) {
+            execIgnore(
+                c,
+                "ALTER TABLE DownstreamDevice ADD added_datetime TEXT;",
+                "duplicate column name"
+            )
+            updateVersionTable(c, 5)
+        }
 
-        updateVersionTable(c, CURRENT_VERSION)
     }
 
     private fun create_drop(dataSource: DataSource) {

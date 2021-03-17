@@ -11,6 +11,7 @@
     <style>
         body {
             font-family: Open Sans, sans-serif;
+            padding-top: 70px;
         }
 
         [v-cloak] {
@@ -34,7 +35,7 @@
 </head>
 <body>
 <div class="adminapp">
-    <nav class="navbar navbar-default navbar-static-top">
+    <nav class="navbar navbar-default navbar-fixed-top">
         <div class="container">
             <div class="navbar-header">
                 <a class="navbar-brand">pretixSCAN Proxy</a>
@@ -79,9 +80,6 @@
     </nav>
     <div class="container">
         <section>
-            <header class="header">
-                <h1>Welcome to pretixSCAN-Proxy</h1>
-            </header>
             <section class="main form-inline" v-if="!state.configured && loading == 0">
                 <label>Upstream URL<br>
                     <input class="form-control" v-model="config_url" placeholder="https://pretix.eu">
@@ -94,51 +92,112 @@
                 <button class="btn btn-primary" type="button" @click="configure">Configure</button>
             </section>
             <section class="main" v-if="state.configured">
-                <strong>Upstream URL:</strong> {{state.upstreamUrl}}<br>
-                <strong>Organizer:</strong> {{state.organizer}}<br>
-                <button class="btn btn-default" type="button" @click="sync">Trigger Sync</button>
-                <button class="btn btn-default" type="button" @click="synceventlist">Sync list of events</button>
-                <br><br>
-                <strong>Event synchronization:</strong>
-                <table>
-                    <tr>
-                        <th>Event</th>
-                        <th>Last sync</th>
-                        <th>Last download</th>
-                        <th>Last failed sync</th>
-                        <th>Last error message</th>
-                    </tr>
-                    <tr v-for="e in state.syncedEvents">
-                        <td>{{e.slug}}</td>
-                        <td>{{e.lastSync}}</td>
-                        <td>{{e.lastDownload}}</td>
-                        <td>{{e.lastFailedSync}}</td>
-                        <td>{{e.lastFailedSyncMsg}}</td>
-                    </tr>
-                </table>
-                <br><br>
-                <strong>Local checkins (not yet on upstream server):</strong>
-                <table>
-                    <tr>
-                        <th>Event</th>
-                        <th>Check-in list</th>
-                        <th>#</th>
-                    </tr>
-                    <tr v-for="q in state.queues">
-                        <td>{{q.event}}</td>
-                        <td>{{q.list}}</td>
-                        <td>{{q.count}}</td>
-                    </tr>
-                </table>
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">
+                            Configuration
+                        </h3>
+                    </div>
+                    <div class="panel-body">
+                        <dl class="dl-horizontal">
+                            <dt>Upstream URL</dt>
+                            <dd>{{state.upstreamUrl}}</dd>
+                            <dt>Organizer</dt>
+                            <dd>{{state.organizer}}</dd>
+                        </dl>
+                        <button class="btn btn-default" type="button" @click="sync">Trigger Sync</button>
+                        <button class="btn btn-default" type="button" @click="synceventlist">
+                            Sync list of events
+                        </button>
+                    </div>
+                </div>
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">
+                            Upstream synchronization
+                        </h3>
+                    </div>
+                    <div class="panel-body">
+                        <h4>Events to be synchronized</h4>
+                        <table class="table">
+                            <thead>
+                            <tr>
+                                <th>Event</th>
+                                <th>Last sync</th>
+                                <th>Last download</th>
+                                <th>Last failed sync</th>
+                                <th>Last error message</th>
+                                <th></th>
+                            </tr>
+                            </thead>
+                            <tr v-for="e in state.syncedEvents">
+                                <td>{{e.slug}}</td>
+                                <td>{{e.lastSync}}</td>
+                                <td>{{e.lastDownload}}</td>
+                                <td>{{e.lastFailedSync}}</td>
+                                <td>{{e.lastFailedSyncMsg}}</td>
+                                <td>
+                                    <button @click="removeEvent(e.slug)" type="button" class="btn btn-danger">Remove
+                                    </button>
+                                </td>
+                            </tr>
+                        </table>
+                        <div class="form-inline">
+                            <input type="event" v-model="addEventSlug" placeholder="event slug" class="form-control">
+                            <button @click="addEvent" type="button" class="btn btn-default">Add event to sync list</button>
+                        </div>
+                        <hr>
+                        <h4>Local checkins (not yet on upstream server)</h4>
+                        <table class="table">
+                            <tr>
+                                <th>Event</th>
+                                <th>Check-in list</th>
+                                <th>#</th>
+                            </tr>
+                            <tr v-for="q in state.queues">
+                                <td>{{q.event}}</td>
+                                <td>{{q.list}}</td>
+                                <td>{{q.count}}</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">
+                            Downstream devices
+                        </h3>
+                    </div>
+                    <div class="panel-body">
+                        <button class="btn btn-primary" type="button" @click="newdevice">Create a new pretixSCAN device</button>
+                        <button class="btn btn-default" type="button" @click="newproxydevice">Create a new Proxy-API device</button>
+                        <section class="init-token" v-if="init_data">
+                            <qrcode v-if="initqr" :value="initqr" :options="{ width: 300 }"></qrcode>
+                            <br>
+                            <strong>URL:</strong> {{init_data.url}}<br>
+                            <strong>Token:</strong> {{init_data.token}}
+                        </section>
+                        <hr>
+                        <table class="table">
+                            <tr>
+                                <th>Device ID</th>
+                                <th>Initialization token</th>
+                                <th>Creation time</th>
+                                <th></th>
+                            </tr>
+                            <tr v-for="q in state.downstreamDevices">
+                                <td>{{q.uuid}}</td>
+                                <td>{{q.init_token ? q.init_token : 'Already configured'}}</td>
+                                <td>{{q.added_datetime}}</td>
+                                <td>
+                                    <button @click="removeDevice(q.uuid)" type="button" class="btn btn-danger">Remove
+                                    </button>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
 
-                <hr>
-                <button type="button" @click="newdevice">Create a new device</button>
-            </section>
-            <section class="init-token" v-if="init_data">
-                <qrcode :value="initqr" :options="{ width: 300 }"></qrcode>
-                <br>
-                <strong>URL:</strong> {{init_data.url}}<br>
-                <strong>Token:</strong> {{init_data.token}}
             </section>
         </section>
     </div>

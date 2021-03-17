@@ -66,6 +66,7 @@ fun syncAllEvents(force: Boolean = false) {
 				"pretixSCANPROXY",
 				VERSION
 			)
+			syncManager!!.keepSlugs.addAll(result)
 			syncManager!!.sync(force) {
 				LOG.info(it)
 			}
