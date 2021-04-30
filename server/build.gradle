@@ -17,6 +17,10 @@ dependencies {
     compile 'com.fasterxml.jackson.core:jackson-databind:2.10.1'
     compile 'com.fasterxml.jackson.module:jackson-module-kotlin:2.10.1'
     compile "org.slf4j:slf4j-simple:1.7.26"
+    
+    compile 'commons-codec:commons-codec:1.15'
+    compile 'net.i2p.crypto:eddsa:0.3.0'
+    compile 'com.google.protobuf:protobuf-lite:3.0.0'
 
     compile 'com.squareup.okhttp3:okhttp:4.3.0'
     compile 'io.requery:requery:1.6.0'
