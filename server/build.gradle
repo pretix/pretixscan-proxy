@@ -18,7 +18,6 @@ dependencies {
     compile 'com.fasterxml.jackson.module:jackson-module-kotlin:2.10.1'
     compile "org.slf4j:slf4j-simple:1.7.26"
     
-    compile 'commons-codec:commons-codec:1.15'
     compile 'net.i2p.crypto:eddsa:0.3.0'
     compile 'com.google.protobuf:protobuf-lite:3.0.0'
 
