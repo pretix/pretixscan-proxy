@@ -65,6 +65,162 @@ Then you can run the built JAR file:
         -Dpretixscan.adminauth="admin:admin" \
         -jar server/build/libs/server-1.0-SNAPSHOT.jar
 
+For initial configuration, visit the web interface at http://localhost:7000 (or the domain of your reverse proxy)
+and login with the admin credentials defined above.
+
+API
+---
+
+Beside the web interface and the endpoints powering it, the proxy server exposes two sets of API endpoints:
+
+- A set of API endpoints that "mock" endpoints from the pretix server API. For example, you can query
+  ``/api/v1/organizers/<org>/events/<event>/orders/`` and will get a valid, but always empty response. For other
+  resources like items or check-in lists, you get a populated response. These API calls are not documented on
+  purpose as they only exist to ensure compatibility with our pretixSCAN apps.
+  
+- A set of API endpoints special to the proxy at ``/proxyapi/v1/``. The ones that are intended to be used by third
+  parties are documented below.
+  
+### Authentication
+
+Authentication to the API closely follows the [Device authentication](https://docs.pretix.eu/en/latest/api/deviceauth.html#rest-deviceauth)
+protocol pretix uses. The admin web interface allows to generate initialization tokens which can be converted into a device
+token with the ``/api/v1/device/initialize`` endpoint. You can then supply these tokens to all subsequent calls in a
+``Authorization: Device <token>`` header.
+
+### Check
+
+The check endpoint allows you to check a ticket for validity.
+
+Sample request:
+
+    POST /proxyapi/v1/rpc/<event>/<checkinlist_id>/check/ HTTP/1.1
+    Content-Type: application/json
+
+    {
+      "ticketid": "barcode_content",
+      "answers": [
+        {
+          "question": {
+            "server_id": 1234
+          },
+          "value": "Foo"
+        }
+      ],
+      "with_badge_data": false,
+      "ignore_unpaid": false
+    }
+
+Sample response:
+
+    HTTP/1.1 200 OK
+    Content-Type: application/json
+
+    {
+      "type": "VALID",
+      "ticket": "Entry pass",
+      "variation": "Regular",
+      "attendee_name": "John Doe",
+      "seat": "Row 3, Seat 5",
+      "message": "Additional message",
+      "reasonExplanation": "Additional reason for RULES error code",
+      "orderCode": "ABC123",
+      "firstScanned": "2021-05-12T12:00:00.000Z",
+      "addonText": "+ Workshop",
+      "isRequireAttention": false,
+      "isCheckinAllowed": false,
+      "requiredAnswers": [
+        {
+          "question": {
+             ...
+          },
+          "currentValue": "Foo"
+        }
+      ],
+      "position": {
+        ...  // pretix API orderposition object
+      }
+    }
+
+``type`` can currently be any of ``VALID``, ``INVALID``, ``USED``, ``ERROR``, ``UNPAID``, ``CANCELED``, ``RULES``, ``REVOKED``, ``PRODUCT``, or ``ANSWERS_REQUIRED``.
+All other fields are nullable.
+
+### Search
+
+The search endpoint allows you to search for tickets.
+
+Sample request:
+
+    POST /proxyapi/v1/rpc/<event>/<checkinlist_id>/search/ HTTP/1.1
+    Content-Type: application/json
+
+    {
+      "query": "john",
+      "page": 1
+    }
+
+Sample response:
+
+    HTTP/1.1 200 OK
+    Content-Type: application/json
+
+    [
+      {
+        "secret": "barcode_content",
+        "ticket": "Entry pass",
+        "variation": "Regular",
+        "attendee_name": "John Doe",
+        "seat": "Row 3, Seat 5",
+        "orderCode": "ABC123",
+        "addonText": "+ Workshop",
+        "status": "PAID",
+        "isRedeemed": false,
+        "isRequireAttention": false,
+        "position": {
+          ...  // pretix API orderposition object
+        }
+      }
+    ]
+
+``status`` can currently be any of ``PAID``, ``CANCELED``, or ``PENDING``.
+
+### Status
+
+The status endpoint allows you to access statistics.
+
+Sample request:
+
+    GET /proxyapi/v1/rpc/<event>/<checkinlist_id>/status/ HTTP/1.1
+
+Sample response:
+
+    HTTP/1.1 200 OK
+    Content-Type: application/json
+
+    {
+      "event_name": "Museum",
+      "totalTickets": 3,
+      "alreadyScanned": 2,
+      "currentlyInside": 2,
+      "items": [
+        {
+          "id": 1234,
+          "name": "Entry Pass",
+          "total": 3,
+          "checkins": 2,
+          "admission": true,
+          "variations": [
+            {
+              "id": 3214,
+              "name": "Regular",
+              "total": 3,
+              "checkins": 2
+            }
+          ]
+        }
+      ]
+    ]
+
 
 License
 -------
