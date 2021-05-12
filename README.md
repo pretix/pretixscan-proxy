@@ -38,7 +38,8 @@ This allows you to get the best of both worlds – as long as there is a reliabl
 Development status
 ------------------
 
-Everything important seems to be working but this hasn't been used in production yet.
+pretixSCAN Proxy has been used in production. However, it currently does not follow a defined release cycle
+and is currently mostly used in projects in close collaboration with our team.
 
 System requirements
 -------------------
@@ -68,7 +69,7 @@ Then you can run the built JAR file:
 License
 -------
 
-Copyright 2019 Raphael Michel
+Copyright 2019-2021 rami.io GmbH
 
 Released under the terms of the GNU General Public License v3
 
