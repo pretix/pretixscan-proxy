@@ -64,7 +64,8 @@ fun syncAllEvents(force: Boolean = false) {
 				System.getProperty("os.name"),
 				System.getProperty("os.version"),
 				"pretixSCANPROXY",
-				VERSION
+				VERSION,
+				null
 			)
 			syncManager!!.keepSlugs.addAll(result)
 			syncManager!!.sync(force) {
