@@ -10,6 +10,7 @@ import io.javalin.http.Context
 import io.javalin.http.Handler
 import io.javalin.http.NotFoundResponse
 import io.requery.Persistable
+import org.slf4j.LoggerFactory
 
 object StatusEndpoint : Handler {
     override fun handle(ctx: Context) {
@@ -37,6 +38,7 @@ data class CheckInput(
 
 object CheckEndpoint : JsonBodyHandler<CheckInput>(CheckInput::class.java) {
     override fun handle(ctx: Context, body: CheckInput) {
+        val LOG = LoggerFactory.getLogger("eu.pretix.pretixscan.scanproxy.endpoints.CheckEndpoint")
 
         val acp = AsyncCheckProvider(
             PretixScanConfig(Server.dataDir, ctx.pathParam("event"), null),
@@ -46,7 +48,9 @@ object CheckEndpoint : JsonBodyHandler<CheckInput>(CheckInput::class.java) {
         )
         try {
             val type = TicketCheckProvider.CheckInType.valueOf((body.type ?: "entry").toUpperCase())
-            ctx.json(acp.check(body.ticketid, body.answers, body.ignore_unpaid, body.with_badge_data, type))
+            val result = acp.check(body.ticketid, body.answers, body.ignore_unpaid, body.with_badge_data, type)
+            LOG.info("Scanned ticket '${body.ticketid}' result '${result.type}")
+            ctx.json(result)
         } catch (e: CheckException) {
             ctx.status(400).json(mapOf("title" to e.message))
         }
