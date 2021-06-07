@@ -39,9 +39,9 @@ abstract class CachedResourceEndpoint : ResourceEndpoint() {
 
     override fun handle(ctx: Context) {
 
-        val rlm = Server.syncData.select(ResourceLastModified::class.java)
-            .where(ResourceLastModified.RESOURCE.eq(resourceName))
-            .and(ResourceLastModified.EVENT_SLUG.eq(ctx.pathParam("event")))
+        val rlm = Server.syncData.select(ResourceSyncStatus::class.java)
+            .where(ResourceSyncStatus.RESOURCE.eq(resourceName))
+            .and(ResourceSyncStatus.EVENT_SLUG.eq(ctx.pathParam("event")))
             .limit(1)
             .get().firstOrNull()
         if (rlm != null) {

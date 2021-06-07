@@ -103,7 +103,7 @@ object SetupDownstream : JsonBodyHandler<SetupDownstreamRequest>(SetupDownstream
         }
 
         val result = (Server.proxyData
-                select (DownstreamDeviceEntity::class) where (DownstreamDeviceEntity::init_token eq body.token)).get()
+                select (DownstreamDeviceEntity::class) where (DownstreamDeviceEntity.INIT_TOKEN.eq(body.token))).get()
         val device = result.firstOrNull()
         if (device == null) {
             ctx.json(mapOf("token" to listOf("This initialization token is not known."))).status(400)

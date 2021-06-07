@@ -26,8 +26,11 @@ object DeviceAuth : Handler {
             throw UnauthorizedResponse("Device auth required")
         }
 
-        val result = (Server.proxyData
-                select (DownstreamDeviceEntity::class) where (DownstreamDeviceEntity::api_token eq auth[1])).get()
+        val result = (
+                Server.proxyData
+                        select (DownstreamDeviceEntity::class)
+                        where (DownstreamDeviceEntity.API_TOKEN.eq(auth[1]))
+                ).get()
         val device = result.firstOrNull() ?: throw UnauthorizedResponse("Unknown device token")
     }
 }
@@ -55,7 +58,10 @@ object AdminAuth : Handler {
             }
         }
         if (ctx.basicAuthCredentials() != null) {
-            if (ctx.basicAuthCredentials()?.username == validauth.split(":")[0] && ctx.basicAuthCredentials()?.password == validauth.split(":")[1]) {
+            if (ctx.basicAuthCredentials()?.username == validauth.split(":")[0] && ctx.basicAuthCredentials()?.password == validauth.split(
+                    ":"
+                )[1]
+            ) {
                 return
             }
         }

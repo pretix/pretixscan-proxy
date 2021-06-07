@@ -4,6 +4,7 @@ import eu.pretix.libpretixsync.check.AsyncCheckProvider
 import eu.pretix.libpretixsync.check.CheckException
 import eu.pretix.libpretixsync.check.TicketCheckProvider
 import eu.pretix.libpretixsync.db.*
+import eu.pretix.pretixscan.scanproxy.PretixScanConfig
 import eu.pretix.pretixscan.scanproxy.Server
 import io.javalin.http.Context
 import io.javalin.http.Handler
@@ -13,6 +14,7 @@ import io.requery.Persistable
 object StatusEndpoint : Handler {
     override fun handle(ctx: Context) {
         val acp = AsyncCheckProvider(
+            PretixScanConfig(Server.dataDir, ctx.pathParam("event"), null),
             ctx.pathParam("event"),
             Server.syncData,
             ctx.pathParam("list").toLong()
@@ -35,7 +37,9 @@ data class CheckInput(
 
 object CheckEndpoint : JsonBodyHandler<CheckInput>(CheckInput::class.java) {
     override fun handle(ctx: Context, body: CheckInput) {
+
         val acp = AsyncCheckProvider(
+            PretixScanConfig(Server.dataDir, ctx.pathParam("event"), null),
             ctx.pathParam("event"),
             Server.syncData,
             ctx.pathParam("list").toLong()
@@ -57,6 +61,7 @@ data class SearchInput(
 object SearchEndpoint : JsonBodyHandler<SearchInput>(SearchInput::class.java) {
     override fun handle(ctx: Context, body: SearchInput) {
         val acp = AsyncCheckProvider(
+            PretixScanConfig(Server.dataDir, ctx.pathParam("event"), null),
             ctx.pathParam("event"),
             Server.syncData,
             ctx.pathParam("list").toLong()
