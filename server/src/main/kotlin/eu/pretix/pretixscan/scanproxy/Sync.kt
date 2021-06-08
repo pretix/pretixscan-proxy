@@ -69,7 +69,7 @@ fun syncAllEvents(force: Boolean = false) {
 			)
 			syncManager!!.keepSlugs.addAll(result)
 			syncManager!!.sync(force) {
-				LOG.info(it)
+				LOG.info("[$ev] $it")
 			}
 			if (configStore.lastFailedSync > 0) {
 				LOG.info(configStore.lastFailedSyncMsg)
