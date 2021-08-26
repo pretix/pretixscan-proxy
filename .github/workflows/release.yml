@@ -21,6 +21,5 @@ jobs:
         run: TERM=dumb ./gradlew jar
       - name: Build
         run: TERM=dumb ./gradlew jar
-
       - name: Upload
-        rum: curl https://marketplace.pretix.eu/upload/ -u pretixscan-proxy:{{ secrets.PLUM_UPLOAD_TOKEN }} -F "version=${GITHUB_REF:10}" -F "file=@server/build/libs/server-.jar"; done
+        run: curl https://marketplace.pretix.eu/upload/ -u pretixscan-proxy:{{ secrets.PLUM_UPLOAD_TOKEN }} -F "version=${GITHUB_REF:10}" -F "file=@server/build/libs/server-.jar"; done
