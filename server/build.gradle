@@ -16,22 +16,22 @@ repositories {
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
 
-    compile "io.javalin:javalin:3.1.0"
-    compile 'com.fasterxml.jackson.core:jackson-databind:2.10.1'
-    compile 'com.fasterxml.jackson.module:jackson-module-kotlin:2.10.1'
-    compile "org.slf4j:slf4j-simple:1.7.26"
+    compile 'io.javalin:javalin:3.13.11'
+    compile 'com.fasterxml.jackson.core:jackson-databind:2.12.4'
+    compile 'com.fasterxml.jackson.module:jackson-module-kotlin:2.12.4'
+    compile 'org.slf4j:slf4j-simple:1.7.32'
     
     compile 'net.i2p.crypto:eddsa:0.3.0'
-    compile 'com.google.protobuf:protobuf-lite:3.0.0'
+    compile 'com.google.protobuf:protobuf-lite:3.0.1'
 
     compile 'com.squareup.okhttp3:okhttp:4.3.0'
     compile 'io.requery:requery:1.6.0'
     compile 'io.requery:requery-kotlin:1.6.0'
-    compile 'joda-time:joda-time:2.9.9'
-    compile 'org.postgresql:postgresql:42.2.6'
+    compile 'joda-time:joda-time:2.10.10'
+    compile 'org.postgresql:postgresql:42.2.23.jre7'
     compile 'org.json:json:20090211'
-    compile 'net.harawata:appdirs:1.0.0'
-    compile 'net.sourceforge.streamsupport:streamsupport-cfuture:1.7.1'
+    compile 'net.harawata:appdirs:1.2.1'
+    compile 'net.sourceforge.streamsupport:streamsupport-cfuture:1.7.3'
 
     kapt 'io.requery:requery-processor:1.6.0'
     kapt 'javax.annotation:jsr250-api:1.0'
