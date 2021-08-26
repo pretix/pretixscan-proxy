@@ -19,7 +19,5 @@ jobs:
         run: git submodule update --init
       - name: Build
         run: TERM=dumb ./gradlew jar
-      - name: Build
-        run: TERM=dumb ./gradlew jar
       - name: Upload
         run: curl https://marketplace.pretix.eu/upload/ -u pretixscan-proxy:${{ secrets.PLUM_UPLOAD_TOKEN }} -F "version=$(git describe --tags --always --first-parent)" -F "file=@server/build/libs/server-$(git describe --tags --always --first-parent).jar"
