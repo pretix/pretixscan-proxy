@@ -110,7 +110,11 @@ class PretixScanConfig(private var data_dir: String, private val eventSlug: Stri
     }
 
     override fun setDeviceKnownGateName(value: String?) {
-        prefs.put(PREFS_KEY_KNOWN_GATE_NAME, value)
+        if (value == null) {
+            prefs.remove(PREFS_KEY_KNOWN_GATE_NAME)
+        } else {
+            prefs.put(PREFS_KEY_KNOWN_GATE_NAME, value)
+        }
         prefs.flush()
     }
 
