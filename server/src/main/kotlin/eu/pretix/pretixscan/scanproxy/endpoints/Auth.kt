@@ -57,7 +57,7 @@ object AdminAuth : Handler {
                 throw ForbiddenResponse("Only local access is allowed")
             }
         }
-        if (ctx.basicAuthCredentials() != null) {
+        if (ctx.header("Authorization") != null && ctx.basicAuthCredentials() != null) {
             if (ctx.basicAuthCredentials()?.username == validauth.split(":")[0] && ctx.basicAuthCredentials()?.password == validauth.split(
                     ":"
                 )[1]
