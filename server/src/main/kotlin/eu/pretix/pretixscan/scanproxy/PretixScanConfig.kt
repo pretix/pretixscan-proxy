@@ -2,7 +2,6 @@ package eu.pretix.pretixscan.scanproxy
 
 import eu.pretix.libpretixsync.api.PretixApi
 import eu.pretix.libpretixsync.config.ConfigStore
-import eu.pretix.libpretixsync.db.AbstractSubEvent
 import java.io.File
 import java.util.prefs.Preferences
 
@@ -142,6 +141,10 @@ class PretixScanConfig(private var data_dir: String, private val eventSlug: Stri
 
     override fun getEventSlug(): String {
         return eventSlug
+    }
+
+    override fun getSyncCycleId(): String {
+        return "cycle"
     }
 
     override fun getSubEventId(): Long? {

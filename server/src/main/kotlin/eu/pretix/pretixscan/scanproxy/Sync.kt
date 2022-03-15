@@ -28,9 +28,9 @@ fun syncEventList() {
         throw UnconfiguredException()
     }
 
-    AllEventsSyncAdapter(Server.syncData, fileStorage, configStore.eventSlug, api, null)
+    AllEventsSyncAdapter(Server.syncData, fileStorage, configStore.eventSlug, api, configStore.syncCycleId, null)
         .download()
-    AllSubEventsSyncAdapter(Server.syncData, fileStorage, configStore.eventSlug, api, null)
+    AllSubEventsSyncAdapter(Server.syncData, fileStorage, configStore.eventSlug, api, configStore.syncCycleId, null)
         .download()
 }
 
