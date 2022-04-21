@@ -17,14 +17,14 @@ dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
 
     compile 'io.javalin:javalin:3.13.11'
-    compile 'com.fasterxml.jackson.core:jackson-databind:2.12.4'
-    compile 'com.fasterxml.jackson.module:jackson-module-kotlin:2.12.4'
+    compile 'com.fasterxml.jackson.core:jackson-databind:2.13.0'
+    compile 'com.fasterxml.jackson.module:jackson-module-kotlin:2.13.0'
     compile 'org.slf4j:slf4j-simple:1.7.32'
     
     compile 'net.i2p.crypto:eddsa:0.3.0'
     compile 'com.google.protobuf:protobuf-lite:3.0.1'
 
-    compile 'com.squareup.okhttp3:okhttp:4.3.0'
+    compile 'com.squareup.okhttp3:okhttp:4.9.3'
     compile 'io.requery:requery:1.6.0'
     compile 'io.requery:requery-kotlin:1.6.0'
     compile 'joda-time:joda-time:2.10.10'

@@ -2,6 +2,7 @@ package eu.pretix.pretixscan.scanproxy
 
 import eu.pretix.libpretixsync.api.PretixApi
 import eu.pretix.libpretixsync.config.ConfigStore
+import org.json.JSONObject
 import java.io.File
 import java.util.prefs.Preferences
 
@@ -22,6 +23,7 @@ class PretixScanConfig(private var data_dir: String, private val eventSlug: Stri
     private val PREFS_KEY_LAST_STATUS_DATA = "last_status_data"
     private val PREFS_KEY_LAST_CLEANUP = "last_cleanup"
     private val PREFS_KEY_KNOWN_DEVICE_VERSION = "known_device_version"
+    private val PREFS_KEY_KNOWN_DEVICE_INFO = "known_device_info"
     private val PREFS_KEY_KNOWN_PRETIX_VERSION = "known_pretix_version"
     private val PREFS_KEY_KNOWN_GATE_NAME = "known_gate_name"
 
@@ -157,6 +159,15 @@ class PretixScanConfig(private var data_dir: String, private val eventSlug: Stri
 
     override fun setDeviceKnownVersion(value: Int) {
         prefs.putInt(PREFS_KEY_KNOWN_DEVICE_VERSION, value)
+        prefs.flush()
+    }
+
+    override fun getDeviceKnownInfo(): JSONObject {
+        return JSONObject(prefs.get(PREFS_KEY_KNOWN_DEVICE_INFO, "{}") ?: "{}")
+    }
+
+    override fun setDeviceKnownInfo(value: JSONObject?) {
+        prefs.put(PREFS_KEY_KNOWN_DEVICE_INFO, value?.toString() ?: "{}")
         prefs.flush()
     }
 

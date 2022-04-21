@@ -8,6 +8,7 @@ import eu.pretix.libpretixsync.sync.SyncManager
 import eu.pretix.pretixscan.scanproxy.Server.VERSION
 import eu.pretix.pretixscan.scanproxy.Server.VERSION_CODE
 import eu.pretix.pretixscan.scanproxy.db.SyncedEventEntity
+import org.json.JSONObject
 import org.slf4j.LoggerFactory
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
@@ -61,6 +62,7 @@ fun syncAllEvents(force: Boolean = false) {
 				SyncManager.Profile.PRETIXSCAN,
 				false,
 				VERSION_CODE,
+				JSONObject(),
 				System.getProperty("os.name"),
 				System.getProperty("os.version"),
 				"pretixSCANPROXY",
