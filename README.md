@@ -72,18 +72,12 @@ and login with the admin credentials defined above.
 Config options
 --------------
 
-===================================== ============================================
-Property                              Description
-===================================== ============================================
-pretixscan.database                   PostgreSQL connection URL
-pretixscan.baseurl                    Base URL the proxy will be reachable at
-pretixscan.adminauth                  user:pass for management interface
-pretixscan.autoOfflineMode            "off" for "always offline", "on" for "default
-                                      to online, but switch to offline after repeated
-                                      errors", or "1s", "2s", "5s", "10s", "15s", "20s"
-                                      for "default to online, but switch to offline after
-                                      repeated errors or after average scans longer than X"
-===================================== ============================================
+| Property | Description |
+|----------| --- |
+| pretixscan.database | PostgreSQL connection URL |
+| pretixscan.baseurl | Base URL the proxy will be reachable at |
+| pretixscan.adminauth | user:pass for management interface |
+| pretixscan.autoOfflineMode | "off" for "always offline", "on" for "default to online, but switch to offline after repeated errors", or "1s", "2s", "5s", "10s", "15s", "20s" for "default to online, but switch to offline after repeated errors or after average scans longer than X" |
 
 API
 ---
