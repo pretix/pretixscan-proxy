@@ -59,6 +59,7 @@ object ConfigState : Handler {
     data class QueueState(
         val event: String,
         val list: String,
+        val list_id: Long,
         val count: Int
     )
 
@@ -73,6 +74,7 @@ object ConfigState : Handler {
                 QueueState(
                     l.getEvent_slug(),
                     l.getName(),
+                    l.getServer_id(),
                     cnt ?: 0
                 )
             )

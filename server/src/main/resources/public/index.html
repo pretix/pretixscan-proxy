@@ -152,11 +152,13 @@
                             <tr>
                                 <th>Event</th>
                                 <th>Check-in list</th>
+                                <th>Check-in list ID</th>
                                 <th>#</th>
                             </tr>
                             <tr v-for="q in state.queues">
                                 <td>{{q.event}}</td>
                                 <td>{{q.list}}</td>
+                                <td>{{ q.list_id }}</td>
                                 <td>{{q.count}}</td>
                             </tr>
                         </table>
