@@ -63,10 +63,27 @@ Then you can run the built JAR file:
         -Dpretixscan.database="jdbc:postgresql:scanproxy" \
         -Dpretixscan.baseurl="https://local.baseurl.com" \
         -Dpretixscan.adminauth="admin:admin" \
+        -Dpretixscan.autoOfflineMode="off" \
         -jar server/build/libs/server-1.0-SNAPSHOT.jar
 
 For initial configuration, visit the web interface at http://localhost:7000 (or the domain of your reverse proxy)
 and login with the admin credentials defined above.
+
+Config options
+--------------
+
+===================================== ============================================
+Property                              Description
+===================================== ============================================
+pretixscan.database                   PostgreSQL connection URL
+pretixscan.baseurl                    Base URL the proxy will be reachable at
+pretixscan.adminauth                  user:pass for management interface
+pretixscan.autoOfflineMode            "off" for "always offline", "on" for "default
+                                      to online, but switch to offline after repeated
+                                      errors", or "1s", "2s", "5s", "10s", "15s", "20s"
+                                      for "default to online, but switch to offline after
+                                      repeated errors or after average scans longer than X"
+===================================== ============================================
 
 API
 ---

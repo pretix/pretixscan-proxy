@@ -22,7 +22,7 @@ object Server {
     private val LOG = LoggerFactory.getLogger(Server::class.java)
     val syncData = makeSyncDataStore()
     val proxyData = makeProxyDataStore()
-
+    val connectivityHelper = ConnectivityHelper(System.getProperty("pretixscan.autoOfflineMode", "off"))
     val appDirs = AppDirsFactory.getInstance()!!
     val dataDir = appDirs.getUserDataDir("pretixscanproxy", "1", "pretix")
 
