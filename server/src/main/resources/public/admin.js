@@ -24,7 +24,7 @@ var app = new Vue({
 
     computed: {
         initqr: function () {
-            if (this.init_data.token.startsWith("token="))
+            if (this.init_data.token.startsWith("proxy="))
                 return JSON.stringify(this.init_data);
         }
     },
