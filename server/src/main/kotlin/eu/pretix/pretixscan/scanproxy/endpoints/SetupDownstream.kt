@@ -15,9 +15,12 @@ data class SetupDownstreamInitResponse(
 )
 
 
-object SetupDownstreamInit : Handler {
+data class SetupDownstreamInitRequest(val name: String)
+
+
+object SetupDownstreamInit : JsonBodyHandler<SetupDownstreamInitRequest>(SetupDownstreamInitRequest::class.java) {
     private val charPool: List<Char> = ('a'..'z') + ('A'..'Z') + ('0'..'9')
-    override fun handle(ctx: Context) {
+    override fun handle(ctx: Context, body: SetupDownstreamInitRequest) {
         val configStore = PretixScanConfig(Server.dataDir, "", 0)
         if (!configStore.isConfigured) {
             throw ServiceUnavailableResponse("Not configured")
@@ -30,6 +33,7 @@ object SetupDownstreamInit : Handler {
         val baseurl = System.getProperty("pretixscan.baseurl", "http://URLNOTSET")
         val d = DownstreamDeviceEntity()
         d.uuid = UUID.randomUUID().toString()
+        d.name = body.name
         d.added_datetime = System.currentTimeMillis().toString()
         d.init_token = "proxy=" + (1..16)
             .map { i -> kotlin.random.Random.nextInt(0, SetupDownstreamInit.charPool.size) }
@@ -47,9 +51,9 @@ object SetupDownstreamInit : Handler {
 }
 
 
-object SetupDownstreamInitReady : Handler {
+object SetupDownstreamInitReady : JsonBodyHandler<SetupDownstreamInitRequest>(SetupDownstreamInitRequest::class.java) {
     private val charPool: List<Char> = ('a'..'z') + ('A'..'Z') + ('0'..'9')
-    override fun handle(ctx: Context) {
+    override fun handle(ctx: Context, body: SetupDownstreamInitRequest) {
         val configStore = PretixScanConfig(Server.dataDir, "", 0)
         if (!configStore.isConfigured) {
             throw ServiceUnavailableResponse("Not configured")
@@ -62,6 +66,7 @@ object SetupDownstreamInitReady : Handler {
         val baseurl = System.getProperty("pretixscan.baseurl", "http://URLNOTSET")
         val d = DownstreamDeviceEntity()
         d.uuid = UUID.randomUUID().toString()
+        d.name = body.name
         d.added_datetime = System.currentTimeMillis().toString()
         d.api_token = (1..64)
             .map { i -> kotlin.random.Random.nextInt(0, SetupDownstreamInitReady.charPool.size) }

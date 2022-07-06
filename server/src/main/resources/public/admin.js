@@ -11,6 +11,7 @@ var app = new Vue({
     // app initial state
     data: {
         state: {},
+        newdevice_name: "",
         config_url: "https://pretix.eu",
         config_token: "",
         loading: 0,
@@ -78,20 +79,28 @@ var app = new Vue({
             }, err_handler);
         },
         newdevice: function () {
+            if (!this.newdevice_name) { return }
             this.loading++;
-            Vue.http.post("/proxyapi/v1/init").then(function (response) {
+            Vue.http.post("/proxyapi/v1/init", {
+                "name": this.newdevice_name
+            }).then(function (response) {
                 app.loading--;
                 app.init_data = response.body;
                 app.reload();
             }, err_handler);
+            this.newdevice_name = ""
         },
         newproxydevice: function () {
+            if (!this.newdevice_name) { return }
             this.loading++;
-            Vue.http.post("/proxyapi/v1/initready").then(function (response) {
+            Vue.http.post("/proxyapi/v1/initready", {
+                "name": this.newdevice_name
+            }).then(function (response) {
                 app.loading--;
                 app.init_data = response.body;
                 app.reload();
             }, err_handler);
+            this.newdevice_name = ""
         },
         configure: function () {
             this.loading++;

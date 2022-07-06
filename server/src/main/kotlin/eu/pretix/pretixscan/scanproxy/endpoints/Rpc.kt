@@ -9,6 +9,7 @@ import eu.pretix.libpretixsync.db.*
 import eu.pretix.pretixscan.scanproxy.PretixScanConfig
 import eu.pretix.pretixscan.scanproxy.ProxyFileStorage
 import eu.pretix.pretixscan.scanproxy.Server
+import eu.pretix.pretixscan.scanproxy.db.DownstreamDeviceEntity
 import io.javalin.http.Context
 import io.javalin.http.Handler
 import io.javalin.http.NotFoundResponse
@@ -70,7 +71,8 @@ object CheckEndpoint : JsonBodyHandler<CheckInput>(CheckInput::class.java) {
         try {
             val type = TicketCheckProvider.CheckInType.valueOf((body.type ?: "entry").toUpperCase())
             val result = acp.check(body.ticketid, body.answers, body.ignore_unpaid, body.with_badge_data, type)
-            LOG.info("Scanned ticket '${body.ticketid}' result '${result.type}' time '${(System.currentTimeMillis() - startedAt) / 1000f}s' provider '${acp.javaClass.simpleName}'")
+            var device: DownstreamDeviceEntity = ctx.attribute("device")!!
+            LOG.info("Scanned ticket '${body.ticketid}' result '${result.type}' time '${(System.currentTimeMillis() - startedAt) / 1000f}s' device '${device.name}' provider '${acp.javaClass.simpleName}'")
             ctx.json(result)
             if (acp is OnlineCheckProvider) {
                 if (result.type == TicketCheckProvider.CheckResult.Type.ERROR) {

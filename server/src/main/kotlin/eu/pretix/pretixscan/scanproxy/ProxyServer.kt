@@ -3,6 +3,7 @@ package eu.pretix.pretixscan.scanproxy
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.module.SimpleModule
 import eu.pretix.pretixscan.scanproxy.endpoints.*
+import eu.pretix.pretixscan.scanproxy.db.DownstreamDeviceEntity
 import eu.pretix.libpretixsync.serialization.JSONArraySerializer
 import eu.pretix.libpretixsync.serialization.JSONObjectSerializer
 import io.javalin.Javalin
@@ -30,7 +31,9 @@ object Server {
     fun main(args: Array<String>) {
         val app = Javalin.create { config ->
             config.requestLogger { ctx, executionTimeMs ->
-                LOG.info("[${ctx.ip()}] ${ctx.method()} ${ctx.path()} -> ${ctx.status()}")
+                var device: DownstreamDeviceEntity? = ctx.attribute("device")
+                val device_name = device?.name ?: ""
+                LOG.info("[${ctx.ip()}] '${device_name}' ${ctx.method()} ${ctx.path()} -> ${ctx.status()}")
             }
             config.prefer405over404 = true
             config.addStaticFiles("/public")

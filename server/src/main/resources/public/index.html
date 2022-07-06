@@ -171,8 +171,11 @@
                         </h3>
                     </div>
                     <div class="panel-body">
-                        <button class="btn btn-primary" type="button" @click="newdevice">Create a new pretixSCAN device</button>
-                        <button class="btn btn-default" type="button" @click="newproxydevice">Create a new Proxy-API device</button>
+                        <span class="form-inline">
+                            <input class="form-control" v-model="newdevice_name" placeholder="Device name" @keyup.enter="newdevice">
+                            <button class="btn btn-primary" type="button" v-bind:disabled="!newdevice_name" @click="newdevice">Create a new pretixSCAN device</button>
+                            <button class="btn btn-default" type="button" v-bind:disabled="!newdevice_name" @click="newproxydevice">Create a new Proxy-API device</button>
+                        </span>
                         <section class="init-token" v-if="init_data">
                             <qrcode v-if="initqr" :value="initqr" :options="{ width: 300 }"></qrcode>
                             <br>
@@ -182,13 +185,13 @@
                         <hr>
                         <table class="table">
                             <tr>
-                                <th>Device ID</th>
+                                <th>Name</th>
                                 <th>Initialization token</th>
                                 <th>Creation time</th>
                                 <th></th>
                             </tr>
                             <tr v-for="q in state.downstreamDevices">
-                                <td>{{q.uuid}}</td>
+                                <td>{{q.name}}</td>
                                 <td>{{q.init_token ? q.init_token : 'Already configured'}}</td>
                                 <td>{{q.added_datetime}}</td>
                                 <td>
