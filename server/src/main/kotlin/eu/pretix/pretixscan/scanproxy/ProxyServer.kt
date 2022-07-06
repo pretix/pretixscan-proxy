@@ -17,8 +17,8 @@ import java.util.concurrent.Executors
 
 
 object Server {
-    val VERSION = "1.14.2"
-    val VERSION_CODE = 7
+    val VERSION = "1.15.0"
+    val VERSION_CODE = 8
     private val LOG = LoggerFactory.getLogger(Server::class.java)
     val syncData = makeSyncDataStore()
     val proxyData = makeProxyDataStore()
