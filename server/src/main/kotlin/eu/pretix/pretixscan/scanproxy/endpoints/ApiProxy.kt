@@ -93,6 +93,16 @@ object QuestionEndpoint : CachedResourceEndpoint() {
 }
 
 
+object SettingsEndpoint : Handler {
+    override fun handle(ctx: Context) {
+        val settings: Settings = Server.syncData.select(Settings::class.java)
+            .where(Settings.SLUG.eq(ctx.pathParam("event")))
+            .get().firstOrNull() ?: throw NotFoundResponse("Settings not found")
+        ctx.result(settings.json_data)
+    }
+}
+
+
 object DownloadEndpoint : Handler {
     override fun handle(ctx: Context) {
         val fname = ctx.pathParam("filename")

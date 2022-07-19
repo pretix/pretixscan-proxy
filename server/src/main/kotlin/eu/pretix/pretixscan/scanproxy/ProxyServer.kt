@@ -63,6 +63,7 @@ object Server {
                             get("checkinlists/", CheckInListEndpoint)
                             get("orders/", EmptyResourceEndpoint)
                             get("badgeitems/", BadgeItemEndpoint)
+                            get("settings/", SettingsEndpoint)
                             get("subevents/:id/", SubEventEndpoint)
                         }
                     }
