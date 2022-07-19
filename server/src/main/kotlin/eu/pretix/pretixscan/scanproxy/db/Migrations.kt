@@ -11,7 +11,7 @@ import javax.sql.DataSource
 
 object Migrations {
     private val model = Models.DEFAULT
-    var CURRENT_VERSION = 5
+    var CURRENT_VERSION = 6
 
     @Throws(SQLException::class)
     private fun createVersionTable(c: Connection, version: Int) {
@@ -86,6 +86,14 @@ object Migrations {
                 "duplicate column name"
             )
             updateVersionTable(c, 5)
+        }
+        if (db_version < 6) {
+            execIgnore(
+                c,
+                "ALTER TABLE DownstreamDevice ADD name TEXT;",
+                "duplicate column name"
+            )
+            updateVersionTable(c, 6)
         }
 
     }

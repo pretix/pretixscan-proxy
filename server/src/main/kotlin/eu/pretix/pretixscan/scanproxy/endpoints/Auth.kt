@@ -32,6 +32,7 @@ object DeviceAuth : Handler {
                         where (DownstreamDeviceEntity.API_TOKEN.eq(auth[1]))
                 ).get()
         val device = result.firstOrNull() ?: throw UnauthorizedResponse("Unknown device token")
+        ctx.attribute("device", device)
     }
 }
 

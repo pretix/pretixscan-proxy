@@ -89,11 +89,12 @@ object ConfigState : Handler {
                 "configured" to configStore.isConfigured,
                 "organizer" to configStore.organizerSlug,
                 "upstreamUrl" to configStore.apiUrl,
-                "downstreamDevices" to (Server.proxyData select (DownstreamDeviceEntity::class)).get().map {
+                "downstreamDevices" to (Server.proxyData select (DownstreamDeviceEntity::class) orderBy (DownstreamDeviceEntity.NAME)).get().map {
                     return@map mapOf(
                         "uuid" to it.uuid,
                         "added_datetime" to if (it.added_datetime.isNullOrBlank()) null else Date(it.added_datetime!!.toLong()).toString(),
                         "init_token" to it.init_token,
+                        "name" to it.name,
                         "setup" to it.api_token.isNullOrBlank()
                     )
                 }.toList(),

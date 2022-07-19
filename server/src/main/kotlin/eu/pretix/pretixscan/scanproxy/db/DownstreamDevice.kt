@@ -13,4 +13,5 @@ interface DownstreamDevice : Persistable {
     var init_token: String?
     var api_token: String?
     var added_datetime: String?
+    var name: String?
 }
