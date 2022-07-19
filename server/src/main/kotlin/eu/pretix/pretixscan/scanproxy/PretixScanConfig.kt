@@ -2,12 +2,13 @@ package eu.pretix.pretixscan.scanproxy
 
 import eu.pretix.libpretixsync.api.PretixApi
 import eu.pretix.libpretixsync.config.ConfigStore
+import eu.pretix.pretixscan.scanproxy.db.SyncedEventEntity
 import org.json.JSONObject
 import java.io.File
 import java.util.prefs.Preferences
 
 
-class PretixScanConfig(private var data_dir: String, private val eventSlug: String, private val subEvent: Long?) : ConfigStore {
+class PretixScanConfig(private var data_dir: String) : ConfigStore {
     private val prefs = Preferences.userNodeForPackage(PretixScanConfig::class.java)
 
     private val PREFS_KEY_API_URL = "pretix_api_url"
@@ -72,7 +73,7 @@ class PretixScanConfig(private var data_dir: String, private val eventSlug: Stri
     }
 
     override fun getLastDownload(): Long {
-        return prefs.getLong(PREFS_KEY_LAST_DOWNLOAD + "_" + eventSlug, 0)
+        return prefs.getLong(PREFS_KEY_LAST_DOWNLOAD, 0)
     }
 
     override fun getAutoSwitchRequested(): Boolean {
@@ -80,30 +81,30 @@ class PretixScanConfig(private var data_dir: String, private val eventSlug: Stri
     }
 
     override fun setLastDownload(value: Long) {
-        prefs.putLong(PREFS_KEY_LAST_DOWNLOAD + "_" + eventSlug, value)
+        prefs.putLong(PREFS_KEY_LAST_DOWNLOAD, value)
         prefs.flush()
     }
 
     override fun getLastSync(): Long {
-        return prefs.getLong(PREFS_KEY_LAST_SYNC + "_" + eventSlug, 0)
+        return prefs.getLong(PREFS_KEY_LAST_SYNC, 0)
     }
 
     override fun setLastSync(value: Long) {
-        prefs.putLong(PREFS_KEY_LAST_SYNC + "_" + eventSlug, value)
+        prefs.putLong(PREFS_KEY_LAST_SYNC, value)
         prefs.flush()
     }
 
     override fun getLastFailedSync(): Long {
-        return prefs.getLong(PREFS_KEY_LAST_FAILED_SYNC + "_" + eventSlug, 0)
+        return prefs.getLong(PREFS_KEY_LAST_FAILED_SYNC, 0)
     }
 
     override fun setLastFailedSync(value: Long) {
-        prefs.putLong(PREFS_KEY_LAST_FAILED_SYNC + "_" + eventSlug, value)
+        prefs.putLong(PREFS_KEY_LAST_FAILED_SYNC, value)
         prefs.flush()
     }
 
     override fun getLastFailedSyncMsg(): String {
-        return prefs.get(PREFS_KEY_LAST_FAILED_SYNC_MSG + "_" + eventSlug, "")
+        return prefs.get(PREFS_KEY_LAST_FAILED_SYNC_MSG, "")
     }
 
     override fun getDeviceKnownGateName(): String {
@@ -120,7 +121,7 @@ class PretixScanConfig(private var data_dir: String, private val eventSlug: Stri
     }
 
     override fun setLastFailedSyncMsg(value: String?) {
-        prefs.put(PREFS_KEY_LAST_FAILED_SYNC_MSG + "_" + eventSlug, value)
+        prefs.put(PREFS_KEY_LAST_FAILED_SYNC_MSG, value)
         prefs.flush()
     }
 
@@ -141,16 +142,20 @@ class PretixScanConfig(private var data_dir: String, private val eventSlug: Stri
         return prefs.getInt(PREFS_KEY_API_VERSION, PretixApi.SUPPORTED_API_VERSION)
     }
 
-    override fun getEventSlug(): String {
-        return eventSlug
-    }
-
     override fun getSyncCycleId(): String {
         return "cycle"
     }
 
-    override fun getSubEventId(): Long? {
-        return subEvent
+    override fun getSynchronizedEvents(): List<String> {
+        return (Server.proxyData select (SyncedEventEntity::class)).get().map { it.slug }.toList()
+    }
+
+    override fun getSelectedSubeventForEvent(event: String?): Long? {
+        return null
+    }
+
+    override fun getSelectedCheckinListForEvent(event: String?): Long? {
+        return null
     }
 
     override fun getDeviceKnownVersion(): Int {

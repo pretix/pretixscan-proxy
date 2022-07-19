@@ -29,7 +29,7 @@ object SetupUpstream : JsonBodyHandler<SetupUpstreamRequest>(SetupUpstreamReques
             DefaultHttpClientFactory()
         )
 
-        val configStore = PretixScanConfig(Server.dataDir, "", 0)
+        val configStore = PretixScanConfig(Server.dataDir)
 
         if (configStore.isConfigured) {
             throw BadRequestResponse("Already configured")
@@ -83,7 +83,7 @@ object ConfigState : Handler {
     }
 
     override fun handle(ctx: Context) {
-        val configStore = PretixScanConfig(Server.dataDir, "", 0)
+        val configStore = PretixScanConfig(Server.dataDir)
         ctx.json(
             mapOf(
                 "configured" to configStore.isConfigured,
@@ -99,7 +99,7 @@ object ConfigState : Handler {
                     )
                 }.toList(),
                 "syncedEvents" to (Server.proxyData select (SyncedEventEntity::class)).get().map {
-                    val localStore = PretixScanConfig(Server.dataDir, it.slug, null)
+                    val localStore = PretixScanConfig(Server.dataDir)
                     return@map mapOf(
                         "slug" to it.slug,
                         "lastSync" to Date(localStore.lastSync).toString(),
