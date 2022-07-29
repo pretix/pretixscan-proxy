@@ -48,6 +48,7 @@ object Server {
 
         app.routes {
             path("api/v1") {
+                get("version", UpstreamVersion)
                 post("device/initialize", SetupDownstream)
                 path("organizers/:organizer") {
                     before(DeviceAuth)
@@ -67,6 +68,7 @@ object Server {
                             get("orders/", EmptyResourceEndpoint)
                             get("badgeitems/", BadgeItemEndpoint)
                             get("settings/", SettingsEndpoint)
+                            get("revokedsecrets/", EmptyResourceEndpoint)
                             get("subevents/:id/", SubEventEndpoint)
                         }
                     }
@@ -98,6 +100,11 @@ object Server {
                     get("status/", StatusEndpoint)
                     post("search/", SearchEndpoint)
                     post("check/", CheckEndpoint)
+                }
+                path("rpc/") {
+                    before(DeviceAuth)
+                    post("search/", MultiSearchEndpoint)
+                    post("check/", MultiCheckEndpoint)
                 }
             }
             path("download") {

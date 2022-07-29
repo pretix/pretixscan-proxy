@@ -21,7 +21,7 @@ data class SetupDownstreamInitRequest(val name: String)
 object SetupDownstreamInit : JsonBodyHandler<SetupDownstreamInitRequest>(SetupDownstreamInitRequest::class.java) {
     private val charPool: List<Char> = ('a'..'z') + ('A'..'Z') + ('0'..'9')
     override fun handle(ctx: Context, body: SetupDownstreamInitRequest) {
-        val configStore = PretixScanConfig(Server.dataDir, "", 0)
+        val configStore = PretixScanConfig(Server.dataDir)
         if (!configStore.isConfigured) {
             throw ServiceUnavailableResponse("Not configured")
         }
@@ -54,7 +54,7 @@ object SetupDownstreamInit : JsonBodyHandler<SetupDownstreamInitRequest>(SetupDo
 object SetupDownstreamInitReady : JsonBodyHandler<SetupDownstreamInitRequest>(SetupDownstreamInitRequest::class.java) {
     private val charPool: List<Char> = ('a'..'z') + ('A'..'Z') + ('0'..'9')
     override fun handle(ctx: Context, body: SetupDownstreamInitRequest) {
-        val configStore = PretixScanConfig(Server.dataDir, "", 0)
+        val configStore = PretixScanConfig(Server.dataDir)
         if (!configStore.isConfigured) {
             throw ServiceUnavailableResponse("Not configured")
         }
@@ -102,7 +102,7 @@ data class SetupDownstreamResponse(
 object SetupDownstream : JsonBodyHandler<SetupDownstreamRequest>(SetupDownstreamRequest::class.java) {
     private val charPool: List<Char> = ('a'..'z') + ('A'..'Z') + ('0'..'9')
     override fun handle(ctx: Context, body: SetupDownstreamRequest) {
-        val configStore = PretixScanConfig(Server.dataDir, "", 0)
+        val configStore = PretixScanConfig(Server.dataDir)
         if (!configStore.isConfigured) {
             throw ServiceUnavailableResponse("Not configured")
         }
@@ -142,6 +142,20 @@ object SetupDownstreamRemove : JsonBodyHandler<RemoveDeviceRequest>(RemoveDevice
             mapOf(
                 "result" to (Server.proxyData delete (DownstreamDeviceEntity::class) where (DownstreamDeviceEntity.UUID eq body.uuid)).get()
                     .value()
+            )
+        )
+    }
+}
+
+object UpstreamVersion : Handler {
+    override fun handle(ctx: Context) {
+        val configStore = PretixScanConfig(Server.dataDir)
+        ctx.json(
+            mapOf(
+                "pretix" to "?",
+                "pretix_numeric" to configStore.knownPretixVersion,
+                "pretixscan_proxy" to Server.VERSION,
+                "pretixscan_proxy_numeric" to Server.VERSION_CODE,
             )
         )
     }

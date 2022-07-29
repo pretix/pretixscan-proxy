@@ -5,11 +5,10 @@ import eu.pretix.pretixscan.scanproxy.Server
 import eu.pretix.pretixscan.scanproxy.db.DownstreamDeviceEntity
 import eu.pretix.pretixscan.scanproxy.db.SyncedEventEntity
 import io.javalin.http.*
-import io.requery.kotlin.eq
 
 object DeviceAuth : Handler {
     override fun handle(ctx: Context) {
-        val configStore = PretixScanConfig(Server.dataDir, "", null)
+        val configStore = PretixScanConfig(Server.dataDir)
         if (!configStore.isConfigured) {
             throw ServiceUnavailableResponse("Not configured")
         }
@@ -59,7 +58,7 @@ object AdminAuth : Handler {
             }
         }
         if (ctx.header("Authorization") != null) {
-            if (ctx.basicAuthCredentials()?.username == validauth.split(":")[0] && ctx.basicAuthCredentials()?.password == validauth.split(
+            if (ctx.basicAuthCredentials().username == validauth.split(":")[0] && ctx.basicAuthCredentials().password == validauth.split(
                     ":"
                 )[1]
             ) {
