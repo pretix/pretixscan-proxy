@@ -27,6 +27,7 @@ class PretixScanConfig(private var data_dir: String) : ConfigStore {
     private val PREFS_KEY_KNOWN_DEVICE_INFO = "known_device_info"
     private val PREFS_KEY_KNOWN_PRETIX_VERSION = "known_pretix_version"
     private val PREFS_KEY_KNOWN_GATE_NAME = "known_gate_name"
+    private val PREFS_KEY_KNOWN_LIVE_EVENT_SLUGS = "cache_known_live_event_slugs"
 
     fun setDeviceConfig(
         url: String,
@@ -203,4 +204,12 @@ class PretixScanConfig(private var data_dir: String) : ConfigStore {
         prefs.flush()
     }
 
+    override fun getKnownLiveEventSlugs(): Set<String> {
+        return prefs.get(PREFS_KEY_KNOWN_LIVE_EVENT_SLUGS, "").split(",").filter { it.isNotEmpty() }.toSet()
+    }
+
+    override fun setKnownLiveEventSlugs(slugs: Set<String>) {
+        prefs.put(PREFS_KEY_KNOWN_LIVE_EVENT_SLUGS, slugs.joinToString(","))
+        prefs.flush()
+    }
 }
