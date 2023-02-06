@@ -26,10 +26,6 @@ object SetupDownstreamInit : JsonBodyHandler<SetupDownstreamInitRequest>(SetupDo
             throw ServiceUnavailableResponse("Not configured")
         }
 
-        // TODO: Require some kind of proper authentication!!!
-        if (ctx.ip() != "127.0.0.1" && ctx.ip() != "0:0:0:0:0:0:0:1") {
-            throw ForbiddenResponse("Only local access is allowed")
-        }
         val baseurl = System.getProperty("pretixscan.baseurl", "http://URLNOTSET")
         val d = DownstreamDeviceEntity()
         d.uuid = UUID.randomUUID().toString()
@@ -59,10 +55,6 @@ object SetupDownstreamInitReady : JsonBodyHandler<SetupDownstreamInitRequest>(Se
             throw ServiceUnavailableResponse("Not configured")
         }
 
-        // TODO: Require some kind of proper authentication!!!
-        if (ctx.ip() != "127.0.0.1" && ctx.ip() != "0:0:0:0:0:0:0:1") {
-            throw ForbiddenResponse("Only local access is allowed")
-        }
         val baseurl = System.getProperty("pretixscan.baseurl", "http://URLNOTSET")
         val d = DownstreamDeviceEntity()
         d.uuid = UUID.randomUUID().toString()
