@@ -53,7 +53,7 @@ object AdminAuth : Handler {
     override fun handle(ctx: Context) {
         val validauth = System.getProperty("pretixscan.adminauth", "nope")
         if (validauth == "nope") {
-            if (ctx.ip() != "127.0.0.1" && ctx.ip() != "0:0:0:0:0:0:0:1") {
+            if (ctx.ip() != "127.0.0.1" && ctx.ip() != "[0:0:0:0:0:0:0:1]") {
                 throw ForbiddenResponse("Only local access is allowed")
             }
         }
