@@ -48,7 +48,8 @@ data class CheckInput(
     val answers: List<Answer>?,
     val ignore_unpaid: Boolean,
     val with_badge_data: Boolean,
-    val type: String?
+    val type: String?,
+    val source_type: String?
 )
 
 object CheckEndpoint : JsonBodyHandler<CheckInput>(CheckInput::class.java) {
@@ -63,6 +64,7 @@ object CheckEndpoint : JsonBodyHandler<CheckInput>(CheckInput::class.java) {
             val result = acp.check(
                 mapOf(ctx.pathParam("event") to ctx.pathParam("list").toLong()),
                 body.ticketid,
+                body.source_type ?: "barcode",
                 body.answers,
                 body.ignore_unpaid,
                 body.with_badge_data,
@@ -91,7 +93,8 @@ data class MultiCheckInput(
     val answers: List<Answer>?,
     val ignore_unpaid: Boolean,
     val with_badge_data: Boolean,
-    val type: String?
+    val type: String?,
+    val source_type: String?
 )
 
 object MultiCheckEndpoint : JsonBodyHandler<MultiCheckInput>(MultiCheckInput::class.java) {
@@ -106,6 +109,7 @@ object MultiCheckEndpoint : JsonBodyHandler<MultiCheckInput>(MultiCheckInput::cl
             val result = acp.check(
                 body.events_and_checkin_lists,
                 body.ticketid,
+                body.source_type ?: "barcode",
                 body.answers,
                 body.ignore_unpaid,
                 body.with_badge_data,
