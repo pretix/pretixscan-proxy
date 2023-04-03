@@ -6,6 +6,8 @@ import eu.pretix.libpretixsync.check.CheckException
 import eu.pretix.libpretixsync.check.OnlineCheckProvider
 import eu.pretix.libpretixsync.check.TicketCheckProvider
 import eu.pretix.libpretixsync.db.Answer
+import eu.pretix.libpretixsync.db.Question
+import eu.pretix.libpretixsync.db.QuestionOption
 import eu.pretix.pretixscan.scanproxy.PretixScanConfig
 import eu.pretix.pretixscan.scanproxy.ProxyFileStorage
 import eu.pretix.pretixscan.scanproxy.Server
@@ -43,9 +45,14 @@ object StatusEndpoint : Handler {
     }
 }
 
+class CheckInputAnswer(var question: Question, var value: String, var options: List<QuestionOption>? = null) {
+    fun toAnswer(): Answer {
+        return Answer(question, value, options)
+    }
+}
 data class CheckInput(
     val ticketid: String,
-    val answers: List<Answer>?,
+    val answers: List<CheckInputAnswer>?,
     val ignore_unpaid: Boolean,
     val with_badge_data: Boolean,
     val type: String?,
@@ -65,7 +72,7 @@ object CheckEndpoint : JsonBodyHandler<CheckInput>(CheckInput::class.java) {
                 mapOf(ctx.pathParam("event") to ctx.pathParam("list").toLong()),
                 body.ticketid,
                 body.source_type ?: "barcode",
-                body.answers,
+                body.answers?.map { it.toAnswer() },
                 body.ignore_unpaid,
                 body.with_badge_data,
                 type
@@ -90,7 +97,7 @@ object CheckEndpoint : JsonBodyHandler<CheckInput>(CheckInput::class.java) {
 data class MultiCheckInput(
     val events_and_checkin_lists: Map<String, Long>,
     val ticketid: String,
-    val answers: List<Answer>?,
+    val answers: List<CheckInputAnswer>?,
     val ignore_unpaid: Boolean,
     val with_badge_data: Boolean,
     val type: String?,
@@ -110,7 +117,7 @@ object MultiCheckEndpoint : JsonBodyHandler<MultiCheckInput>(MultiCheckInput::cl
                 body.events_and_checkin_lists,
                 body.ticketid,
                 body.source_type ?: "barcode",
-                body.answers,
+                body.answers?.map { it.toAnswer() },
                 body.ignore_unpaid,
                 body.with_badge_data,
                 type

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonMappingException
 import io.javalin.http.BadRequestResponse
 import io.javalin.http.Context
 import io.javalin.http.Handler
+import io.javalin.plugin.json.JavalinJackson
 import io.javalin.plugin.json.JavalinJson
 import org.slf4j.LoggerFactory
 
