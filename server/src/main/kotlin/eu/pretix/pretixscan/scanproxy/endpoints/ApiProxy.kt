@@ -98,7 +98,7 @@ object SettingsEndpoint : Handler {
         val settings: Settings = Server.syncData.select(Settings::class.java)
             .where(Settings.SLUG.eq(ctx.pathParam("event")))
             .get().firstOrNull() ?: throw NotFoundResponse("Settings not found")
-        ctx.result(settings.json_data)
+        ctx.json(settings.getJSON())
     }
 }
 
