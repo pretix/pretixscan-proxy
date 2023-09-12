@@ -27,6 +27,7 @@ class PretixScanConfig(private var data_dir: String) : ConfigStore {
     private val PREFS_KEY_KNOWN_DEVICE_INFO = "known_device_info"
     private val PREFS_KEY_KNOWN_PRETIX_VERSION = "known_pretix_version"
     private val PREFS_KEY_KNOWN_GATE_NAME = "known_gate_name"
+    private val PREFS_KEY_KNOWN_GATE_ID = "known_gate_id"
     private val PREFS_KEY_KNOWN_LIVE_EVENT_SLUGS = "cache_known_live_event_slugs"
 
     fun setDeviceConfig(
@@ -117,6 +118,19 @@ class PretixScanConfig(private var data_dir: String) : ConfigStore {
             prefs.remove(PREFS_KEY_KNOWN_GATE_NAME)
         } else {
             prefs.put(PREFS_KEY_KNOWN_GATE_NAME, value)
+        }
+        prefs.flush()
+    }
+
+    override fun getDeviceKnownGateID(): Long {
+        return prefs.getLong(PREFS_KEY_KNOWN_GATE_ID, 0L)
+    }
+
+    override fun setDeviceKnownGateID(value: Long?) {
+        if (value == null) {
+            prefs.remove(PREFS_KEY_KNOWN_GATE_ID)
+        } else {
+            prefs.putLong(PREFS_KEY_KNOWN_GATE_ID, value)
         }
         prefs.flush()
     }

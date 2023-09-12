@@ -63,8 +63,11 @@ fun syncAllEvents(force: Boolean = false) {
             JSONObject(),
             System.getProperty("os.name"),
             System.getProperty("os.version"),
+            System.getProperty("os.name"),
+            System.getProperty("os.version"),
             "pretixSCANPROXY",
             VERSION,
+            null,
             Server.connectivityHelper
         )
         syncManager.sync(force) {

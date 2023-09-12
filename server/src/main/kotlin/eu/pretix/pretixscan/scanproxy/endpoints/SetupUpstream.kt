@@ -25,6 +25,7 @@ object SetupUpstream : JsonBodyHandler<SetupUpstreamRequest>(SetupUpstreamReques
     override fun handle(ctx: Context, body: SetupUpstreamRequest) {
         val setupm = SetupManager(
             System.getProperty("os.name"), System.getProperty("os.version"),
+            System.getProperty("os.name"), System.getProperty("os.version"),
             "pretixSCANPROXY", VERSION,
             DefaultHttpClientFactory()
         )
