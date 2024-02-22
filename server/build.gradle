@@ -4,6 +4,7 @@ plugins {
     id 'kotlin-kapt'
     id 'com.palantir.git-version' version '0.12.3'
 }
+apply from: '../libpretixsync-repo/libpretixsync/versions.gradle'
 
 group 'eu.pretix.pretixscan'
 version gitVersion()
@@ -14,33 +15,38 @@ repositories {
 }
 
 dependencies {
-    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
 
-    compile 'io.javalin:javalin:3.13.11'
-    compile 'com.fasterxml.jackson.core:jackson-databind:2.13.0'
-    compile 'com.fasterxml.jackson.module:jackson-module-kotlin:2.13.0'
-    compile 'org.slf4j:slf4j-simple:1.7.32'
-    
-    compile 'net.i2p.crypto:eddsa:0.3.0'
-    compile 'com.google.protobuf:protobuf-lite:3.0.1'
+    // Server dependencies
+    implementation "io.javalin:javalin:3.13.11"
+    implementation "org.slf4j:slf4j-simple:1.7.32"
+    implementation "org.postgresql:postgresql:42.3.8"
+    implementation 'net.harawata:appdirs:1.2.1'
 
-    compile 'com.squareup.okhttp3:okhttp:4.9.3'
-    compile 'io.requery:requery:1.6.0'
-    compile 'io.requery:requery-kotlin:1.6.0'
-    compile 'joda-time:joda-time:2.10.10'
-    compile 'org.postgresql:postgresql:42.2.23.jre7'
-    compile 'org.json:json:20090211'
-    compile 'net.harawata:appdirs:1.2.1'
-    compile 'net.sourceforge.streamsupport:streamsupport-cfuture:1.7.3'
-
-    kapt 'io.requery:requery-processor:1.6.0'
-    kapt 'javax.annotation:jsr250-api:1.0'
-
-    compile(project(':libpretixsync')) {
+    // libpretixsync dependencies
+    implementation "com.fasterxml.jackson.core:jackson-databind:$jackson_core_version"
+    implementation "com.fasterxml.jackson.module:jackson-module-kotlin:$jackson_kotlin_version"
+    implementation "net.i2p.crypto:eddsa:$eddsa_version"
+    implementation "com.google.protobuf:protobuf-javalite:$protobuf_version"
+    implementation "com.squareup.okhttp3:okhttp:$okhttp_version"
+    implementation "io.requery:requery:$requery_version"
+    implementation "io.requery:requery-kotlin:$requery_version"
+    implementation "joda-time:joda-time:$joda_version"
+    implementation "org.json:json:$json_version"
+    implementation "net.sourceforge.streamsupport:streamsupport-cfuture:$cfuture_version"
+    kapt "io.requery:requery-processor:$requery_version"
+    kapt "javax.annotation:jsr250-api:$jsr250_version"
+    implementation(project(':libpretixsync')) {
         transitive = false
     }
 
-    testCompile group: 'junit', name: 'junit', version: '4.12'
+    // Test dependencies
+    testImplementation project(path: ':libpretixsync')
+    testImplementation(testFixtures(project(':libpretixsync'))) {
+        transitive = false
+    }
+    testImplementation "org.xerial:sqlite-jdbc:$sqlite_jdbc_version"
+    testImplementation "junit:junit:$junit_version"
 }
 
 mainClassName = "eu.pretix.pretixscan.scanproxy.Server"
