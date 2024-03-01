@@ -8,7 +8,8 @@ import eu.pretix.libpretixsync.serialization.JSONArraySerializer
 import eu.pretix.libpretixsync.serialization.JSONObjectSerializer
 import io.javalin.Javalin
 import io.javalin.apibuilder.ApiBuilder.*
-import io.javalin.plugin.json.JavalinJackson
+import io.javalin.http.staticfiles.Location
+import io.javalin.json.JavalinJackson
 import net.harawata.appdirs.AppDirsFactory
 import org.json.JSONArray
 import org.json.JSONObject
@@ -21,41 +22,36 @@ object Server {
     val VERSION = "2.4.0"
     val VERSION_CODE = 13
     private val LOG = LoggerFactory.getLogger(Server::class.java)
-    val syncData = makeSyncDataStore()
-    val proxyData = makeProxyDataStore()
-    val connectivityHelper = ConnectivityHelper(System.getProperty("pretixscan.autoOfflineMode", "off"))
-    val appDirs = AppDirsFactory.getInstance()!!
-    val dataDir = appDirs.getUserDataDir("pretixscanproxy", "1", "pretix")
 
-    @JvmStatic
-    fun main(args: Array<String>) {
+    fun createApp(): Javalin {
         val app = Javalin.create { config ->
-            config.requestLogger { ctx, executionTimeMs ->
+            config.requestLogger.http { ctx, _ ->
                 var device: DownstreamDeviceEntity? = ctx.attribute("device")
                 val device_name = device?.name ?: ""
                 LOG.info("[${ctx.ip()}] '${device_name}' ${ctx.method()} ${ctx.path()} -> ${ctx.status()}")
             }
-            config.prefer405over404 = true
-            config.addStaticFiles("/public")
-        }
+            config.staticFiles.add("/public", Location.CLASSPATH)
 
-        // Map between org.json and Jackson
-        val module = SimpleModule()
-        module.addSerializer(JSONObject::class.java, JSONObjectSerializer())
-        module.addSerializer(JSONArray::class.java, JSONArraySerializer())
-        JavalinJackson.getObjectMapper().registerModule(module)
-        JavalinJackson.getObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+            // Map between org.json and Jackson
+            val module = SimpleModule()
+            module.addSerializer(JSONObject::class.java, JSONObjectSerializer())
+            module.addSerializer(JSONArray::class.java, JSONArraySerializer())
+            config.jsonMapper(JavalinJackson().updateMapper { mapper ->
+                mapper.registerModule(module)
+                mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+            })
+        }
 
         app.routes {
             path("api/v1") {
                 get("version", UpstreamVersion)
                 post("device/initialize", SetupDownstream)
-                path("organizers/:organizer") {
+                path("organizers/{organizer}") {
                     before(DeviceAuth)
                     get("subevents", SubEventsEndpoint)
                     path("events") {
                         get(EventsEndpoint)
-                        path(":event") {
+                        path("{event}") {
                             before(EventRegister)
                             get(EventEndpoint)
                             //get("categories/", CategoryEndpoint)
@@ -69,7 +65,7 @@ object Server {
                             get("badgeitems/", BadgeItemEndpoint)
                             get("settings/", SettingsEndpoint)
                             get("revokedsecrets/", EmptyResourceEndpoint)
-                            get("subevents/:id/", SubEventEndpoint)
+                            get("subevents/{id}/", SubEventEndpoint)
                         }
                     }
                 }
@@ -95,7 +91,7 @@ object Server {
                 before("synceventlist", AdminAuth)
                 post("synceventlist", SyncEventList)
 
-                path("rpc/:event/:list/") {
+                path("rpc/{event}/{list}/") {
                     before(DeviceAuth)
                     get("status/", StatusEndpoint)
                     post("search/", SearchEndpoint)
@@ -109,10 +105,19 @@ object Server {
             }
             path("download") {
                 before(DeviceAuth)
-                get(":filename", DownloadEndpoint)
+                get("{filename}", DownloadEndpoint)
             }
         }
+        return app
+    }
 
+    @JvmStatic
+    fun main(args: Array<String>) {
+        if (!isProxyDepsInitialized()) {
+            proxyDeps = ServerProxyDependencies()
+        }
+
+        val app = createApp()
         val webthread = Thread {
             app.start(7000)
         }

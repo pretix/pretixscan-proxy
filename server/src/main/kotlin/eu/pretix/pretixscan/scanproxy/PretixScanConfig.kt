@@ -162,7 +162,7 @@ class PretixScanConfig(private var data_dir: String) : ConfigStore {
     }
 
     override fun getSynchronizedEvents(): List<String> {
-        return (Server.proxyData select (SyncedEventEntity::class)).get().map { it.slug }.toList()
+        return (proxyDeps.proxyData select (SyncedEventEntity::class)).get().map { it.slug }.toList()
     }
 
     override fun getSelectedSubeventForEvent(event: String?): Long? {

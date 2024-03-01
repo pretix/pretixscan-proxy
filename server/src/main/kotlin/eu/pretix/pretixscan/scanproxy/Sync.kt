@@ -23,15 +23,15 @@ class SyncFailedException(message: String) : Exception(message)
 
 fun syncEventList() {
     val fileStorage = ProxyFileStorage()
-    val configStore = PretixScanConfig(Server.dataDir)
+    val configStore = PretixScanConfig(proxyDeps.dataDir)
     val api = PretixApi.fromConfig(configStore)
     if (!configStore.isConfigured) {
         throw UnconfiguredException()
     }
 
-    AllEventsSyncAdapter(Server.syncData, fileStorage, api, configStore.syncCycleId, null)
+    AllEventsSyncAdapter(proxyDeps.syncData, fileStorage, api, configStore.syncCycleId, null)
         .download()
-    AllSubEventsSyncAdapter(Server.syncData, fileStorage, api, configStore.syncCycleId, null)
+    AllSubEventsSyncAdapter(proxyDeps.syncData, fileStorage, api, configStore.syncCycleId, null)
         .download()
 }
 
@@ -40,7 +40,7 @@ fun syncAllEvents(force: Boolean = false) {
     val LOG = LoggerFactory.getLogger("eu.pretix.pretixscan.scanproxy.syncAllEvents")
 
     LOG.info("Starting to sync…")
-    val configStore = PretixScanConfig(Server.dataDir)
+    val configStore = PretixScanConfig(proxyDeps.dataDir)
     if (!configStore.isConfigured) {
         throw UnconfiguredException()
     }
@@ -53,7 +53,7 @@ fun syncAllEvents(force: Boolean = false) {
             configStore,
             PretixApi.fromConfig(configStore),
             DummySentryImplementation(),
-            Server.syncData,
+            proxyDeps.syncData,
             ProxyFileStorage(),
             1000,
             30000,
@@ -68,7 +68,7 @@ fun syncAllEvents(force: Boolean = false) {
             "pretixSCANPROXY",
             VERSION,
             null,
-            Server.connectivityHelper
+            proxyDeps.connectivityHelper
         )
         syncManager.sync(force) {
             LOG.info("$it")

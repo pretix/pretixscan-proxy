@@ -1,0 +1,17 @@
+POST http://localhost:7000/proxyapi/v1/rpc/democon/3/check/ HTTP/1.1
+Content-Type: application/json
+Authorization: Device 0J3OgktseFPY03X1TUobLdu3sIAj4OxbwfJRSC6qbX6bus5gzMhlwwjNcKsime5U
+
+{
+      "ticketid": "barcode_content",
+      "answers": [
+        {
+          "question": {
+            "server_id": 1234
+          },
+          "value": "Foo"
+        }
+      ],
+      "with_badge_data": false,
+      "ignore_unpaid": false
+}
