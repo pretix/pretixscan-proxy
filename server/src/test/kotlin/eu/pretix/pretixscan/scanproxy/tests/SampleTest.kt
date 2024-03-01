@@ -1,6 +1,6 @@
 package eu.pretix.pretixscan.scanproxy.tests
 
-import eu.pretix.pretixscan.scanproxy.Server
+import eu.pretix.pretixscan.scanproxy.tests.utils.BaseDatabaseTest
 import io.javalin.testtools.JavalinTest
 import org.hamcrest.CoreMatchers.equalTo
 import org.hamcrest.MatcherAssert.assertThat

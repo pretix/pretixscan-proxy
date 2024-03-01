@@ -83,7 +83,7 @@ object ConfigState : Handler {
     }
 
     override fun handle(ctx: Context) {
-        val configStore = PretixScanConfig(proxyDeps.dataDir)
+        val configStore = proxyDeps.configStore
         ctx.json(
             mapOf(
                 "configured" to configStore.isConfigured,
@@ -99,7 +99,7 @@ object ConfigState : Handler {
                     )
                 }.toList(),
                 "syncedEvents" to (proxyDeps.proxyData select (SyncedEventEntity::class)).get().map {
-                    val localStore = PretixScanConfig(proxyDeps.dataDir)
+                    val localStore = proxyDeps.configStore
                     return@map mapOf(
                         "slug" to it.slug,
                         "lastSync" to Date(localStore.lastSync).toString(),

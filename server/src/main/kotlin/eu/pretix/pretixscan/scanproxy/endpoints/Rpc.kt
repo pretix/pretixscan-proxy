@@ -20,12 +20,12 @@ import java.util.*
 fun getCheckProvider(): TicketCheckProvider {
     if (proxyDeps.connectivityHelper.isOffline) {
         return AsyncCheckProvider(
-            PretixScanConfig(proxyDeps.dataDir),
+            proxyDeps.configStore,
             proxyDeps.syncData,
         )
     } else {
         return OnlineCheckProvider(
-            PretixScanConfig(proxyDeps.dataDir),
+            proxyDeps.configStore,
             proxyDeps.httpClientFactory,
             proxyDeps.syncData,
             proxyDeps.fileStorage,
@@ -129,6 +129,13 @@ object MultiCheckEndpoint : JsonBodyHandler<MultiCheckInput>(MultiCheckInput::cl
                 body.with_badge_data,
                 type
             )
+            val requiredAnswers = result.requiredAnswers
+            if (requiredAnswers != null) {
+                val questions = requiredAnswers.map { it.question }
+                for (q in questions) {
+                    q.resolveDependency(questions)
+                }
+            }
             val device: DownstreamDeviceEntity = ctx.attribute("device")!!
             LOG.info("Scanned ticket '${body.ticketid}' result '${result.type}' time '${(System.currentTimeMillis() - startedAt) / 1000f}s' device '${device.name}' provider '${acp.javaClass.simpleName}'")
             ctx.json(result)

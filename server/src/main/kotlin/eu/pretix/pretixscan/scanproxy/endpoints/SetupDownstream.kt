@@ -22,8 +22,7 @@ data class SetupDownstreamInitRequest(val name: String)
 object SetupDownstreamInit : JsonBodyHandler<SetupDownstreamInitRequest>(SetupDownstreamInitRequest::class.java) {
     private val charPool: List<Char> = ('a'..'z') + ('A'..'Z') + ('0'..'9')
     override fun handle(ctx: Context, body: SetupDownstreamInitRequest) {
-        val configStore = PretixScanConfig(proxyDeps.dataDir)
-        if (!configStore.isConfigured) {
+        if (!proxyDeps.configStore.isConfigured) {
             throw ServiceUnavailableResponse("Not configured")
         }
 
@@ -33,8 +32,8 @@ object SetupDownstreamInit : JsonBodyHandler<SetupDownstreamInitRequest>(SetupDo
         d.name = body.name
         d.added_datetime = System.currentTimeMillis().toString()
         d.init_token = "proxy=" + (1..16)
-            .map { kotlin.random.Random.nextInt(0, SetupDownstreamInit.charPool.size) }
-            .map(SetupDownstreamInit.charPool::get)
+            .map { kotlin.random.Random.nextInt(0, charPool.size) }
+            .map(charPool::get)
             .joinToString("")
         proxyDeps.proxyData.insert(d)
         ctx.json(
@@ -51,8 +50,7 @@ object SetupDownstreamInit : JsonBodyHandler<SetupDownstreamInitRequest>(SetupDo
 object SetupDownstreamInitReady : JsonBodyHandler<SetupDownstreamInitRequest>(SetupDownstreamInitRequest::class.java) {
     private val charPool: List<Char> = ('a'..'z') + ('A'..'Z') + ('0'..'9')
     override fun handle(ctx: Context, body: SetupDownstreamInitRequest) {
-        val configStore = PretixScanConfig(proxyDeps.dataDir)
-        if (!configStore.isConfigured) {
+        if (!proxyDeps.configStore.isConfigured) {
             throw ServiceUnavailableResponse("Not configured")
         }
 
@@ -62,8 +60,8 @@ object SetupDownstreamInitReady : JsonBodyHandler<SetupDownstreamInitRequest>(Se
         d.name = body.name
         d.added_datetime = System.currentTimeMillis().toString()
         d.api_token = (1..64)
-            .map { kotlin.random.Random.nextInt(0, SetupDownstreamInitReady.charPool.size) }
-            .map(SetupDownstreamInitReady.charPool::get)
+            .map { kotlin.random.Random.nextInt(0, charPool.size) }
+            .map(charPool::get)
             .joinToString("")
         proxyDeps.proxyData.insert(d)
         ctx.json(
@@ -95,8 +93,7 @@ data class SetupDownstreamResponse(
 object SetupDownstream : JsonBodyHandler<SetupDownstreamRequest>(SetupDownstreamRequest::class.java) {
     private val charPool: List<Char> = ('a'..'z') + ('A'..'Z') + ('0'..'9')
     override fun handle(ctx: Context, body: SetupDownstreamRequest) {
-        val configStore = PretixScanConfig(proxyDeps.dataDir)
-        if (!configStore.isConfigured) {
+        if (!proxyDeps.configStore.isConfigured) {
             throw ServiceUnavailableResponse("Not configured")
         }
 
@@ -113,7 +110,7 @@ object SetupDownstream : JsonBodyHandler<SetupDownstreamRequest>(SetupDownstream
                 .joinToString("")
             proxyDeps.proxyData.update(device)
             ctx.json(SetupDownstreamResponse(
-                organizer = configStore.organizerSlug,
+                organizer = proxyDeps.configStore.organizerSlug,
                 device_id = 1,
                 unique_serial = (1..12)
                     .map { kotlin.random.Random.nextInt(0, charPool.size) }
@@ -142,7 +139,7 @@ object SetupDownstreamRemove : JsonBodyHandler<RemoveDeviceRequest>(RemoveDevice
 
 object UpstreamVersion : Handler {
     override fun handle(ctx: Context) {
-        val configStore = PretixScanConfig(proxyDeps.dataDir)
+        val configStore = proxyDeps.configStore
         ctx.json(
             mapOf(
                 "pretix" to "?",

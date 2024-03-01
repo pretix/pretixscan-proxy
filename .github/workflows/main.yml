@@ -19,4 +19,4 @@ jobs:
       - name: Submodules
         run: git submodule update --init
       - name: Build
-        run: TERM=dumb ./gradlew jar
+        run: TERM=dumb ./gradlew test jar

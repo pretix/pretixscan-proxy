@@ -1,20 +1,27 @@
-package eu.pretix.pretixscan.scanproxy.tests
+package eu.pretix.pretixscan.scanproxy.tests.utils
 
+import eu.pretix.libpretixsync.api.HttpClientFactory
+import eu.pretix.libpretixsync.api.PretixApi
+import eu.pretix.libpretixsync.api.RateLimitInterceptor
+import eu.pretix.libpretixsync.config.ConfigStore
 import eu.pretix.pretixscan.scanproxy.Models
 import eu.pretix.pretixscan.scanproxy.ProxyDependencies
 import eu.pretix.pretixscan.scanproxy.db.Migrations
+import eu.pretix.pretixscan.scanproxy.tests.test.FakePretixApi
 import io.requery.Persistable
 import io.requery.cache.EntityCacheBuilder
 import io.requery.sql.ConfigurationBuilder
 import io.requery.sql.EntityDataStore
 import io.requery.sql.KotlinConfiguration
 import io.requery.sql.KotlinEntityDataStore
+import okhttp3.OkHttpClient
 import org.sqlite.SQLiteConfig
 import org.sqlite.SQLiteDataSource
 import java.io.File
 import java.nio.file.Files
 import java.security.MessageDigest
 import java.util.*
+import java.util.concurrent.TimeUnit
 import kotlin.io.path.absolutePathString
 
 class TestProxyDependencies() : ProxyDependencies() {
@@ -87,6 +94,27 @@ class TestProxyDependencies() : ProxyDependencies() {
 
     override val dataDir: String by lazy {
         Files.createTempDirectory("proxytests").absolutePathString()
+    }
+
+    override val httpClientFactory: HttpClientFactory by lazy {
+        object : HttpClientFactory {
+            override fun buildClient(ignore_ssl: Boolean): OkHttpClient {
+                return OkHttpClient.Builder()
+                    .connectTimeout(30, TimeUnit.SECONDS)
+                    .writeTimeout(30, TimeUnit.SECONDS)
+                    .readTimeout(30, TimeUnit.SECONDS)
+                    .addInterceptor(RateLimitInterceptor())
+                    .build()
+            }
+        }
+    }
+
+    override val configStore: ConfigStore by lazy {
+        TestConfigStore()
+    }
+
+    override val pretixApi: PretixApi by lazy {
+        FakePretixApi()
     }
 
     override fun init() {

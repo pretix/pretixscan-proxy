@@ -1,7 +1,6 @@
-package eu.pretix.pretixscan.scanproxy.tests
+package eu.pretix.pretixscan.scanproxy.tests.utils
 
 import eu.pretix.pretixscan.scanproxy.Models
-import eu.pretix.pretixscan.scanproxy.isProxyDepsInitialized
 import eu.pretix.pretixscan.scanproxy.proxyDeps
 import io.requery.BlockingEntityStore
 import io.requery.Persistable

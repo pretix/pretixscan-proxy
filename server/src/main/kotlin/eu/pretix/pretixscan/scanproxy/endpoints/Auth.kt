@@ -8,12 +8,11 @@ import io.javalin.http.*
 
 object DeviceAuth : Handler {
     override fun handle(ctx: Context) {
-        val configStore = PretixScanConfig(proxyDeps.dataDir)
-        if (!configStore.isConfigured) {
+        if (!proxyDeps.configStore.isConfigured) {
             throw ServiceUnavailableResponse("Not configured")
         }
 
-        if (ctx.pathParamMap().containsKey("organizer") && configStore.organizerSlug != ctx.pathParam("organizer")) {
+        if (ctx.pathParamMap().containsKey("organizer") && proxyDeps.configStore.organizerSlug != ctx.pathParam("organizer")) {
             throw NotFoundResponse("Unknown organizer")
         }
 
