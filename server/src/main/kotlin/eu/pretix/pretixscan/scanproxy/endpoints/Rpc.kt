@@ -1,6 +1,5 @@
 package eu.pretix.pretixscan.scanproxy.endpoints
 
-import eu.pretix.libpretixsync.api.DefaultHttpClientFactory
 import eu.pretix.libpretixsync.check.AsyncCheckProvider
 import eu.pretix.libpretixsync.check.CheckException
 import eu.pretix.libpretixsync.check.OnlineCheckProvider
@@ -27,9 +26,9 @@ fun getCheckProvider(): TicketCheckProvider {
     } else {
         return OnlineCheckProvider(
             PretixScanConfig(proxyDeps.dataDir),
-            DefaultHttpClientFactory(),
+            proxyDeps.httpClientFactory,
             proxyDeps.syncData,
-            ProxyFileStorage(),
+            proxyDeps.fileStorage,
         )
     }
 }

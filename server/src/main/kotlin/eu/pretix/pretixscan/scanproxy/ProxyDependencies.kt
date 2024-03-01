@@ -1,5 +1,10 @@
 package eu.pretix.pretixscan.scanproxy
 
+import eu.pretix.libpretixsync.api.DefaultHttpClientFactory
+import eu.pretix.libpretixsync.api.HttpClientFactory
+import eu.pretix.libpretixsync.api.PretixApi
+import eu.pretix.libpretixsync.config.ConfigStore
+import eu.pretix.libpretixsync.sync.FileStorage
 import eu.pretix.pretixscan.scanproxy.db.Migrations
 import io.requery.Persistable
 import io.requery.cache.EntityCacheBuilder
@@ -10,6 +15,7 @@ import io.requery.sql.KotlinEntityDataStore
 import net.harawata.appdirs.AppDirsFactory
 import org.postgresql.ds.PGSimpleDataSource
 import org.slf4j.LoggerFactory
+import java.io.File
 import java.sql.DriverManager
 
 lateinit var proxyDeps: ProxyDependencies
@@ -21,13 +27,29 @@ fun isProxyDepsInitialized(): Boolean {
 abstract class ProxyDependencies {
     abstract val syncData: EntityDataStore<Persistable>
     abstract val proxyData : KotlinEntityDataStore<Persistable>
+    abstract val dataDir: String
 
-    val connectivityHelper = ConnectivityHelper(System.getProperty("pretixscan.autoOfflineMode", "off"))
-    val appDirs = AppDirsFactory.getInstance()!!
-    val dataDir = appDirs.getUserDataDir("pretixscanproxy", "1", "pretix")
+    open val connectivityHelper = ConnectivityHelper(System.getProperty("pretixscan.autoOfflineMode", "off"))
+    open val httpClientFactory: HttpClientFactory by lazy {
+        DefaultHttpClientFactory()
+    }
+    open val configStore: ConfigStore by lazy {
+        PretixScanConfig(proxyDeps.dataDir)
+    }
+    open val fileStorage: ProxyFileStorage by lazy {
+        ProxyFileStorage()
+    }
+    open val pretixApi: PretixApi by lazy {
+        PretixApi.fromConfig(configStore, proxyDeps.httpClientFactory, null)
+    }
+
+    open fun init() {}
 }
 
 class ServerProxyDependencies: ProxyDependencies() {
+    private val appDirs = AppDirsFactory.getInstance()!!
+    override val dataDir = appDirs.getUserDataDir("pretixscanproxy", "1", "pretix")
+
     override val proxyData: KotlinEntityDataStore<Persistable> by lazy {
         val LOG = LoggerFactory.getLogger(Server::class.java)
 

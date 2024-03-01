@@ -12,8 +12,10 @@ import io.requery.sql.KotlinEntityDataStore
 import org.sqlite.SQLiteConfig
 import org.sqlite.SQLiteDataSource
 import java.io.File
+import java.nio.file.Files
 import java.security.MessageDigest
 import java.util.*
+import kotlin.io.path.absolutePathString
 
 class TestProxyDependencies() : ProxyDependencies() {
 
@@ -81,5 +83,14 @@ class TestProxyDependencies() : ProxyDependencies() {
             .build()
 
         EntityDataStore<Persistable>(configuration)
+    }
+
+    override val dataDir: String by lazy {
+        Files.createTempDirectory("proxytests").absolutePathString()
+    }
+
+    override fun init() {
+        super.init()
+        System.setProperty("pretixscan.adminauth", "foo:bar")
     }
 }

@@ -110,7 +110,7 @@ object DownloadEndpoint : Handler {
         if (fname.contains("/")) {
             throw NotFoundResponse()
         }
-        val f = ProxyFileStorage().getFile(fname)
+        val f = proxyDeps.fileStorage.getFile(fname)
         if (!f.exists()) {
             throw NotFoundResponse()
         }

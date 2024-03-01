@@ -7,8 +7,6 @@ import org.hamcrest.MatcherAssert.assertThat
 import org.junit.Test
 
 class SampleTest: BaseDatabaseTest() {
-    private val app = Server.createApp()
-
     @Test
     fun `GET to fetch users returns list of users`() = JavalinTest.test(app) { server, client ->
         assertThat(client.get("/api/v1/version").code, equalTo(200))

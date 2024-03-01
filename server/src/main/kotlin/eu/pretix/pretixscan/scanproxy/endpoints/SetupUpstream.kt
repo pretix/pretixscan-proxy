@@ -1,11 +1,9 @@
 package eu.pretix.pretixscan.scanproxy.endpoints
 
-import eu.pretix.libpretixsync.api.DefaultHttpClientFactory
 import eu.pretix.libpretixsync.db.CheckInList
 import eu.pretix.libpretixsync.db.QueuedCheckIn
 import eu.pretix.libpretixsync.setup.*
 import eu.pretix.pretixscan.scanproxy.PretixScanConfig
-import eu.pretix.pretixscan.scanproxy.Server
 import eu.pretix.pretixscan.scanproxy.Server.VERSION
 import eu.pretix.pretixscan.scanproxy.db.DownstreamDeviceEntity
 import eu.pretix.pretixscan.scanproxy.db.SyncedEventEntity
@@ -28,7 +26,7 @@ object SetupUpstream : JsonBodyHandler<SetupUpstreamRequest>(SetupUpstreamReques
             System.getProperty("os.name"), System.getProperty("os.version"),
             System.getProperty("os.name"), System.getProperty("os.version"),
             "pretixSCANPROXY", VERSION,
-            DefaultHttpClientFactory()
+            proxyDeps.httpClientFactory
         )
 
         val configStore = PretixScanConfig(proxyDeps.dataDir)
