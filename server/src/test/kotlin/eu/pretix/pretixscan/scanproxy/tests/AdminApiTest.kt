@@ -7,6 +7,7 @@ import eu.pretix.pretixscan.scanproxy.db.DownstreamDeviceEntity
 import eu.pretix.pretixscan.scanproxy.db.SyncedEventEntity
 import eu.pretix.pretixscan.scanproxy.proxyDeps
 import eu.pretix.pretixscan.scanproxy.tests.utils.BaseDatabaseTest
+import eu.pretix.pretixscan.scanproxy.tests.utils.TestConfigStore
 import io.javalin.testtools.JavalinTest
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody
@@ -44,6 +45,7 @@ class AdminApiTest : BaseDatabaseTest() {
 
     @Test
     fun `SetupUpstream fails if already configured`() = JavalinTest.test(app) { server, client ->
+        (proxyDeps.configStore as TestConfigStore).configured = true
         assertThat(
             client.post(
                 "/proxyapi/v1/configure", mapOf(
