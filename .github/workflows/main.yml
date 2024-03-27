@@ -20,3 +20,11 @@ jobs:
         run: git submodule update --init
       - name: Build
         run: TERM=dumb ./gradlew test jar
+      - name: Store reports
+        if: failure()
+        uses: actions/upload-artifact@v3
+        with:
+          name: reports
+          path: |
+            **/build/reports/
+            **/build/test-results/
