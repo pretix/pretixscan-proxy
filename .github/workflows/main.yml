@@ -9,13 +9,16 @@ on:
 
 jobs:
   build:
+    strategy:
+      matrix:
+        java: [ '11', '17' ]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: set up JDK 11
+      - name: set up JDK
         uses: actions/setup-java@v1
         with:
-          java-version: 11
+          java-version: ${{ matrix.java }}
       - name: Submodules
         run: git submodule update --init
       - name: Build
