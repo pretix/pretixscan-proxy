@@ -1,19 +1,18 @@
 package eu.pretix.pretixscan.scanproxy.endpoints
 
 import eu.pretix.pretixscan.scanproxy.PretixScanConfig
-import eu.pretix.pretixscan.scanproxy.Server
 import eu.pretix.pretixscan.scanproxy.db.DownstreamDeviceEntity
 import eu.pretix.pretixscan.scanproxy.db.SyncedEventEntity
+import eu.pretix.pretixscan.scanproxy.proxyDeps
 import io.javalin.http.*
 
 object DeviceAuth : Handler {
     override fun handle(ctx: Context) {
-        val configStore = PretixScanConfig(Server.dataDir)
-        if (!configStore.isConfigured) {
+        if (!proxyDeps.configStore.isConfigured) {
             throw ServiceUnavailableResponse("Not configured")
         }
 
-        if (ctx.pathParamMap().containsKey("organizer") && configStore.organizerSlug != ctx.pathParam("organizer")) {
+        if (ctx.pathParamMap().containsKey("organizer") && proxyDeps.configStore.organizerSlug != ctx.pathParam("organizer")) {
             throw NotFoundResponse("Unknown organizer")
         }
 
@@ -26,7 +25,7 @@ object DeviceAuth : Handler {
         }
 
         val result = (
-                Server.proxyData
+                proxyDeps.proxyData
                         select (DownstreamDeviceEntity::class)
                         where (DownstreamDeviceEntity.API_TOKEN.eq(auth[1]))
                 ).get()
@@ -38,13 +37,13 @@ object DeviceAuth : Handler {
 object EventRegister : Handler {
     override fun handle(ctx: Context) {
         val ev = (
-                Server.proxyData select (SyncedEventEntity::class)
+                proxyDeps.proxyData select (SyncedEventEntity::class)
                         where (SyncedEventEntity.SLUG eq ctx.pathParam("event"))
                 ).get().firstOrNull()
         if (ev == null) {
             val s = SyncedEventEntity()
             s.slug = ctx.pathParam("event")
-            Server.proxyData.insert(s)
+            proxyDeps.proxyData.insert(s)
         }
     }
 }
@@ -58,10 +57,7 @@ object AdminAuth : Handler {
             }
         }
         if (ctx.header("Authorization") != null) {
-            if (ctx.basicAuthCredentials().username == validauth.split(":")[0] && ctx.basicAuthCredentials().password == validauth.split(
-                    ":"
-                )[1]
-            ) {
+            if (ctx.basicAuthCredentials()?.username == validauth.split(":")[0] && ctx.basicAuthCredentials()?.password == validauth.split(":")[1]) {
                 return
             }
         }

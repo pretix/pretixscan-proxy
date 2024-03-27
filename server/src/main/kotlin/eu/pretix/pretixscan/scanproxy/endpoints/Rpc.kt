@@ -1,6 +1,5 @@
 package eu.pretix.pretixscan.scanproxy.endpoints
 
-import eu.pretix.libpretixsync.api.DefaultHttpClientFactory
 import eu.pretix.libpretixsync.check.AsyncCheckProvider
 import eu.pretix.libpretixsync.check.CheckException
 import eu.pretix.libpretixsync.check.OnlineCheckProvider
@@ -10,25 +9,26 @@ import eu.pretix.libpretixsync.db.Question
 import eu.pretix.libpretixsync.db.QuestionOption
 import eu.pretix.pretixscan.scanproxy.PretixScanConfig
 import eu.pretix.pretixscan.scanproxy.ProxyFileStorage
-import eu.pretix.pretixscan.scanproxy.Server
 import eu.pretix.pretixscan.scanproxy.db.DownstreamDeviceEntity
+import eu.pretix.pretixscan.scanproxy.proxyDeps
 import io.javalin.http.Context
 import io.javalin.http.Handler
 import org.slf4j.LoggerFactory
+import java.util.*
 
 
 fun getCheckProvider(): TicketCheckProvider {
-    if (Server.connectivityHelper.isOffline) {
+    if (proxyDeps.connectivityHelper.isOffline) {
         return AsyncCheckProvider(
-            PretixScanConfig(Server.dataDir),
-            Server.syncData,
+            proxyDeps.configStore,
+            proxyDeps.syncData,
         )
     } else {
         return OnlineCheckProvider(
-            PretixScanConfig(Server.dataDir),
-            DefaultHttpClientFactory(),
-            Server.syncData,
-            ProxyFileStorage(),
+            proxyDeps.configStore,
+            proxyDeps.httpClientFactory,
+            proxyDeps.syncData,
+            proxyDeps.fileStorage,
         )
     }
 }
@@ -67,7 +67,7 @@ object CheckEndpoint : JsonBodyHandler<CheckInput>(CheckInput::class.java) {
         )
         val startedAt = System.currentTimeMillis()
         try {
-            val type = TicketCheckProvider.CheckInType.valueOf((body.type ?: "entry").toUpperCase())
+            val type = TicketCheckProvider.CheckInType.valueOf((body.type ?: "entry").uppercase(Locale.getDefault()))
             val result = acp.check(
                 mapOf(ctx.pathParam("event") to ctx.pathParam("list").toLong()),
                 body.ticketid,
@@ -89,13 +89,13 @@ object CheckEndpoint : JsonBodyHandler<CheckInput>(CheckInput::class.java) {
             ctx.json(result)
             if (acp is OnlineCheckProvider) {
                 if (result.type == TicketCheckProvider.CheckResult.Type.ERROR) {
-                    Server.connectivityHelper.recordError()
+                    proxyDeps.connectivityHelper.recordError()
                 } else {
-                    Server.connectivityHelper.recordSuccess(System.currentTimeMillis() - startedAt)
+                    proxyDeps.connectivityHelper.recordSuccess(System.currentTimeMillis() - startedAt)
                 }
             }
         } catch (e: CheckException) {
-            Server.connectivityHelper.recordError()
+            proxyDeps.connectivityHelper.recordError()
             ctx.status(400).json(mapOf("title" to e.message))
         }
     }
@@ -119,7 +119,7 @@ object MultiCheckEndpoint : JsonBodyHandler<MultiCheckInput>(MultiCheckInput::cl
         )
         val startedAt = System.currentTimeMillis()
         try {
-            val type = TicketCheckProvider.CheckInType.valueOf((body.type ?: "entry").toUpperCase())
+            val type = TicketCheckProvider.CheckInType.valueOf((body.type ?: "entry").uppercase(Locale.getDefault()))
             val result = acp.check(
                 body.events_and_checkin_lists,
                 body.ticketid,
@@ -129,18 +129,25 @@ object MultiCheckEndpoint : JsonBodyHandler<MultiCheckInput>(MultiCheckInput::cl
                 body.with_badge_data,
                 type
             )
+            val requiredAnswers = result.requiredAnswers
+            if (requiredAnswers != null) {
+                val questions = requiredAnswers.map { it.question }
+                for (q in questions) {
+                    q.resolveDependency(questions)
+                }
+            }
             val device: DownstreamDeviceEntity = ctx.attribute("device")!!
             LOG.info("Scanned ticket '${body.ticketid}' result '${result.type}' time '${(System.currentTimeMillis() - startedAt) / 1000f}s' device '${device.name}' provider '${acp.javaClass.simpleName}'")
             ctx.json(result)
             if (acp is OnlineCheckProvider) {
                 if (result.type == TicketCheckProvider.CheckResult.Type.ERROR) {
-                    Server.connectivityHelper.recordError()
+                    proxyDeps.connectivityHelper.recordError()
                 } else {
-                    Server.connectivityHelper.recordSuccess(System.currentTimeMillis() - startedAt)
+                    proxyDeps.connectivityHelper.recordSuccess(System.currentTimeMillis() - startedAt)
                 }
             }
         } catch (e: CheckException) {
-            Server.connectivityHelper.recordError()
+            proxyDeps.connectivityHelper.recordError()
             ctx.status(400).json(mapOf("title" to e.message))
         }
     }
@@ -160,7 +167,7 @@ object SearchEndpoint : JsonBodyHandler<SearchInput>(SearchInput::class.java) {
                 body.query, body.page
             ))
         } catch (e: CheckException) {
-            Server.connectivityHelper.recordError()
+            proxyDeps.connectivityHelper.recordError()
             ctx.status(400).json(mapOf("title" to e.message))
         }
     }
@@ -182,7 +189,7 @@ object MultiSearchEndpoint : JsonBodyHandler<MultiSearchInput>(MultiSearchInput:
                 body.page
             ))
         } catch (e: CheckException) {
-            Server.connectivityHelper.recordError()
+            proxyDeps.connectivityHelper.recordError()
             ctx.status(400).json(mapOf("title" to e.message))
         }
     }

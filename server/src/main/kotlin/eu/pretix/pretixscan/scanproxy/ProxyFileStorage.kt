@@ -8,7 +8,7 @@ import java.io.OutputStream
 class ProxyFileStorage : FileStorage {
 
     fun getDir(): File {
-        val dir = File(Server.dataDir, "dbcache")
+        val dir = File(proxyDeps.dataDir, "dbcache")
         if (!dir.exists()) {
             dir.mkdirs()
         }

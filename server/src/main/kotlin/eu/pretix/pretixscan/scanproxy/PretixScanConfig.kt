@@ -8,7 +8,17 @@ import java.io.File
 import java.util.prefs.Preferences
 
 
-class PretixScanConfig(private var data_dir: String) : ConfigStore {
+interface ProxyScanConfig : ConfigStore {
+    fun setDeviceConfig(
+        url: String,
+        key: String,
+        orga_slug: String,
+        device_id: Long
+    )
+}
+
+
+class PretixScanConfig(private var data_dir: String) : ProxyScanConfig {
     private val prefs = Preferences.userNodeForPackage(PretixScanConfig::class.java)
 
     private val PREFS_KEY_API_URL = "pretix_api_url"
@@ -30,7 +40,7 @@ class PretixScanConfig(private var data_dir: String) : ConfigStore {
     private val PREFS_KEY_KNOWN_GATE_ID = "known_gate_id"
     private val PREFS_KEY_KNOWN_LIVE_EVENT_SLUGS = "cache_known_live_event_slugs"
 
-    fun setDeviceConfig(
+    override fun setDeviceConfig(
         url: String,
         key: String,
         orga_slug: String,
@@ -162,7 +172,7 @@ class PretixScanConfig(private var data_dir: String) : ConfigStore {
     }
 
     override fun getSynchronizedEvents(): List<String> {
-        return (Server.proxyData select (SyncedEventEntity::class)).get().map { it.slug }.toList()
+        return (proxyDeps.proxyData select (SyncedEventEntity::class)).get().map { it.slug }.toList()
     }
 
     override fun getSelectedSubeventForEvent(event: String?): Long? {

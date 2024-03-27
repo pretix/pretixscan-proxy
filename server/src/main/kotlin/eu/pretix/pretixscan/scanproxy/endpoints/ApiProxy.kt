@@ -3,6 +3,7 @@ package eu.pretix.pretixscan.scanproxy.endpoints
 import eu.pretix.libpretixsync.db.*
 import eu.pretix.pretixscan.scanproxy.ProxyFileStorage
 import eu.pretix.pretixscan.scanproxy.Server
+import eu.pretix.pretixscan.scanproxy.proxyDeps
 import io.javalin.http.Context
 import io.javalin.http.Handler
 import io.javalin.http.NotFoundResponse
@@ -13,7 +14,7 @@ import java.util.*
 
 object EventEndpoint : Handler {
     override fun handle(ctx: Context) {
-        val event = Server.syncData.select(Event::class.java)
+        val event = proxyDeps.syncData.select(Event::class.java)
             .where(Event.SLUG.eq(ctx.pathParam("event")))
             .get().firstOrNull() ?: throw NotFoundResponse("Event not found")
         ctx.json(event.json)
@@ -39,7 +40,7 @@ abstract class CachedResourceEndpoint : ResourceEndpoint() {
 
     override fun handle(ctx: Context) {
 
-        val rlm = Server.syncData.select(ResourceSyncStatus::class.java)
+        val rlm = proxyDeps.syncData.select(ResourceSyncStatus::class.java)
             .where(ResourceSyncStatus.RESOURCE.eq(resourceName))
             .and(ResourceSyncStatus.EVENT_SLUG.eq(ctx.pathParam("event")))
             .limit(1)
@@ -66,7 +67,7 @@ abstract class CachedResourceEndpoint : ResourceEndpoint() {
 object CategoryEndpoint : CachedResourceEndpoint() {
     override val resourceName = "categories"
     override fun query(ctx: Context): List<RemoteObject> {
-        return Server.syncData.select(ItemCategory::class.java)
+        return proxyDeps.syncData.select(ItemCategory::class.java)
             .where(ItemCategory.EVENT_SLUG.eq(ctx.pathParam("event")))
             .get().toList()
     }
@@ -76,7 +77,7 @@ object CategoryEndpoint : CachedResourceEndpoint() {
 object ItemEndpoint : CachedResourceEndpoint() {
     override val resourceName = "items"
     override fun query(ctx: Context): List<RemoteObject> {
-        return Server.syncData.select(Item::class.java)
+        return proxyDeps.syncData.select(Item::class.java)
             .where(Item.EVENT_SLUG.eq(ctx.pathParam("event")))
             .get().toList()
     }
@@ -86,7 +87,7 @@ object ItemEndpoint : CachedResourceEndpoint() {
 object QuestionEndpoint : CachedResourceEndpoint() {
     override val resourceName = "questions"
     override fun query(ctx: Context): List<RemoteObject> {
-        return Server.syncData.select(Question::class.java)
+        return proxyDeps.syncData.select(Question::class.java)
             .where(Question.EVENT_SLUG.eq(ctx.pathParam("event")))
             .get().toList()
     }
@@ -95,7 +96,7 @@ object QuestionEndpoint : CachedResourceEndpoint() {
 
 object SettingsEndpoint : Handler {
     override fun handle(ctx: Context) {
-        val settings: Settings = Server.syncData.select(Settings::class.java)
+        val settings: Settings = proxyDeps.syncData.select(Settings::class.java)
             .where(Settings.SLUG.eq(ctx.pathParam("event")))
             .get().firstOrNull() ?: throw NotFoundResponse("Settings not found")
         ctx.json(settings.getJSON())
@@ -109,7 +110,7 @@ object DownloadEndpoint : Handler {
         if (fname.contains("/")) {
             throw NotFoundResponse()
         }
-        val f = ProxyFileStorage().getFile(fname)
+        val f = proxyDeps.fileStorage.getFile(fname)
         if (!f.exists()) {
             throw NotFoundResponse()
         }
@@ -119,7 +120,7 @@ object DownloadEndpoint : Handler {
 
 object BadgeLayoutEndpoint : ResourceEndpoint() {
     override fun query(ctx: Context): List<RemoteObject> {
-        return Server.syncData.select(BadgeLayout::class.java)
+        return proxyDeps.syncData.select(BadgeLayout::class.java)
             .where(BadgeLayout.EVENT_SLUG.eq(ctx.pathParam("event")))
             .get().toList()
     }
@@ -146,7 +147,7 @@ object BadgeLayoutEndpoint : ResourceEndpoint() {
 object EventsEndpoint : ResourceEndpoint() {
     override fun query(ctx: Context): List<RemoteObject> {
         val cutoff = SimpleDateFormat("yyyy-MM-dd").parse((LocalDate.now().minusDays(5).toString()))
-        return Server.syncData.select(Event::class.java)
+        return proxyDeps.syncData.select(Event::class.java)
             .where(
                 Event.DATE_TO.gte(cutoff)
                     .or(
@@ -162,7 +163,7 @@ object EventsEndpoint : ResourceEndpoint() {
 object SubEventsEndpoint : ResourceEndpoint() {
     override fun query(ctx: Context): List<RemoteObject> {
         val cutoff = SimpleDateFormat("yyyy-MM-dd").parse((LocalDate.now().minusDays(5).toString()))
-        return Server.syncData.select(SubEvent::class.java)
+        return proxyDeps.syncData.select(SubEvent::class.java)
             .where(
                 SubEvent.DATE_TO.gte(cutoff)
                     .or(
@@ -178,7 +179,7 @@ object SubEventsEndpoint : ResourceEndpoint() {
 object CheckInListEndpoint : CachedResourceEndpoint() {
     override val resourceName = "checkinlists"
     override fun query(ctx: Context): List<RemoteObject> {
-        return Server.syncData.select(CheckInList::class.java)
+        return proxyDeps.syncData.select(CheckInList::class.java)
             .where(CheckInList.EVENT_SLUG.eq(ctx.pathParam("event")))
             .get().toList()
     }
@@ -186,7 +187,7 @@ object CheckInListEndpoint : CachedResourceEndpoint() {
 
 object SubEventEndpoint : Handler {
     override fun handle(ctx: Context) {
-        val event = Server.syncData.select(SubEvent::class.java)
+        val event = proxyDeps.syncData.select(SubEvent::class.java)
             .where(SubEvent.EVENT_SLUG.eq(ctx.pathParam("event")))
             .and(SubEvent.SERVER_ID.eq(ctx.pathParam("id").toLong()))
             .get().firstOrNull() ?: throw NotFoundResponse("Subevent not found")
@@ -197,7 +198,7 @@ object SubEventEndpoint : Handler {
 
 object BadgeItemEndpoint : ResourceEndpoint() {
     override fun query(ctx: Context): List<RemoteObject> {
-        return Server.syncData.select(BadgeLayoutItem::class.java)
+        return proxyDeps.syncData.select(BadgeLayoutItem::class.java)
             .join(BadgeLayout::class.java).on(BadgeLayoutItem.LAYOUT_ID.eq(BadgeLayout.ID))
             .where(BadgeLayout.EVENT_SLUG.eq(ctx.pathParam("event")))
             .get().toList()
