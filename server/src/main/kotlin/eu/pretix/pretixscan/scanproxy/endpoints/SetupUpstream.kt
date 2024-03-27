@@ -3,7 +3,6 @@ package eu.pretix.pretixscan.scanproxy.endpoints
 import eu.pretix.libpretixsync.db.CheckInList
 import eu.pretix.libpretixsync.db.QueuedCheckIn
 import eu.pretix.libpretixsync.setup.*
-import eu.pretix.pretixscan.scanproxy.PretixScanConfig
 import eu.pretix.pretixscan.scanproxy.Server.VERSION
 import eu.pretix.pretixscan.scanproxy.db.DownstreamDeviceEntity
 import eu.pretix.pretixscan.scanproxy.db.SyncedEventEntity
@@ -29,15 +28,13 @@ object SetupUpstream : JsonBodyHandler<SetupUpstreamRequest>(SetupUpstreamReques
             proxyDeps.httpClientFactory
         )
 
-        val configStore = PretixScanConfig(proxyDeps.dataDir)
-
-        if (configStore.isConfigured) {
+        if (proxyDeps.configStore.isConfigured) {
             throw BadRequestResponse("Already configured")
         }
 
         try {
             val init = setupm.initialize(body.url, body.token)
-            configStore.setDeviceConfig(init.url, init.api_token, init.organizer, init.device_id)
+            proxyDeps.configStore.setDeviceConfig(init.url, init.api_token, init.organizer, init.device_id)
             syncEventList()
             ctx.status(200)
         } catch (e: SSLException) {

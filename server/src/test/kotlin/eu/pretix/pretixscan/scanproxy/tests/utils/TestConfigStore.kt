@@ -1,10 +1,14 @@
 package eu.pretix.pretixscan.scanproxy.tests.utils
 
-import eu.pretix.libpretixsync.config.ConfigStore
+import eu.pretix.pretixscan.scanproxy.ProxyScanConfig
 import org.json.JSONObject
 
-class TestConfigStore : ConfigStore {
+class TestConfigStore : ProxyScanConfig {
     var configured = true
+
+    override fun setDeviceConfig(url: String, key: String, orga_slug: String, device_id: Long) {
+        configured = true
+    }
 
     override fun isDebug(): Boolean {
         return true

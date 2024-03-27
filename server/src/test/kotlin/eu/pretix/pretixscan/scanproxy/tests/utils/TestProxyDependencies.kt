@@ -6,6 +6,7 @@ import eu.pretix.libpretixsync.api.RateLimitInterceptor
 import eu.pretix.libpretixsync.config.ConfigStore
 import eu.pretix.pretixscan.scanproxy.Models
 import eu.pretix.pretixscan.scanproxy.ProxyDependencies
+import eu.pretix.pretixscan.scanproxy.ProxyScanConfig
 import eu.pretix.pretixscan.scanproxy.db.Migrations
 import eu.pretix.pretixscan.scanproxy.tests.test.FakePretixApi
 import io.requery.Persistable
@@ -109,7 +110,7 @@ class TestProxyDependencies() : ProxyDependencies() {
         }
     }
 
-    override val configStore: ConfigStore by lazy {
+    override val configStore: ProxyScanConfig by lazy {
         TestConfigStore()
     }
 
