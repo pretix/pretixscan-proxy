@@ -1,7 +1,7 @@
 package eu.pretix.pretixscan.scanproxy.db
 
+import eu.pretix.libpretixsync.utils.HashUtils
 import io.requery.Entity
-import io.requery.Generated
 import io.requery.Key
 import io.requery.Persistable
 

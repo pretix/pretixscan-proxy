@@ -1,12 +1,14 @@
 package eu.pretix.pretixscan.scanproxy.endpoints
 
-import eu.pretix.pretixscan.scanproxy.PretixScanConfig
+import eu.pretix.libpretixsync.db.MediumKeySet
+import eu.pretix.libpretixsync.utils.HashUtils
 import eu.pretix.pretixscan.scanproxy.Server
+import eu.pretix.pretixscan.scanproxy.db.DownstreamDevice
 import eu.pretix.pretixscan.scanproxy.db.DownstreamDeviceEntity
-import eu.pretix.pretixscan.scanproxy.db.SyncedEventEntity
 import eu.pretix.pretixscan.scanproxy.proxyDeps
-import io.javalin.http.*
-import io.requery.kotlin.eq
+import io.javalin.http.Context
+import io.javalin.http.Handler
+import io.javalin.http.ServiceUnavailableResponse
 import java.util.*
 
 data class SetupDownstreamInitResponse(
@@ -90,6 +92,11 @@ data class SetupDownstreamResponse(
     val name: String
 )
 
+fun uniqueSerial(device: DownstreamDevice): String {
+    val hash = HashUtils.toSHA1(device.uuid.toByteArray())
+    return hash.uppercase().slice(0..12)
+}
+
 object SetupDownstream : JsonBodyHandler<SetupDownstreamRequest>(SetupDownstreamRequest::class.java) {
     private val charPool: List<Char> = ('a'..'z') + ('A'..'Z') + ('0'..'9')
     override fun handle(ctx: Context, body: SetupDownstreamRequest) {
@@ -112,10 +119,7 @@ object SetupDownstream : JsonBodyHandler<SetupDownstreamRequest>(SetupDownstream
             ctx.json(SetupDownstreamResponse(
                 organizer = proxyDeps.configStore.organizerSlug,
                 device_id = 1,
-                unique_serial = (1..12)
-                    .map { kotlin.random.Random.nextInt(0, charPool.size) }
-                    .map(charPool::get)
-                    .joinToString(""),
+                unique_serial = uniqueSerial(device),
                 api_token = device.api_token!!,
                 name = "Downstream device"
             ))
@@ -146,6 +150,38 @@ object UpstreamVersion : Handler {
                 "pretix_numeric" to configStore.knownPretixVersion,
                 "pretixscan_proxy" to Server.VERSION,
                 "pretixscan_proxy_numeric" to Server.VERSION_CODE,
+            )
+        )
+    }
+}
+
+
+object DeviceInfo : Handler {
+    override fun handle(ctx: Context) {
+        val configStore = proxyDeps.configStore
+        val device = ctx.attribute<DownstreamDeviceEntity>("device")!!
+        ctx.json(
+            mapOf(
+                "device" to mapOf(
+                    "organizer" to configStore.organizerSlug,
+                    "device_id" to 1,
+                    "unique_serial" to uniqueSerial(device),
+                    "api_token" to device.api_token,
+                    "name" to device.name,
+                    "gate" to if (configStore.deviceKnownGateID > 0) mapOf(
+                        "id" to configStore.deviceKnownGateID,
+                        "name" to configStore.deviceKnownGateName
+                    ) else null,
+                ),
+                "server" to mapOf(
+                    "version" to mapOf(
+                        "pretix" to "?",
+                        "pretix_numeric" to configStore.knownPretixVersion,
+                        "pretixscan_proxy" to Server.VERSION,
+                        "pretixscan_proxy_numeric" to Server.VERSION_CODE,
+                    ),
+                ),
+                "medium_key_sets" to emptyList<Map<String, String>>()  // RSA setup not implemented
             )
         )
     }

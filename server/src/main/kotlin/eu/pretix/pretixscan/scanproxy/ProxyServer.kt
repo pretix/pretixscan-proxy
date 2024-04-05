@@ -46,9 +46,14 @@ object Server {
             path("api/v1") {
                 get("version", UpstreamVersion)
                 post("device/initialize", SetupDownstream)
+                path("device/info") {
+                    before(DeviceAuth)
+                    get(DeviceInfo)
+                }
                 path("organizers/{organizer}") {
                     before(DeviceAuth)
                     get("subevents", SubEventsEndpoint)
+                    get("reusablemedia/", EmptyResourceEndpoint)
                     path("events") {
                         get(EventsEndpoint)
                         path("{event}") {
@@ -65,6 +70,7 @@ object Server {
                             get("badgeitems/", BadgeItemEndpoint)
                             get("settings/", SettingsEndpoint)
                             get("revokedsecrets/", EmptyResourceEndpoint)
+                            get("blockedsecrets/", EmptyResourceEndpoint)
                             get("subevents/{id}/", SubEventEndpoint)
                         }
                     }
