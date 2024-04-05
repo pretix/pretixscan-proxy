@@ -5,6 +5,7 @@ import io.javalin.http.BadRequestResponse
 import io.javalin.http.Context
 import io.javalin.http.Handler
 import io.javalin.json.JavalinJackson
+import io.javalin.json.jsonMapper
 import org.slf4j.LoggerFactory
 
 abstract class JsonBodyHandler<T>(private val bodyClass: Class<T>) : Handler {
@@ -15,7 +16,7 @@ abstract class JsonBodyHandler<T>(private val bodyClass: Class<T>) : Handler {
     override fun handle(ctx: Context) {
         var body: T?
         try {
-            body = JavalinJackson().fromJsonString(ctx.body(), bodyClass)
+            body = ctx.jsonMapper().fromJsonString(ctx.body(), bodyClass)
         } catch (e: JsonMappingException) {
             LOG.info(e.message)
             throw BadRequestResponse("Invalid JSON body")
