@@ -46,6 +46,10 @@ object Server {
             path("api/v1") {
                 get("version", UpstreamVersion)
                 post("device/initialize", SetupDownstream)
+                path("device/eventselection") {
+                    before(DeviceAuth)
+                    get(EventSelection)
+                }
                 path("organizers/{organizer}") {
                     before(DeviceAuth)
                     get("subevents", SubEventsEndpoint)
