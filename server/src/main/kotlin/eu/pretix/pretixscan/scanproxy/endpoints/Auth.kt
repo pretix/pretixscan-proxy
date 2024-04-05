@@ -36,15 +36,7 @@ object DeviceAuth : Handler {
 
 object EventRegister : Handler {
     override fun handle(ctx: Context) {
-        val ev = (
-                proxyDeps.proxyData select (SyncedEventEntity::class)
-                        where (SyncedEventEntity.SLUG eq ctx.pathParam("event"))
-                ).get().firstOrNull()
-        if (ev == null) {
-            val s = SyncedEventEntity()
-            s.slug = ctx.pathParam("event")
-            proxyDeps.proxyData.insert(s)
-        }
+        registerEventIfNotExists(ctx.pathParam("event"))
     }
 }
 
