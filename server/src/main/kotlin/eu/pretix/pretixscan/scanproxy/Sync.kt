@@ -1,11 +1,14 @@
 package eu.pretix.pretixscan.scanproxy
 
 import eu.pretix.libpretixsync.DummySentryImplementation
+import eu.pretix.libpretixsync.api.PermissionDeniedApiException
 import eu.pretix.libpretixsync.sync.AllEventsSyncAdapter
 import eu.pretix.libpretixsync.sync.AllSubEventsSyncAdapter
+import eu.pretix.libpretixsync.sync.SyncException
 import eu.pretix.libpretixsync.sync.SyncManager
 import eu.pretix.pretixscan.scanproxy.Server.VERSION
 import eu.pretix.pretixscan.scanproxy.Server.VERSION_CODE
+import eu.pretix.pretixscan.scanproxy.db.SyncedEventEntity
 import org.json.JSONObject
 import org.slf4j.LoggerFactory
 import java.util.concurrent.locks.ReentrantLock
@@ -64,8 +67,20 @@ fun syncAllEvents(force: Boolean = false) {
             null,
             proxyDeps.connectivityHelper
         )
-        syncManager.sync(force) {
+        val syncResult = syncManager.sync(force) {
             LOG.info("$it")
+        }
+        if (syncResult.exception != null && syncResult.exception is SyncException &&
+            syncResult.exception.cause is PermissionDeniedApiException) {
+            val failedEvent = (syncResult.exception.cause as PermissionDeniedApiException).eventSlug
+            if (failedEvent != null) {
+                // No permission to this event or event does not exist, do not sync it any more
+                // to keep sync from being blocked
+                LOG.warn("Removing event $failedEvent from sync because we have no permission.")
+                proxyDeps.proxyData.delete (SyncedEventEntity::class)
+                    .where (SyncedEventEntity.SLUG eq failedEvent)
+                    .get().value()
+            }
         }
         if (proxyDeps.configStore.lastFailedSync > 0) {
             LOG.info(proxyDeps.configStore.lastFailedSyncMsg)

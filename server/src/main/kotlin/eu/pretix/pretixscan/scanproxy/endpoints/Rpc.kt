@@ -10,6 +10,7 @@ import eu.pretix.libpretixsync.db.QuestionOption
 import eu.pretix.pretixscan.scanproxy.PretixScanConfig
 import eu.pretix.pretixscan.scanproxy.ProxyFileStorage
 import eu.pretix.pretixscan.scanproxy.db.DownstreamDeviceEntity
+import eu.pretix.pretixscan.scanproxy.db.SyncedEventEntity
 import eu.pretix.pretixscan.scanproxy.proxyDeps
 import io.javalin.http.Context
 import io.javalin.http.Handler
@@ -37,6 +38,7 @@ fun getCheckProvider(): TicketCheckProvider {
 object StatusEndpoint : Handler {
     override fun handle(ctx: Context) {
         val acp = getCheckProvider()
+        registerEventIfNotExists(ctx.pathParam("event"))
         try {
             ctx.json(acp.status(ctx.pathParam("event"), ctx.pathParam("list").toLong())!!)
         } catch (e: CheckException) {
@@ -63,8 +65,8 @@ object CheckEndpoint : JsonBodyHandler<CheckInput>(CheckInput::class.java) {
     override fun handle(ctx: Context, body: CheckInput) {
         val LOG = LoggerFactory.getLogger("eu.pretix.pretixscan.scanproxy.endpoints.CheckEndpoint")
 
-        val acp = getCheckProvider(
-        )
+        registerEventIfNotExists(ctx.pathParam("event"))
+        val acp = getCheckProvider()
         val startedAt = System.currentTimeMillis()
         try {
             val type = TicketCheckProvider.CheckInType.valueOf((body.type ?: "entry").uppercase(Locale.getDefault()))
@@ -115,8 +117,11 @@ object MultiCheckEndpoint : JsonBodyHandler<MultiCheckInput>(MultiCheckInput::cl
     override fun handle(ctx: Context, body: MultiCheckInput) {
         val LOG = LoggerFactory.getLogger("eu.pretix.pretixscan.scanproxy.endpoints.MultiCheckEndpoint")
 
-        val acp = getCheckProvider(
-        )
+        for (event in body.events_and_checkin_lists.keys) {
+            registerEventIfNotExists(event)
+        }
+
+        val acp = getCheckProvider()
         val startedAt = System.currentTimeMillis()
         try {
             val type = TicketCheckProvider.CheckInType.valueOf((body.type ?: "entry").uppercase(Locale.getDefault()))
@@ -161,6 +166,7 @@ data class SearchInput(
 object SearchEndpoint : JsonBodyHandler<SearchInput>(SearchInput::class.java) {
     override fun handle(ctx: Context, body: SearchInput) {
         val acp = getCheckProvider()
+        registerEventIfNotExists(ctx.pathParam("event"))
         try {
             ctx.json(acp.search(
                 mapOf(ctx.pathParam("event") to ctx.pathParam("list").toLong()),
@@ -181,6 +187,9 @@ data class MultiSearchInput(
 
 object MultiSearchEndpoint : JsonBodyHandler<MultiSearchInput>(MultiSearchInput::class.java) {
     override fun handle(ctx: Context, body: MultiSearchInput) {
+        for (event in body.events_and_checkin_lists.keys) {
+            registerEventIfNotExists(event)
+        }
         val acp = getCheckProvider()
         try {
             ctx.json(acp.search(

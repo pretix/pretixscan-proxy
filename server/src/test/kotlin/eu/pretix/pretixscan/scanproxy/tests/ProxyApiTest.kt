@@ -234,6 +234,25 @@ class ProxyApiTest : BaseDatabaseTest() {
 
 
     @Test
+    fun `CheckEndpoint for unknown event triggers sync`() = JavalinTest.test(app) { server, client ->
+        assertThat(proxyDeps.proxyData.count(SyncedEventEntity::class).get().value(), equalTo(2))
+        val device = createDevice()
+        val resp = client.post("/proxyapi/v1/rpc/unknown/1/check/", mapOf(
+            "ticketid" to "kfndgffgyw4tdgcacx6bb3bgemq69cxj",
+            "answers" to emptyList<Map<String, String>>(),
+            "ignore_unpaid" to false,
+            "with_badge_data" to true,
+            "type" to "exit",
+            "source_type" to "barcode"
+        )) {
+            it.header("Authorization", "Device ${device.api_token}")
+        }
+        assertThat(resp.code, equalTo(200))
+        assertThat(proxyDeps.proxyData.count(SyncedEventEntity::class).get().value(), equalTo(3))
+    }
+
+
+    @Test
     fun `MultiCheckEndpoint returns CheckResult`() = JavalinTest.test(app) { server, client ->
         val device = createDevice()
         val resp = client.post("/proxyapi/v1/rpc/check/", mapOf(
@@ -271,6 +290,28 @@ class ProxyApiTest : BaseDatabaseTest() {
         assertThat(json["position"], notNullValue())
         assertThat(json["eventSlug"], equalTo("demo"))
         assertThat(json["offline"], equalTo(true))
+    }
+
+
+    @Test
+    fun `MultiCheckEndpoint for unknown event triggers sync`() = JavalinTest.test(app) { server, client ->
+        assertThat(proxyDeps.proxyData.count(SyncedEventEntity::class).get().value(), equalTo(2))
+        val device = createDevice()
+        val resp = client.post("/proxyapi/v1/rpc/check/", mapOf(
+            "events_and_checkin_lists" to mapOf(
+                "unknown" to 9999,
+            ),
+            "ticketid" to "kfndgffgyw4tdgcacx6bb3bgemq69cxj",
+            "answers" to emptyList<Map<String, String>>(),
+            "ignore_unpaid" to false,
+            "with_badge_data" to true,
+            "type" to "exit",
+            "source_type" to "barcode"
+        )) {
+            it.header("Authorization", "Device ${device.api_token}")
+        }
+        assertThat(resp.code, equalTo(200))
+        assertThat(proxyDeps.proxyData.count(SyncedEventEntity::class).get().value(), equalTo(3))
     }
 
 

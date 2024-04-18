@@ -50,6 +50,10 @@ object Server {
                     before(DeviceAuth)
                     get(DeviceInfo)
                 }
+                path("device/eventselection") {
+                    before(DeviceAuth)
+                    get(EventSelection)
+                }
                 path("organizers/{organizer}") {
                     before(DeviceAuth)
                     get("subevents", SubEventsEndpoint)
