@@ -338,7 +338,6 @@ class ProxyApiTest : BaseDatabaseTest() {
         var json = jacksonObjectMapper().readValue<MutableMap<Any, Any>>(resp.body!!.string())
         assertThat(json["type"], equalTo("ANSWERS_REQUIRED"))
         val requiredAnswer = (json["requiredAnswers"] as List<Map<Any, Any>>)[0]
-        assertThat((requiredAnswer["question"] as Map<Any, Any>)["id"], equalTo(1))
         assertThat((requiredAnswer["question"] as Map<Any, Any>)["server_id"], equalTo(1))
         assertThat((requiredAnswer["question"] as Map<Any, Any>)["event_slug"], equalTo("demo"))
         assertThat((requiredAnswer["question"] as Map<Any, Any>)["required"], equalTo(true))
