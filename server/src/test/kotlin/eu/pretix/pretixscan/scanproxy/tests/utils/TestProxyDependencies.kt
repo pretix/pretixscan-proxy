@@ -4,10 +4,12 @@ import eu.pretix.libpretixsync.api.HttpClientFactory
 import eu.pretix.libpretixsync.api.PretixApi
 import eu.pretix.libpretixsync.api.RateLimitInterceptor
 import eu.pretix.libpretixsync.config.ConfigStore
+import eu.pretix.libpretixsync.sqldelight.SyncDatabase
 import eu.pretix.pretixscan.scanproxy.Models
 import eu.pretix.pretixscan.scanproxy.ProxyDependencies
 import eu.pretix.pretixscan.scanproxy.ProxyScanConfig
 import eu.pretix.pretixscan.scanproxy.db.Migrations
+import eu.pretix.pretixscan.scanproxy.db.createSyncDatabase
 import eu.pretix.pretixscan.scanproxy.tests.test.FakePretixApi
 import io.requery.Persistable
 import io.requery.cache.EntityCacheBuilder
@@ -16,51 +18,37 @@ import io.requery.sql.EntityDataStore
 import io.requery.sql.KotlinConfiguration
 import io.requery.sql.KotlinEntityDataStore
 import okhttp3.OkHttpClient
+import org.postgresql.ds.PGSimpleDataSource
+import org.slf4j.LoggerFactory
 import org.sqlite.SQLiteConfig
 import org.sqlite.SQLiteDataSource
 import java.io.File
 import java.nio.file.Files
 import java.security.MessageDigest
+import java.sql.DriverManager
 import java.util.*
 import java.util.concurrent.TimeUnit
 import kotlin.io.path.absolutePathString
 
 class TestProxyDependencies() : ProxyDependencies() {
 
-    private fun byteArray2Hex(hash: ByteArray): String {
-        val formatter = Formatter()
-        for (b in hash) {
-            formatter.format("%02x", b)
-        }
-        return formatter.toString()
-    }
-
-    private fun createTemporarySqliteSource(): SQLiteDataSource {
-        val randomBytes = ByteArray(32) // length is bounded by 7
-
-        Random().nextBytes(randomBytes)
-        val md = MessageDigest.getInstance("SHA-1")
-        //md.update(name.getMethodName().toByteArray())
-        md.update(randomBytes)
-        val dbname = byteArray2Hex(md.digest())
-
-        val dataSource = SQLiteDataSource()
-        val tmpfile = File.createTempFile(dbname, "sqlite3")
-        tmpfile.deleteOnExit()
-
-        dataSource.url = "jdbc:sqlite:file:$tmpfile"
-        return dataSource
-    }
-
     override val proxyData: KotlinEntityDataStore<Persistable> by lazy {
-        val dataSource = createTemporarySqliteSource()
-        val config = SQLiteConfig()
-        config.setDateClass("TEXT")
-        dataSource.config = config
-        dataSource.setEnforceForeignKeys(true)
+        val url = System.getProperty("pretixscan.database")
 
+        val conn = DriverManager.getConnection(url)
+        var exists = false
+        val r = conn.metaData.getTables(null, null, "_scanproxy_version", arrayOf("TABLE"))
+        while (r.next()) {
+            if (r.getString("TABLE_NAME") == "_scanproxy_version") {
+                exists = true
+                break
+            }
+        }
+
+        val dataSource = PGSimpleDataSource()
+        dataSource.setURL(url)
         val model = Models.DEFAULT
-        Migrations.migrate(dataSource, true)
+        Migrations.migrate(dataSource, !exists)
         val configuration = KotlinConfiguration(
             dataSource = dataSource,
             model = model,
@@ -73,14 +61,22 @@ class TestProxyDependencies() : ProxyDependencies() {
     }
 
     override val syncData: EntityDataStore<Persistable> by lazy {
-        val dataSource = createTemporarySqliteSource()
-        val config = SQLiteConfig()
-        config.setDateClass("TEXT")
-        dataSource.config = config
-        dataSource.setEnforceForeignKeys(true)
+        val url = System.getProperty("pretixscan.database")
 
+        val conn = DriverManager.getConnection(url)
+        var exists = false
+        val r = conn.metaData.getTables(null, null, "_version", arrayOf("TABLE"))
+        while (r.next()) {
+            if (r.getString("TABLE_NAME") == "_version") {
+                exists = true
+                break
+            }
+        }
+
+        val dataSource = PGSimpleDataSource()
+        dataSource.setURL(url)
         val model = eu.pretix.libpretixsync.Models.DEFAULT
-        eu.pretix.libpretixsync.db.Migrations.migrate(dataSource, true)
+        eu.pretix.libpretixsync.db.Migrations.migrate(dataSource, !exists)
         val configuration = ConfigurationBuilder(dataSource, model)
             .setEntityCache(
                 EntityCacheBuilder(model)
@@ -122,4 +118,13 @@ class TestProxyDependencies() : ProxyDependencies() {
         super.init()
         System.setProperty("pretixscan.adminauth", "foo:bar")
     }
+
+    override val db: SyncDatabase
+        get() {
+            val LOG = LoggerFactory.getLogger(TestProxyDependencies::class.java)
+            return createSyncDatabase(
+                url = System.getProperty("pretixscan.database"),
+                LOG = LOG,
+            )
+        }
 }
