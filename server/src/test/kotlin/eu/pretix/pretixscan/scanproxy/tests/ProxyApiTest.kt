@@ -34,9 +34,9 @@ class ProxyApiTest : BaseDatabaseTest() {
         proxyDeps.proxyData.insert(s)
         EventSyncAdapter(proxyDeps.syncData, "demo", "demo", proxyDeps.pretixApi, "", null).standaloneRefreshFromJSON(jsonResource("events/event1.json"))
         EventSyncAdapter(proxyDeps.syncData, "demo", "demo", proxyDeps.pretixApi, "", null).standaloneRefreshFromJSON(jsonResource("events/event2.json"))
-        ItemSyncAdapter(proxyDeps.syncData, FakeFileStorage(), "demo", proxyDeps.pretixApi, "", null).standaloneRefreshFromJSON(jsonResource("items/item1.json"))
-        ItemSyncAdapter(proxyDeps.syncData, FakeFileStorage(), "demo", proxyDeps.pretixApi, "", null).standaloneRefreshFromJSON(jsonResource("items/item2.json"))
-        ItemSyncAdapter(proxyDeps.syncData, FakeFileStorage(), "demo2", proxyDeps.pretixApi, "", null).standaloneRefreshFromJSON(jsonResource("items/event2-item3.json"))
+        ItemSyncAdapter(proxyDeps.db, FakeFileStorage(), "demo", proxyDeps.pretixApi, "", null).standaloneRefreshFromJSON(jsonResource("items/item1.json"))
+        ItemSyncAdapter(proxyDeps.db, FakeFileStorage(), "demo", proxyDeps.pretixApi, "", null).standaloneRefreshFromJSON(jsonResource("items/item2.json"))
+        ItemSyncAdapter(proxyDeps.db, FakeFileStorage(), "demo2", proxyDeps.pretixApi, "", null).standaloneRefreshFromJSON(jsonResource("items/event2-item3.json"))
         CheckInListSyncAdapter(proxyDeps.syncData, FakeFileStorage(), "demo", proxyDeps.pretixApi, "", null, 0).standaloneRefreshFromJSON(
             jsonResource("checkinlists/list1.json")
         )
@@ -60,7 +60,7 @@ class ProxyApiTest : BaseDatabaseTest() {
         )
         SubEventSyncAdapter(proxyDeps.syncData, "demo", "14", proxyDeps.pretixApi, "", null).standaloneRefreshFromJSON(jsonResource("subevents/subevent1.json"))
 
-        val osa = OrderSyncAdapter(proxyDeps.syncData, FakeFileStorage(), "demo", 0, true, false, proxyDeps.pretixApi, "", null)
+        val osa = OrderSyncAdapter(proxyDeps.db, FakeFileStorage(), "demo", 0, true, false, proxyDeps.pretixApi, "", null)
         osa.standaloneRefreshFromJSON(jsonResource("orders/order1.json"))
         osa.standaloneRefreshFromJSON(jsonResource("orders/order2.json"))
         osa.standaloneRefreshFromJSON(jsonResource("orders/order3.json"))
@@ -70,7 +70,7 @@ class ProxyApiTest : BaseDatabaseTest() {
         osa.standaloneRefreshFromJSON(jsonResource("orders/order7.json"))
         osa.standaloneRefreshFromJSON(jsonResource("orders/order8.json"))
         osa.standaloneRefreshFromJSON(jsonResource("orders/order9.json"))
-        val osa2 = OrderSyncAdapter(proxyDeps.syncData, FakeFileStorage(), "demo2", 0, true, false, proxyDeps.pretixApi, "", null)
+        val osa2 = OrderSyncAdapter(proxyDeps.db, FakeFileStorage(), "demo2", 0, true, false, proxyDeps.pretixApi, "", null)
         osa2.standaloneRefreshFromJSON(jsonResource("orders/event2-order1.json"))
     }
 

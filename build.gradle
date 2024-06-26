@@ -1,5 +1,7 @@
 buildscript {
     ext.kotlin_version = '1.7.20'
+    ext.sqldelight_version = '2.0.2'
+
     repositories {
         jcenter()
         mavenCentral()
@@ -11,6 +13,7 @@ buildscript {
         classpath "net.ltgt.gradle:gradle-apt-plugin:0.17"
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath "com.google.protobuf:protobuf-gradle-plugin:0.8.11"
+        classpath "app.cash.sqldelight:gradle-plugin:$sqldelight_version"
     }
 }
 

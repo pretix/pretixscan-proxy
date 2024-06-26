@@ -29,6 +29,7 @@ fun getCheckProvider(): TicketCheckProvider {
             proxyDeps.configStore,
             proxyDeps.httpClientFactory,
             proxyDeps.syncData,
+            proxyDeps.db,
             proxyDeps.fileStorage,
         )
     }
