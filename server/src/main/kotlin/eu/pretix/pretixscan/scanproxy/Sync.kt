@@ -27,9 +27,9 @@ fun syncEventList() {
         throw UnconfiguredException()
     }
 
-    AllEventsSyncAdapter(proxyDeps.syncData, proxyDeps.fileStorage, proxyDeps.pretixApi, proxyDeps.configStore.syncCycleId, null)
+    AllEventsSyncAdapter(proxyDeps.db, proxyDeps.fileStorage, proxyDeps.pretixApi, proxyDeps.configStore.syncCycleId, null)
         .download()
-    AllSubEventsSyncAdapter(proxyDeps.syncData, proxyDeps.fileStorage, proxyDeps.pretixApi, proxyDeps.configStore.syncCycleId, null)
+    AllSubEventsSyncAdapter(proxyDeps.db, proxyDeps.fileStorage, proxyDeps.pretixApi, proxyDeps.configStore.syncCycleId, null)
         .download()
 }
 
