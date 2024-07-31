@@ -5,17 +5,21 @@ import app.cash.sqldelight.driver.jdbc.JdbcPreparedStatement
 import app.cash.sqldelight.driver.jdbc.asJdbcDriver
 import eu.pretix.libpretixsync.sqldelight.BadgeLayout
 import eu.pretix.libpretixsync.sqldelight.BadgeLayoutItem
+import eu.pretix.libpretixsync.sqldelight.BlockedTicketSecret
 import eu.pretix.libpretixsync.sqldelight.CachedPdfImage
 import eu.pretix.libpretixsync.sqldelight.Cashier
 import eu.pretix.libpretixsync.sqldelight.CheckIn
+import eu.pretix.libpretixsync.sqldelight.CheckInList
 import eu.pretix.libpretixsync.sqldelight.Closing
 import eu.pretix.libpretixsync.sqldelight.Event
 import eu.pretix.libpretixsync.sqldelight.Item
 import eu.pretix.libpretixsync.sqldelight.ItemCategory
+import eu.pretix.libpretixsync.sqldelight.MediumKeySet
 import eu.pretix.libpretixsync.sqldelight.OrderPosition
 import eu.pretix.libpretixsync.sqldelight.Orders
 import eu.pretix.libpretixsync.sqldelight.PostgresIdAdapter
 import eu.pretix.libpretixsync.sqldelight.PostgresJavaUtilDateAdapter
+import eu.pretix.libpretixsync.sqldelight.PostgresLongBooleanAdapter
 import eu.pretix.libpretixsync.sqldelight.Question
 import eu.pretix.libpretixsync.sqldelight.QueuedOrder
 import eu.pretix.libpretixsync.sqldelight.Quota
@@ -23,6 +27,8 @@ import eu.pretix.libpretixsync.sqldelight.Receipt
 import eu.pretix.libpretixsync.sqldelight.ReceiptLine
 import eu.pretix.libpretixsync.sqldelight.ReceiptPayment
 import eu.pretix.libpretixsync.sqldelight.ResourceSyncStatus
+import eu.pretix.libpretixsync.sqldelight.ReusableMedium
+import eu.pretix.libpretixsync.sqldelight.RevokedTicketSecret
 import eu.pretix.libpretixsync.sqldelight.Settings
 import eu.pretix.libpretixsync.sqldelight.SubEvent
 import eu.pretix.libpretixsync.sqldelight.SyncDatabase
@@ -67,6 +73,7 @@ fun createSyncDatabase(url: String, LOG: Logger): SyncDatabase {
 
     val dateAdapter = PostgresJavaUtilDateAdapter()
     val idAdapter = PostgresIdAdapter()
+    val longBooleanAdapter = PostgresLongBooleanAdapter()
 
     val db = SyncDatabase(
         driver = driver,
@@ -74,6 +81,9 @@ fun createSyncDatabase(url: String, LOG: Logger): SyncDatabase {
             idAdapter = idAdapter,
         ),
         BadgeLayoutItemAdapter = BadgeLayoutItem.Adapter(
+            idAdapter = idAdapter,
+        ),
+        BlockedTicketSecretAdapter = BlockedTicketSecret.Adapter(
             idAdapter = idAdapter,
         ),
         CachedPdfImageAdapter = CachedPdfImage.Adapter(
@@ -85,6 +95,9 @@ fun createSyncDatabase(url: String, LOG: Logger): SyncDatabase {
         CheckInAdapter = CheckIn.Adapter(
             idAdapter = idAdapter,
             datetimeAdapter = dateAdapter,
+        ),
+        CheckInListAdapter = CheckInList.Adapter(
+            idAdapter = idAdapter,
         ),
         ClosingAdapter = Closing.Adapter(
             idAdapter = idAdapter,
@@ -101,6 +114,9 @@ fun createSyncDatabase(url: String, LOG: Logger): SyncDatabase {
         ItemCategoryAdapter = ItemCategory.Adapter(
             idAdapter = idAdapter,
         ),
+        MediumKeySetAdapter = MediumKeySet.Adapter(
+            idAdapter = idAdapter,
+        ),
         OrderPositionAdapter = OrderPosition.Adapter(
             idAdapter = idAdapter,
         ),
@@ -115,6 +131,7 @@ fun createSyncDatabase(url: String, LOG: Logger): SyncDatabase {
         ),
         QuotaAdapter = Quota.Adapter(
             idAdapter = idAdapter,
+            availableAdapter = longBooleanAdapter,
         ),
         ReceiptLineAdapter = ReceiptLine.Adapter(
             idAdapter = idAdapter,
@@ -130,6 +147,12 @@ fun createSyncDatabase(url: String, LOG: Logger): SyncDatabase {
             idAdapter = idAdapter,
         ),
         ResourceSyncStatusAdapter = ResourceSyncStatus.Adapter(
+            idAdapter = idAdapter,
+        ),
+        ReusableMediumAdapter = ReusableMedium.Adapter(
+            idAdapter = idAdapter,
+        ),
+        RevokedTicketSecretAdapter = RevokedTicketSecret.Adapter(
             idAdapter = idAdapter,
         ),
         SettingsAdapter = Settings.Adapter(
