@@ -2,12 +2,7 @@ package eu.pretix.pretixscan.scanproxy.tests
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import eu.pretix.libpretixsync.check.TicketCheckProvider
-import eu.pretix.libpretixsync.db.Event
-import eu.pretix.libpretixsync.db.Settings
-import eu.pretix.libpretixsync.db.SubEvent
 import eu.pretix.libpretixsync.sync.*
-import eu.pretix.pretixscan.scanproxy.Server
 import eu.pretix.pretixscan.scanproxy.db.DownstreamDeviceEntity
 import eu.pretix.pretixscan.scanproxy.db.SyncedEventEntity
 import eu.pretix.pretixscan.scanproxy.proxyDeps
@@ -17,7 +12,6 @@ import eu.pretix.pretixscan.scanproxy.tests.utils.BaseDatabaseTest
 import io.javalin.testtools.JavalinTest
 import org.hamcrest.CoreMatchers.*
 import org.hamcrest.MatcherAssert.assertThat
-import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 import java.util.*
@@ -32,33 +26,33 @@ class ProxyApiTest : BaseDatabaseTest() {
         s = SyncedEventEntity()
         s.slug = "demo2"
         proxyDeps.proxyData.insert(s)
-        EventSyncAdapter(proxyDeps.syncData, "demo", "demo", proxyDeps.pretixApi, "", null).standaloneRefreshFromJSON(jsonResource("events/event1.json"))
-        EventSyncAdapter(proxyDeps.syncData, "demo", "demo", proxyDeps.pretixApi, "", null).standaloneRefreshFromJSON(jsonResource("events/event2.json"))
+        EventSyncAdapter(proxyDeps.db, "demo", "demo", proxyDeps.pretixApi, "", null).standaloneRefreshFromJSON(jsonResource("events/event1.json"))
+        EventSyncAdapter(proxyDeps.db, "demo", "demo", proxyDeps.pretixApi, "", null).standaloneRefreshFromJSON(jsonResource("events/event2.json"))
         ItemSyncAdapter(proxyDeps.db, FakeFileStorage(), "demo", proxyDeps.pretixApi, "", null).standaloneRefreshFromJSON(jsonResource("items/item1.json"))
         ItemSyncAdapter(proxyDeps.db, FakeFileStorage(), "demo", proxyDeps.pretixApi, "", null).standaloneRefreshFromJSON(jsonResource("items/item2.json"))
         ItemSyncAdapter(proxyDeps.db, FakeFileStorage(), "demo2", proxyDeps.pretixApi, "", null).standaloneRefreshFromJSON(jsonResource("items/event2-item3.json"))
-        CheckInListSyncAdapter(proxyDeps.syncData, FakeFileStorage(), "demo", proxyDeps.pretixApi, "", null, 0).standaloneRefreshFromJSON(
+        CheckInListSyncAdapter(proxyDeps.db, FakeFileStorage(), "demo", proxyDeps.pretixApi, "", null, 0).standaloneRefreshFromJSON(
             jsonResource("checkinlists/list1.json")
         )
-        CheckInListSyncAdapter(proxyDeps.syncData, FakeFileStorage(), "demo", proxyDeps.pretixApi, "", null, 0).standaloneRefreshFromJSON(
+        CheckInListSyncAdapter(proxyDeps.db, FakeFileStorage(), "demo", proxyDeps.pretixApi, "", null, 0).standaloneRefreshFromJSON(
             jsonResource("checkinlists/list2.json")
         )
-        CheckInListSyncAdapter(proxyDeps.syncData, FakeFileStorage(), "demo", proxyDeps.pretixApi, "", null, 0).standaloneRefreshFromJSON(
+        CheckInListSyncAdapter(proxyDeps.db, FakeFileStorage(), "demo", proxyDeps.pretixApi, "", null, 0).standaloneRefreshFromJSON(
             jsonResource("checkinlists/list3.json")
         )
-        CheckInListSyncAdapter(proxyDeps.syncData, FakeFileStorage(), "demo", proxyDeps.pretixApi, "", null, 0).standaloneRefreshFromJSON(
+        CheckInListSyncAdapter(proxyDeps.db, FakeFileStorage(), "demo", proxyDeps.pretixApi, "", null, 0).standaloneRefreshFromJSON(
             jsonResource("checkinlists/list4.json")
         )
-        CheckInListSyncAdapter(proxyDeps.syncData, FakeFileStorage(), "demo", proxyDeps.pretixApi, "", null, 0).standaloneRefreshFromJSON(
+        CheckInListSyncAdapter(proxyDeps.db, FakeFileStorage(), "demo", proxyDeps.pretixApi, "", null, 0).standaloneRefreshFromJSON(
             jsonResource("checkinlists/list5.json")
         )
-        CheckInListSyncAdapter(proxyDeps.syncData, FakeFileStorage(), "demo", proxyDeps.pretixApi, "", null, 0).standaloneRefreshFromJSON(
+        CheckInListSyncAdapter(proxyDeps.db, FakeFileStorage(), "demo", proxyDeps.pretixApi, "", null, 0).standaloneRefreshFromJSON(
             jsonResource("checkinlists/list6.json")
         )
-        CheckInListSyncAdapter(proxyDeps.syncData, FakeFileStorage(), "demo2", proxyDeps.pretixApi, "", null, 0).standaloneRefreshFromJSON(
+        CheckInListSyncAdapter(proxyDeps.db, FakeFileStorage(), "demo2", proxyDeps.pretixApi, "", null, 0).standaloneRefreshFromJSON(
             jsonResource("checkinlists/event2-list7.json")
         )
-        SubEventSyncAdapter(proxyDeps.syncData, "demo", "14", proxyDeps.pretixApi, "", null).standaloneRefreshFromJSON(jsonResource("subevents/subevent1.json"))
+        SubEventSyncAdapter(proxyDeps.db, "demo", "14", proxyDeps.pretixApi, "", null).standaloneRefreshFromJSON(jsonResource("subevents/subevent1.json"))
 
         val osa = OrderSyncAdapter(proxyDeps.db, FakeFileStorage(), "demo", 0, true, false, proxyDeps.pretixApi, "", null)
         osa.standaloneRefreshFromJSON(jsonResource("orders/order1.json"))
@@ -317,7 +311,7 @@ class ProxyApiTest : BaseDatabaseTest() {
 
     @Test
     fun `MultiCheckEndpoint supports questions`() = JavalinTest.test(app) { server, client ->
-        QuestionSyncAdapter(proxyDeps.syncData, FakeFileStorage(), "demo", proxyDeps.pretixApi, "", null).standaloneRefreshFromJSON(
+        QuestionSyncAdapter(proxyDeps.db, FakeFileStorage(), "demo", proxyDeps.pretixApi, "", null).standaloneRefreshFromJSON(
             jsonResource("questions/question1.json")
         )
         val device = createDevice()
