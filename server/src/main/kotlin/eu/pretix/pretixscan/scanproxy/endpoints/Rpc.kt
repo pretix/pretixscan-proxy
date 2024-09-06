@@ -7,10 +7,7 @@ import eu.pretix.libpretixsync.check.TicketCheckProvider
 import eu.pretix.libpretixsync.db.Answer
 import eu.pretix.libpretixsync.db.Question
 import eu.pretix.libpretixsync.db.QuestionOption
-import eu.pretix.pretixscan.scanproxy.PretixScanConfig
-import eu.pretix.pretixscan.scanproxy.ProxyFileStorage
 import eu.pretix.pretixscan.scanproxy.db.DownstreamDeviceEntity
-import eu.pretix.pretixscan.scanproxy.db.SyncedEventEntity
 import eu.pretix.pretixscan.scanproxy.proxyDeps
 import io.javalin.http.Context
 import io.javalin.http.Handler
