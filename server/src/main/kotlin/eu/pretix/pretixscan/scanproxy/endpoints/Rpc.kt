@@ -5,8 +5,9 @@ import eu.pretix.libpretixsync.check.CheckException
 import eu.pretix.libpretixsync.check.OnlineCheckProvider
 import eu.pretix.libpretixsync.check.TicketCheckProvider
 import eu.pretix.libpretixsync.db.Answer
-import eu.pretix.libpretixsync.db.Question
 import eu.pretix.libpretixsync.db.QuestionOption
+import eu.pretix.libpretixsync.models.db.toModel
+import eu.pretix.libpretixsync.sqldelight.SyncDatabase
 import eu.pretix.pretixscan.scanproxy.db.DownstreamDeviceEntity
 import eu.pretix.pretixscan.scanproxy.proxyDeps
 import io.javalin.http.Context
@@ -20,6 +21,7 @@ fun getCheckProvider(): TicketCheckProvider {
         return AsyncCheckProvider(
             proxyDeps.configStore,
             proxyDeps.syncData,
+            proxyDeps.db,
         )
     } else {
         return OnlineCheckProvider(
@@ -45,9 +47,13 @@ object StatusEndpoint : Handler {
     }
 }
 
-class CheckInputAnswer(var question: Question, var value: String, var options: List<QuestionOption>? = null) {
-    fun toAnswer(): Answer {
-        return Answer(question, value, options)
+data class CheckInputQuestion(
+    val server_id: Long,
+)
+class CheckInputAnswer(var question: CheckInputQuestion, var value: String, var options: List<QuestionOption>? = null) {
+    fun toAnswer(db: SyncDatabase): Answer {
+        val q = db.questionQueries.selectByServerId(question.server_id).executeAsOne().toModel()
+        return Answer(q, value, options)
     }
 }
 data class CheckInput(
@@ -72,14 +78,14 @@ object CheckEndpoint : JsonBodyHandler<CheckInput>(CheckInput::class.java) {
                 mapOf(ctx.pathParam("event") to ctx.pathParam("list").toLong()),
                 body.ticketid,
                 body.source_type ?: "barcode",
-                body.answers?.map { it.toAnswer() },
+                body.answers?.map { it.toAnswer(proxyDeps.db) },
                 body.ignore_unpaid,
                 body.with_badge_data,
                 type
             )
             val requiredAnswers = result.requiredAnswers
             if (requiredAnswers != null) {
-                val questions = requiredAnswers.map { it.question }
+                val questions = requiredAnswers.map { it.question.toModel() }
                 for (q in questions) {
                     q.resolveDependency(questions)
                 }
@@ -127,14 +133,14 @@ object MultiCheckEndpoint : JsonBodyHandler<MultiCheckInput>(MultiCheckInput::cl
                 body.events_and_checkin_lists,
                 body.ticketid,
                 body.source_type ?: "barcode",
-                body.answers?.map { it.toAnswer() },
+                body.answers?.map { it.toAnswer(proxyDeps.db) },
                 body.ignore_unpaid,
                 body.with_badge_data,
                 type
             )
             val requiredAnswers = result.requiredAnswers
             if (requiredAnswers != null) {
-                val questions = requiredAnswers.map { it.question }
+                val questions = requiredAnswers.map { it.question.toModel() }
                 for (q in questions) {
                     q.resolveDependency(questions)
                 }
