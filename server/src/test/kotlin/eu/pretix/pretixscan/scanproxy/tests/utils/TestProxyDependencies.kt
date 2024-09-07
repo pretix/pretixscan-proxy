@@ -3,7 +3,6 @@ package eu.pretix.pretixscan.scanproxy.tests.utils
 import eu.pretix.libpretixsync.api.HttpClientFactory
 import eu.pretix.libpretixsync.api.PretixApi
 import eu.pretix.libpretixsync.api.RateLimitInterceptor
-import eu.pretix.libpretixsync.config.ConfigStore
 import eu.pretix.pretixscan.scanproxy.Models
 import eu.pretix.pretixscan.scanproxy.ProxyDependencies
 import eu.pretix.pretixscan.scanproxy.ProxyScanConfig
@@ -20,13 +19,8 @@ import io.requery.sql.KotlinEntityDataStore
 import okhttp3.OkHttpClient
 import org.postgresql.ds.PGSimpleDataSource
 import org.slf4j.LoggerFactory
-import org.sqlite.SQLiteConfig
-import org.sqlite.SQLiteDataSource
-import java.io.File
 import java.nio.file.Files
-import java.security.MessageDigest
 import java.sql.DriverManager
-import java.util.*
 import java.util.concurrent.TimeUnit
 import kotlin.io.path.absolutePathString
 
