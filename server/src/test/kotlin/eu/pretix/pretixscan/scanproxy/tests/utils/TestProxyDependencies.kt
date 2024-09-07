@@ -4,12 +4,12 @@ import eu.pretix.libpretixsync.api.HttpClientFactory
 import eu.pretix.libpretixsync.api.PretixApi
 import eu.pretix.libpretixsync.api.RateLimitInterceptor
 import eu.pretix.libpretixsync.config.ConfigStore
-import eu.pretix.libpretixsync.sqldelight.SyncDatabase
 import eu.pretix.pretixscan.scanproxy.Models
 import eu.pretix.pretixscan.scanproxy.ProxyDependencies
 import eu.pretix.pretixscan.scanproxy.ProxyScanConfig
 import eu.pretix.pretixscan.scanproxy.db.Migrations
 import eu.pretix.pretixscan.scanproxy.db.createSyncDatabase
+import eu.pretix.pretixscan.scanproxy.sqldelight.SyncDatabase
 import eu.pretix.pretixscan.scanproxy.tests.test.FakePretixApi
 import io.requery.Persistable
 import io.requery.cache.EntityCacheBuilder

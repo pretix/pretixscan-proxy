@@ -2,6 +2,7 @@ plugins {
     id('application')
     id('org.jetbrains.kotlin.jvm')
     id('org.jetbrains.kotlin.kapt')
+    id('app.cash.sqldelight')
     id('com.github.johnrengelman.shadow') version '7.1.2'
     id('com.palantir.git-version') version '3.0.0'
     id('com.google.protobuf') version '0.9.4' apply false
@@ -81,4 +82,15 @@ compileTestKotlin {
 
 test {
     systemProperty "pretixscan.database", System.getProperty("pretixscan.database")
+}
+
+sqldelight {
+    databases {
+        SyncDatabase {
+            packageName = "eu.pretix.pretixscan.scanproxy.sqldelight"
+            dependency(project(":libpretixsync"))
+
+            dialect "app.cash.sqldelight:postgresql-dialect:$sqldelight_version"
+        }
+    }
 }

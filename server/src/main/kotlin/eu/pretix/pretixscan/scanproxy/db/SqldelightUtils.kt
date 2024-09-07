@@ -31,9 +31,9 @@ import eu.pretix.libpretixsync.sqldelight.ReusableMedium
 import eu.pretix.libpretixsync.sqldelight.RevokedTicketSecret
 import eu.pretix.libpretixsync.sqldelight.Settings
 import eu.pretix.libpretixsync.sqldelight.SubEvent
-import eu.pretix.libpretixsync.sqldelight.SyncDatabase
 import eu.pretix.libpretixsync.sqldelight.TaxRule
 import eu.pretix.libpretixsync.sqldelight.TicketLayout
+import eu.pretix.pretixscan.scanproxy.sqldelight.SyncDatabase
 import org.postgresql.ds.PGSimpleDataSource
 import org.slf4j.Logger
 import java.sql.DriverManager
