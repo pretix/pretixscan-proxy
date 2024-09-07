@@ -4,7 +4,6 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import eu.pretix.libpretixsync.db.Event
 import eu.pretix.libpretixsync.db.Settings
-import eu.pretix.libpretixsync.db.SubEvent
 import eu.pretix.libpretixsync.sync.*
 import eu.pretix.pretixscan.scanproxy.Server
 import eu.pretix.pretixscan.scanproxy.db.DownstreamDeviceEntity
@@ -171,9 +170,7 @@ class PretixApiTest : BaseDatabaseTest() {
         assertThat(json["count"], equalTo(0))
 
         // Set date to today
-        val ev1 = proxyDeps.syncData.select(SubEvent::class.java).get().first()
-        ev1.setDate_to(Date())
-        proxyDeps.syncData.update(ev1)
+        proxyDeps.db.proxySubEventQueries.testUpdateFirstDateTo(Date())
 
         resp = client.get("/api/v1/organizers/demo/subevents/") {
             it.header("Authorization", "Device ${device.api_token}")
