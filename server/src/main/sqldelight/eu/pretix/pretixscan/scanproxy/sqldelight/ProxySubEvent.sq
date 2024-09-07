@@ -1,0 +1,6 @@
+-- for tests only:
+testUpdateFirstDateTo:
+UPDATE SubEvent
+SET
+    date_to = ?
+WHERE id = (SELECT id FROM SubEvent LIMIT 1);
