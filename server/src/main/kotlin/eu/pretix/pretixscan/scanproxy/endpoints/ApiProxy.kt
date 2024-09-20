@@ -5,6 +5,7 @@ import eu.pretix.pretixscan.scanproxy.proxyDeps
 import io.javalin.http.Context
 import io.javalin.http.Handler
 import io.javalin.http.NotFoundResponse
+import org.json.JSONObject
 import java.text.SimpleDateFormat
 import java.time.LocalDate
 
@@ -19,7 +20,7 @@ object EventEndpoint : Handler {
 }
 
 abstract class ResourceEndpoint : Handler {
-    abstract fun query(ctx: Context): List<RemoteObject>
+    abstract fun query(ctx: Context): List<JSONObject>
 
     override fun handle(ctx: Context) {
         val res = query(ctx)
@@ -27,7 +28,7 @@ abstract class ResourceEndpoint : Handler {
             "count" to res.size,
             "next" to null,
             "previous" to null,
-            "results" to res.map { it.json }
+            "results" to res,
         ))
     }
 }
@@ -55,7 +56,7 @@ abstract class CachedResourceEndpoint : ResourceEndpoint() {
             "count" to res.size,
             "next" to null,
             "previous" to null,
-            "results" to res.map { it.json }
+            "results" to res,
         ))
     }
 }
@@ -63,30 +64,30 @@ abstract class CachedResourceEndpoint : ResourceEndpoint() {
 
 object CategoryEndpoint : CachedResourceEndpoint() {
     override val resourceName = "categories"
-    override fun query(ctx: Context): List<RemoteObject> {
+    override fun query(ctx: Context): List<JSONObject> {
         return proxyDeps.syncData.select(ItemCategory::class.java)
             .where(ItemCategory.EVENT_SLUG.eq(ctx.pathParam("event")))
-            .get().toList()
+            .get().toList().map { it.json }
     }
 }
 
 
 object ItemEndpoint : CachedResourceEndpoint() {
     override val resourceName = "items"
-    override fun query(ctx: Context): List<RemoteObject> {
+    override fun query(ctx: Context): List<JSONObject> {
         return proxyDeps.syncData.select(Item::class.java)
             .where(Item.EVENT_SLUG.eq(ctx.pathParam("event")))
-            .get().toList()
+            .get().toList().map { it.json }
     }
 }
 
 
 object QuestionEndpoint : CachedResourceEndpoint() {
     override val resourceName = "questions"
-    override fun query(ctx: Context): List<RemoteObject> {
+    override fun query(ctx: Context): List<JSONObject> {
         return proxyDeps.syncData.select(Question::class.java)
             .where(Question.EVENT_SLUG.eq(ctx.pathParam("event")))
-            .get().toList()
+            .get().toList().map { it.json }
     }
 }
 
@@ -116,33 +117,27 @@ object DownloadEndpoint : Handler {
 }
 
 object BadgeLayoutEndpoint : ResourceEndpoint() {
-    override fun query(ctx: Context): List<RemoteObject> {
-        return proxyDeps.syncData.select(BadgeLayout::class.java)
+    override fun query(ctx: Context): List<JSONObject> {
+        val res = proxyDeps.syncData.select(BadgeLayout::class.java)
             .where(BadgeLayout.EVENT_SLUG.eq(ctx.pathParam("event")))
             .get().toList()
-    }
 
-    override fun handle(ctx: Context) {
-        val res = query(ctx)
         val baseurl = System.getProperty("pretixscan.baseurl", "http://URLNOTSET")
-        ctx.json(mapOf(
-            "count" to res.size,
-            "next" to null,
-            "previous" to null,
-            "results" to res.map {
-                val d = it.json
-                if ((it as BadgeLayout).getBackground_filename() != null) {
-                    d.put("background", "${baseurl}/download/${it.getBackground_filename()}")
-                }
-                return@map d
+        val json = res.map {
+            val d = it.json
+            if ((it as BadgeLayout).getBackground_filename() != null) {
+                d.put("background", "${baseurl}/download/${it.getBackground_filename()}")
             }
-        ))
+            return@map d
+        }
+
+        return json
     }
 }
 
 
 object EventsEndpoint : ResourceEndpoint() {
-    override fun query(ctx: Context): List<RemoteObject> {
+    override fun query(ctx: Context): List<JSONObject> {
         val cutoff = SimpleDateFormat("yyyy-MM-dd").parse((LocalDate.now().minusDays(5).toString()))
         return proxyDeps.syncData.select(Event::class.java)
             .where(
@@ -152,13 +147,13 @@ object EventsEndpoint : ResourceEndpoint() {
                             .and(Event.DATE_FROM.gte(cutoff))
                     )
             ).and(Event.HAS_SUBEVENTS.eq(false))
-            .get().toList()
+            .get().toList().map { it.json }
     }
 }
 
 
 object SubEventsEndpoint : ResourceEndpoint() {
-    override fun query(ctx: Context): List<RemoteObject> {
+    override fun query(ctx: Context): List<JSONObject> {
         val cutoff = SimpleDateFormat("yyyy-MM-dd").parse((LocalDate.now().minusDays(5).toString()))
         return proxyDeps.syncData.select(SubEvent::class.java)
             .where(
@@ -168,17 +163,17 @@ object SubEventsEndpoint : ResourceEndpoint() {
                             .and(SubEvent.DATE_FROM.gte(cutoff))
                     )
             )
-            .get().toList()
+            .get().toList().map { it.json }
     }
 }
 
 
 object CheckInListEndpoint : CachedResourceEndpoint() {
     override val resourceName = "checkinlists"
-    override fun query(ctx: Context): List<RemoteObject> {
+    override fun query(ctx: Context): List<JSONObject> {
         return proxyDeps.syncData.select(CheckInList::class.java)
             .where(CheckInList.EVENT_SLUG.eq(ctx.pathParam("event")))
-            .get().toList()
+            .get().toList().map { it.json }
     }
 }
 
@@ -194,11 +189,11 @@ object SubEventEndpoint : Handler {
 
 
 object BadgeItemEndpoint : ResourceEndpoint() {
-    override fun query(ctx: Context): List<RemoteObject> {
+    override fun query(ctx: Context): List<JSONObject> {
         return proxyDeps.syncData.select(BadgeLayoutItem::class.java)
             .join(BadgeLayout::class.java).on(BadgeLayoutItem.LAYOUT_ID.eq(BadgeLayout.ID))
             .where(BadgeLayout.EVENT_SLUG.eq(ctx.pathParam("event")))
-            .get().toList()
+            .get().toList().map { it.json }
     }
 }
 
