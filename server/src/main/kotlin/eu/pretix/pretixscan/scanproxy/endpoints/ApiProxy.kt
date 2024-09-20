@@ -1,6 +1,17 @@
 package eu.pretix.pretixscan.scanproxy.endpoints
 
-import eu.pretix.libpretixsync.db.*
+import eu.pretix.libpretixsync.db.BadgeLayout
+import eu.pretix.libpretixsync.db.BadgeLayoutItem
+import eu.pretix.libpretixsync.db.CheckInList
+import eu.pretix.libpretixsync.db.Event
+import eu.pretix.libpretixsync.db.Item
+import eu.pretix.libpretixsync.db.ItemCategory
+import eu.pretix.libpretixsync.db.NonceGenerator
+import eu.pretix.libpretixsync.db.QueuedCall
+import eu.pretix.libpretixsync.db.Question
+import eu.pretix.libpretixsync.db.ResourceSyncStatus
+import eu.pretix.libpretixsync.db.Settings
+import eu.pretix.libpretixsync.db.SubEvent
 import eu.pretix.pretixscan.scanproxy.proxyDeps
 import io.javalin.http.Context
 import io.javalin.http.Handler
