@@ -3,7 +3,6 @@ package eu.pretix.pretixscan.scanproxy.endpoints
 import eu.pretix.libpretixsync.db.BadgeLayout
 import eu.pretix.libpretixsync.db.BadgeLayoutItem
 import eu.pretix.libpretixsync.db.CheckInList
-import eu.pretix.libpretixsync.db.Event
 import eu.pretix.libpretixsync.db.Item
 import eu.pretix.libpretixsync.db.ItemCategory
 import eu.pretix.libpretixsync.db.NonceGenerator
@@ -22,10 +21,10 @@ import java.time.LocalDate
 
 object EventEndpoint : Handler {
     override fun handle(ctx: Context) {
-        val event = proxyDeps.syncData.select(Event::class.java)
-            .where(Event.SLUG.eq(ctx.pathParam("event")))
-            .get().firstOrNull() ?: throw NotFoundResponse("Event not found")
-        ctx.json(event.json)
+        val event = proxyDeps.db.eventQueries.selectBySlug(ctx.pathParam("event"))
+            .executeAsOneOrNull() ?: throw NotFoundResponse("Event not found")
+
+        ctx.json(JSONObject(event.json_data))
     }
 }
 
@@ -149,15 +148,9 @@ object BadgeLayoutEndpoint : ResourceEndpoint() {
 object EventsEndpoint : ResourceEndpoint() {
     override fun query(ctx: Context): List<JSONObject> {
         val cutoff = SimpleDateFormat("yyyy-MM-dd").parse((LocalDate.now().minusDays(5).toString()))
-        return proxyDeps.syncData.select(Event::class.java)
-            .where(
-                Event.DATE_TO.gte(cutoff)
-                    .or(
-                        Event.DATE_TO.isNull()
-                            .and(Event.DATE_FROM.gte(cutoff))
-                    )
-            ).and(Event.HAS_SUBEVENTS.eq(false))
-            .get().toList().map { it.json }
+        return proxyDeps.db.proxyEventQueries.selectJsonForDateCutoffAndNoSubEvents(cutoff)
+            .executeAsList()
+            .map { JSONObject(it.json_data) }
     }
 }
 

@@ -2,7 +2,6 @@ package eu.pretix.pretixscan.scanproxy.tests
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import eu.pretix.libpretixsync.db.Event
 import eu.pretix.libpretixsync.db.Settings
 import eu.pretix.libpretixsync.sync.*
 import eu.pretix.pretixscan.scanproxy.Server
@@ -136,7 +135,7 @@ class PretixApiTest : BaseDatabaseTest() {
 
     @Test
     fun `EventsEndpoint returns list of future events`() = JavalinTest.test(app) { server, client ->
-        assertThat(proxyDeps.syncData.count(Event::class.java).get().value(), equalTo(2))
+        assertThat(proxyDeps.db.proxyEventQueries.testCount().executeAsOne(), equalTo(2L))
         val device = createDevice()
         var resp = client.get("/api/v1/organizers/demo/events/") {
             it.header("Authorization", "Device ${device.api_token}")
@@ -146,9 +145,10 @@ class PretixApiTest : BaseDatabaseTest() {
         assertThat(json["count"], equalTo(0))
 
         // Set date to today
-        val ev1 = proxyDeps.syncData.select(Event::class.java).where(Event.SLUG.eq("demo")).get().first()
-        ev1.setDate_to(Date())
-        proxyDeps.syncData.update(ev1)
+        proxyDeps.db.proxyEventQueries.testUpdateDateToForSlug(
+            date_to = Date(),
+            slug = "demo",
+        )
 
         resp = client.get("/api/v1/organizers/demo/events/") {
             it.header("Authorization", "Device ${device.api_token}")
@@ -190,7 +190,7 @@ class PretixApiTest : BaseDatabaseTest() {
 
     @Test
     fun `EventsEndpoint returns event details`() = JavalinTest.test(app) { server, client ->
-        assertThat(proxyDeps.syncData.count(Event::class.java).get().value(), equalTo(2))
+        assertThat(proxyDeps.db.proxyEventQueries.testCount().executeAsOne(), equalTo(2L))
         val device = createDevice()
         val resp = client.get("/api/v1/organizers/demo/events/demo/") {
             it.header("Authorization", "Device ${device.api_token}")
