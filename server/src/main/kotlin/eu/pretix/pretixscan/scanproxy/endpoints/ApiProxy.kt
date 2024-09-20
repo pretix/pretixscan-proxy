@@ -11,7 +11,6 @@ import eu.pretix.libpretixsync.db.QueuedCall
 import eu.pretix.libpretixsync.db.Question
 import eu.pretix.libpretixsync.db.ResourceSyncStatus
 import eu.pretix.libpretixsync.db.Settings
-import eu.pretix.libpretixsync.db.SubEvent
 import eu.pretix.pretixscan.scanproxy.proxyDeps
 import io.javalin.http.Context
 import io.javalin.http.Handler
@@ -166,15 +165,10 @@ object EventsEndpoint : ResourceEndpoint() {
 object SubEventsEndpoint : ResourceEndpoint() {
     override fun query(ctx: Context): List<JSONObject> {
         val cutoff = SimpleDateFormat("yyyy-MM-dd").parse((LocalDate.now().minusDays(5).toString()))
-        return proxyDeps.syncData.select(SubEvent::class.java)
-            .where(
-                SubEvent.DATE_TO.gte(cutoff)
-                    .or(
-                        SubEvent.DATE_TO.isNull()
-                            .and(SubEvent.DATE_FROM.gte(cutoff))
-                    )
-            )
-            .get().toList().map { it.json }
+
+        return proxyDeps.db.proxySubEventQueries.selectJsonForDateCutoff(cutoff)
+            .executeAsList()
+            .map { JSONObject(it.json_data) }
     }
 }
 
@@ -190,11 +184,12 @@ object CheckInListEndpoint : CachedResourceEndpoint() {
 
 object SubEventEndpoint : Handler {
     override fun handle(ctx: Context) {
-        val event = proxyDeps.syncData.select(SubEvent::class.java)
-            .where(SubEvent.EVENT_SLUG.eq(ctx.pathParam("event")))
-            .and(SubEvent.SERVER_ID.eq(ctx.pathParam("id").toLong()))
-            .get().firstOrNull() ?: throw NotFoundResponse("Subevent not found")
-        ctx.json(event.json)
+        val event = proxyDeps.db.subEventQueries.selectByServerIdAndSlug(
+            server_id = ctx.pathParam("id").toLong(),
+            event_slug = ctx.pathParam("event"),
+        ).executeAsOneOrNull() ?: throw NotFoundResponse("Subevent not found")
+
+        ctx.json(JSONObject(event.json_data))
     }
 }
 
