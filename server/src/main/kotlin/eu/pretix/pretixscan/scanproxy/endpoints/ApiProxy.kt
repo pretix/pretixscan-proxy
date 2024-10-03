@@ -2,8 +2,6 @@ package eu.pretix.pretixscan.scanproxy.endpoints
 
 import eu.pretix.libpretixsync.db.BadgeLayout
 import eu.pretix.libpretixsync.db.BadgeLayoutItem
-import eu.pretix.libpretixsync.db.Item
-import eu.pretix.libpretixsync.db.ItemCategory
 import eu.pretix.libpretixsync.db.NonceGenerator
 import eu.pretix.libpretixsync.db.QueuedCall
 import eu.pretix.libpretixsync.db.Question
@@ -73,9 +71,9 @@ abstract class CachedResourceEndpoint : ResourceEndpoint() {
 object CategoryEndpoint : CachedResourceEndpoint() {
     override val resourceName = "categories"
     override fun query(ctx: Context): List<JSONObject> {
-        return proxyDeps.syncData.select(ItemCategory::class.java)
-            .where(ItemCategory.EVENT_SLUG.eq(ctx.pathParam("event")))
-            .get().toList().map { it.json }
+        return proxyDeps.db.itemCategoryQueries.selectByEventSlug(ctx.pathParam("event"))
+            .executeAsList()
+            .map { JSONObject(it.json_data) }
     }
 }
 
@@ -83,9 +81,9 @@ object CategoryEndpoint : CachedResourceEndpoint() {
 object ItemEndpoint : CachedResourceEndpoint() {
     override val resourceName = "items"
     override fun query(ctx: Context): List<JSONObject> {
-        return proxyDeps.syncData.select(Item::class.java)
-            .where(Item.EVENT_SLUG.eq(ctx.pathParam("event")))
-            .get().toList().map { it.json }
+        return proxyDeps.db.itemQueries.selectByEventSlug(ctx.pathParam("event"))
+            .executeAsList()
+            .map { JSONObject(it.json_data) }
     }
 }
 
