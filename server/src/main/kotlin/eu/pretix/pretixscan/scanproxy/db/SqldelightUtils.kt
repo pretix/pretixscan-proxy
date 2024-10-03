@@ -21,6 +21,7 @@ import eu.pretix.libpretixsync.sqldelight.PostgresIdAdapter
 import eu.pretix.libpretixsync.sqldelight.PostgresJavaUtilDateAdapter
 import eu.pretix.libpretixsync.sqldelight.PostgresLongBooleanAdapter
 import eu.pretix.libpretixsync.sqldelight.Question
+import eu.pretix.libpretixsync.sqldelight.QueuedCheckIn
 import eu.pretix.libpretixsync.sqldelight.QueuedOrder
 import eu.pretix.libpretixsync.sqldelight.Quota
 import eu.pretix.libpretixsync.sqldelight.Receipt
@@ -125,6 +126,10 @@ fun createSyncDatabase(url: String, LOG: Logger): SyncDatabase {
         ),
         QuestionAdapter = Question.Adapter(
             idAdapter = idAdapter,
+        ),
+        QueuedCheckInAdapter = QueuedCheckIn.Adapter(
+            idAdapter = idAdapter,
+            datetimeAdapter = dateAdapter,
         ),
         QueuedOrderAdapter = QueuedOrder.Adapter(
             idAdapter = idAdapter,

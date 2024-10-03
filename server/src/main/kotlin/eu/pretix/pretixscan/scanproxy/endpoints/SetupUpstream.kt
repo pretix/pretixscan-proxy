@@ -1,7 +1,5 @@
 package eu.pretix.pretixscan.scanproxy.endpoints
 
-import eu.pretix.libpretixsync.db.CheckInList
-import eu.pretix.libpretixsync.db.QueuedCheckIn
 import eu.pretix.libpretixsync.setup.*
 import eu.pretix.pretixscan.scanproxy.Server.VERSION
 import eu.pretix.pretixscan.scanproxy.db.DownstreamDeviceEntity
@@ -62,17 +60,15 @@ object ConfigState : Handler {
 
     private fun queues(): List<QueueState> {
         val res = mutableListOf<QueueState>()
-        val lists =
-            proxyDeps.syncData.select(CheckInList::class.java).get().toList()
+        val lists = proxyDeps.db.proxyCheckInListQueries.selectAll().executeAsList()
         for (l in lists) {
-            val cnt = proxyDeps.syncData.count(QueuedCheckIn::class.java)
-                .where(QueuedCheckIn.CHECKIN_LIST_ID.eq(l.getServer_id())).get().value()
+            val cnt = proxyDeps.db.proxyQueuedCheckInQueries.countByCheckInListServerId(l.server_id).executeAsOne()
             res.add(
                 QueueState(
-                    l.getEvent_slug(),
-                    l.getName(),
-                    l.getServer_id(),
-                    cnt ?: 0
+                    l.event_slug!!,
+                    l.name!!,
+                    l.server_id!!,
+                    cnt.toInt(),
                 )
             )
         }
