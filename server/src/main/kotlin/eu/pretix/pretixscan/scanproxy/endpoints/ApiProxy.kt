@@ -2,7 +2,6 @@ package eu.pretix.pretixscan.scanproxy.endpoints
 
 import eu.pretix.libpretixsync.db.BadgeLayout
 import eu.pretix.libpretixsync.db.BadgeLayoutItem
-import eu.pretix.libpretixsync.db.CheckInList
 import eu.pretix.libpretixsync.db.Item
 import eu.pretix.libpretixsync.db.ItemCategory
 import eu.pretix.libpretixsync.db.NonceGenerator
@@ -169,9 +168,9 @@ object SubEventsEndpoint : ResourceEndpoint() {
 object CheckInListEndpoint : CachedResourceEndpoint() {
     override val resourceName = "checkinlists"
     override fun query(ctx: Context): List<JSONObject> {
-        return proxyDeps.syncData.select(CheckInList::class.java)
-            .where(CheckInList.EVENT_SLUG.eq(ctx.pathParam("event")))
-            .get().toList().map { it.json }
+        return proxyDeps.db.checkInListQueries.selectByEventSlug(ctx.pathParam("event"))
+            .executeAsList()
+            .map { JSONObject(it.json_data) }
     }
 }
 
