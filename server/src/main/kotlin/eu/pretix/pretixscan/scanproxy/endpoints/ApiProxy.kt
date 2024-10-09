@@ -3,7 +3,6 @@ package eu.pretix.pretixscan.scanproxy.endpoints
 import eu.pretix.libpretixsync.db.BadgeLayout
 import eu.pretix.libpretixsync.db.BadgeLayoutItem
 import eu.pretix.libpretixsync.db.Question
-import eu.pretix.libpretixsync.db.ResourceSyncStatus
 import eu.pretix.libpretixsync.db.Settings
 import eu.pretix.pretixscan.scanproxy.proxyDeps
 import io.javalin.http.Context
@@ -41,15 +40,13 @@ abstract class CachedResourceEndpoint : ResourceEndpoint() {
     abstract val resourceName: String
 
     override fun handle(ctx: Context) {
-
-        val rlm = proxyDeps.syncData.select(ResourceSyncStatus::class.java)
-            .where(ResourceSyncStatus.RESOURCE.eq(resourceName))
-            .and(ResourceSyncStatus.EVENT_SLUG.eq(ctx.pathParam("event")))
-            .limit(1)
-            .get().firstOrNull()
+        val rlm = proxyDeps.db.resourceSyncStatusQueries.selectByResourceAndEventSlug(
+            resource = resourceName,
+            event_slug = ctx.pathParam("event")
+        ).executeAsOneOrNull()
         if (rlm != null) {
-            ctx.header("Last-Modified", rlm.getLast_modified())
-            if (ctx.header("If-Modified-Since") == rlm.getLast_modified()) {
+            ctx.header("Last-Modified", rlm.last_modified!!)
+            if (ctx.header("If-Modified-Since") == rlm.last_modified!!) {
                 ctx.status(304)
                 return
             }
