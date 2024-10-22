@@ -55,6 +55,8 @@ dependencies {
 mainClassName = "eu.pretix.pretixscan.scanproxy.Server"
 
 jar {
+    dependsOn(':libpretixsync:jar')
+
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     manifest {
         attributes "Main-Class": mainClassName
