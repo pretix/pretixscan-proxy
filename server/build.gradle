@@ -1,9 +1,10 @@
 plugins {
-    id 'application'
-    id 'kotlin'
-    id 'kotlin-kapt'
-    id 'com.github.johnrengelman.shadow' version '7.1.2'
-    id 'com.palantir.git-version' version '3.0.0'
+    id('application')
+    id('org.jetbrains.kotlin.jvm')
+    id('org.jetbrains.kotlin.kapt')
+    id('com.github.johnrengelman.shadow') version '7.1.2'
+    id('com.palantir.git-version') version '3.0.0'
+    id('com.google.protobuf') version '0.9.4' apply false
 }
 apply from: '../libpretixsync-repo/libpretixsync/versions.gradle'
 
@@ -12,7 +13,6 @@ version gitVersion()
 
 repositories {
     mavenCentral()
-    jcenter()
 }
 
 dependencies {
@@ -55,6 +55,8 @@ dependencies {
 mainClassName = "eu.pretix.pretixscan.scanproxy.Server"
 
 jar {
+    dependsOn(':libpretixsync:jar')
+
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     manifest {
         attributes "Main-Class": mainClassName
@@ -62,6 +64,7 @@ jar {
     from {
         configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
     }
+    exclude 'META-INF/*.RSA', 'META-INF/*.SF', 'META-INF/*.DSA'
 }
 java {
     sourceCompatibility = JavaVersion.VERSION_11
