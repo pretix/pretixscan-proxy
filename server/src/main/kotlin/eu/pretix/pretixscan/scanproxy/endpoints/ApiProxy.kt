@@ -1,7 +1,5 @@
 package eu.pretix.pretixscan.scanproxy.endpoints
 
-import eu.pretix.libpretixsync.db.BadgeLayout
-import eu.pretix.libpretixsync.db.BadgeLayoutItem
 import eu.pretix.libpretixsync.db.NonceGenerator
 import eu.pretix.libpretixsync.db.QueuedCall
 import eu.pretix.libpretixsync.db.Question
@@ -121,15 +119,14 @@ object DownloadEndpoint : Handler {
 
 object BadgeLayoutEndpoint : ResourceEndpoint() {
     override fun query(ctx: Context): List<JSONObject> {
-        val res = proxyDeps.syncData.select(BadgeLayout::class.java)
-            .where(BadgeLayout.EVENT_SLUG.eq(ctx.pathParam("event")))
-            .get().toList()
+        val res = proxyDeps.db.badgeLayoutQueries.selectByEventSlug(ctx.pathParam("event"))
+            .executeAsList()
 
         val baseurl = System.getProperty("pretixscan.baseurl", "http://URLNOTSET")
         val json = res.map {
-            val d = it.json
-            if ((it as BadgeLayout).getBackground_filename() != null) {
-                d.put("background", "${baseurl}/download/${it.getBackground_filename()}")
+            val d = JSONObject(it.json_data)
+            if (it.background_filename != null) {
+                d.put("background", "${baseurl}/download/${it.background_filename}")
             }
             return@map d
         }
@@ -183,10 +180,9 @@ object SubEventEndpoint : Handler {
 
 object BadgeItemEndpoint : ResourceEndpoint() {
     override fun query(ctx: Context): List<JSONObject> {
-        return proxyDeps.syncData.select(BadgeLayoutItem::class.java)
-            .join(BadgeLayout::class.java).on(BadgeLayoutItem.LAYOUT_ID.eq(BadgeLayout.ID))
-            .where(BadgeLayout.EVENT_SLUG.eq(ctx.pathParam("event")))
-            .get().toList().map { it.json }
+        return proxyDeps.db.badgeLayoutItemQueries.selectByEventSlug(ctx.pathParam("event"))
+            .executeAsList()
+            .map { JSONObject(it.json_data) }
     }
 }
 
