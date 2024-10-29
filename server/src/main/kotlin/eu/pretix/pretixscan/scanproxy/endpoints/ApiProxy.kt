@@ -1,15 +1,12 @@
 package eu.pretix.pretixscan.scanproxy.endpoints
 
 import eu.pretix.libpretixsync.db.*
-import eu.pretix.pretixscan.scanproxy.ProxyFileStorage
-import eu.pretix.pretixscan.scanproxy.Server
 import eu.pretix.pretixscan.scanproxy.proxyDeps
 import io.javalin.http.Context
 import io.javalin.http.Handler
 import io.javalin.http.NotFoundResponse
 import java.text.SimpleDateFormat
 import java.time.LocalDate
-import java.util.*
 
 
 object EventEndpoint : Handler {
@@ -215,5 +212,20 @@ object EmptyResourceEndpoint : Handler {
                 "results" to emptyList<Any>()
             )
         )
+    }
+}
+
+object PrintLogEndpoint : Handler {
+    override fun handle(ctx: Context) {
+        val event = proxyDeps.syncData.select(Event::class.java)
+            .where(Event.SLUG.eq(ctx.pathParam("event")))
+            .get().firstOrNull() ?: throw NotFoundResponse("Event not found")
+        ctx.json(event.json)
+
+        val log = QueuedCall()
+        log.setBody(ctx.body())
+        log.setIdempotency_key(NonceGenerator.nextNonce())
+        log.setUrl(proxyDeps.pretixApi.eventResourceUrl(ctx.pathParam("event"), "orderpositions") + ctx.pathParam("positionid") + "/printlog/")
+        proxyDeps.syncData.insert(log)
     }
 }

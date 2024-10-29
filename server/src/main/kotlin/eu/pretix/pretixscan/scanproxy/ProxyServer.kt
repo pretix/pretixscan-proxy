@@ -70,6 +70,7 @@ object Server {
                             get("questions/", EmptyResourceEndpoint)
                             get("badgelayouts/", BadgeLayoutEndpoint)
                             get("checkinlists/", CheckInListEndpoint)
+                            post("orderpositions/{positionid}/printlog/", PrintLogEndpoint)
                             get("orders/", EmptyResourceEndpoint)
                             get("badgeitems/", BadgeItemEndpoint)
                             get("settings/", SettingsEndpoint)
