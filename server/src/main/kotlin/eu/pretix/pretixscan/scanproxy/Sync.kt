@@ -65,6 +65,7 @@ fun syncAllEvents(force: Boolean = false) {
             "pretixSCANPROXY",
             VERSION,
             null,
+            "web",
             proxyDeps.connectivityHelper
         )
         val syncResult = syncManager.sync(force) {
