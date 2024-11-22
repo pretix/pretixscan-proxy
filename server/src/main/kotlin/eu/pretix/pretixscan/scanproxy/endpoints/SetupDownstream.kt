@@ -1,6 +1,5 @@
 package eu.pretix.pretixscan.scanproxy.endpoints
 
-import eu.pretix.libpretixsync.db.MediumKeySet
 import eu.pretix.libpretixsync.utils.HashUtils
 import eu.pretix.pretixscan.scanproxy.Server
 import eu.pretix.pretixscan.scanproxy.db.DownstreamDevice
