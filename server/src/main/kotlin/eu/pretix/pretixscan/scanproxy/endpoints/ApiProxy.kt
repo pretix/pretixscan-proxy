@@ -1,7 +1,6 @@
 package eu.pretix.pretixscan.scanproxy.endpoints
 
 import eu.pretix.libpretixsync.db.NonceGenerator
-import eu.pretix.libpretixsync.db.QueuedCall
 import eu.pretix.libpretixsync.db.Question
 import eu.pretix.libpretixsync.db.Settings
 import eu.pretix.pretixscan.scanproxy.proxyDeps
@@ -201,15 +200,15 @@ object EmptyResourceEndpoint : Handler {
 
 object PrintLogEndpoint : Handler {
     override fun handle(ctx: Context) {
-        val event = proxyDeps.syncData.select(Event::class.java)
-            .where(Event.SLUG.eq(ctx.pathParam("event")))
-            .get().firstOrNull() ?: throw NotFoundResponse("Event not found")
-        ctx.json(event.json)
+        val event = proxyDeps.db.eventQueries.selectBySlug(ctx.pathParam("event"))
+            .executeAsOneOrNull() ?: throw NotFoundResponse("Event not found")
 
-        val log = QueuedCall()
-        log.setBody(ctx.body())
-        log.setIdempotency_key(NonceGenerator.nextNonce())
-        log.setUrl(proxyDeps.pretixApi.eventResourceUrl(ctx.pathParam("event"), "orderpositions") + ctx.pathParam("positionid") + "/printlog/")
-        proxyDeps.syncData.insert(log)
+        ctx.json(JSONObject(event.json_data))
+
+        proxyDeps.db.queuedCallQueries.insert(
+            body = ctx.body(),
+            idempotency_key = NonceGenerator.nextNonce(),
+            url = proxyDeps.pretixApi.eventResourceUrl(ctx.pathParam("event"), "orderpositions") + ctx.pathParam("positionid") + "/printlog/",
+        )
     }
 }
