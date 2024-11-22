@@ -20,14 +20,12 @@ fun getCheckProvider(): TicketCheckProvider {
     if (proxyDeps.connectivityHelper.isOffline) {
         return AsyncCheckProvider(
             proxyDeps.configStore,
-            proxyDeps.syncData,
             proxyDeps.db,
         )
     } else {
         return OnlineCheckProvider(
             proxyDeps.configStore,
             proxyDeps.httpClientFactory,
-            proxyDeps.syncData,
             proxyDeps.db,
             proxyDeps.fileStorage,
         )
