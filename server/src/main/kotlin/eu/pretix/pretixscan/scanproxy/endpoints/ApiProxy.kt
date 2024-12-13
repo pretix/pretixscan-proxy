@@ -1,7 +1,6 @@
 package eu.pretix.pretixscan.scanproxy.endpoints
 
 import eu.pretix.libpretixsync.db.NonceGenerator
-import eu.pretix.libpretixsync.db.Settings
 import eu.pretix.pretixscan.scanproxy.proxyDeps
 import io.javalin.http.Context
 import io.javalin.http.Handler
@@ -93,10 +92,9 @@ object QuestionEndpoint : CachedResourceEndpoint() {
 
 object SettingsEndpoint : Handler {
     override fun handle(ctx: Context) {
-        val settings: Settings = proxyDeps.syncData.select(Settings::class.java)
-            .where(Settings.SLUG.eq(ctx.pathParam("event")))
-            .get().firstOrNull() ?: throw NotFoundResponse("Settings not found")
-        ctx.json(settings.getJSON())
+        val settings = proxyDeps.db.settingsQueries.selectBySlug(ctx.pathParam("event"))
+            .executeAsOneOrNull() ?: throw NotFoundResponse("Settings not found")
+        ctx.json(JSONObject(settings.json_data))
     }
 }
 
