@@ -2,7 +2,6 @@ package eu.pretix.pretixscan.scanproxy.tests
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import eu.pretix.libpretixsync.db.Settings
 import eu.pretix.libpretixsync.sync.*
 import eu.pretix.pretixscan.scanproxy.Server
 import eu.pretix.pretixscan.scanproxy.db.DownstreamDeviceEntity
@@ -268,10 +267,18 @@ class PretixApiTest : BaseDatabaseTest() {
 
     @Test
     fun `SettingsEndpoint responds with event settings`() = JavalinTest.test(app) { server, client ->
-        val s = Settings()
-        s.setSlug("demo")
-        s.setJson_data("{\"foo\": \"bar\"}")
-        proxyDeps.syncData.insert(s)
+        proxyDeps.db.settingsQueries.insert(
+            json_data = "{\"foo\": \"bar\"}",
+            address = null,
+            city = null,
+            country = null,
+            name = null,
+            pretixpos_additional_receipt_text = null,
+            slug = "demo",
+            tax_id = null,
+            vat_id = null,
+            zipcode = null,
+        )
 
         val device = createDevice()
         val resp = client.get("/api/v1/organizers/demo/events/demo/settings/") {
