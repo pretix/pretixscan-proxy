@@ -1,7 +1,6 @@
 package eu.pretix.pretixscan.scanproxy.endpoints
 
 import eu.pretix.libpretixsync.db.NonceGenerator
-import eu.pretix.libpretixsync.db.Question
 import eu.pretix.libpretixsync.db.Settings
 import eu.pretix.pretixscan.scanproxy.proxyDeps
 import io.javalin.http.Context
@@ -85,9 +84,9 @@ object ItemEndpoint : CachedResourceEndpoint() {
 object QuestionEndpoint : CachedResourceEndpoint() {
     override val resourceName = "questions"
     override fun query(ctx: Context): List<JSONObject> {
-        return proxyDeps.syncData.select(Question::class.java)
-            .where(Question.EVENT_SLUG.eq(ctx.pathParam("event")))
-            .get().toList().map { it.json }
+        return proxyDeps.db.questionQueries.selectByEventSlug(ctx.pathParam("event"))
+            .executeAsList()
+            .map { JSONObject(it.json_data) }
     }
 }
 
