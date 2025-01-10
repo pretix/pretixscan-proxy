@@ -8,7 +8,6 @@ import eu.pretix.libpretixsync.sync.SyncException
 import eu.pretix.libpretixsync.sync.SyncManager
 import eu.pretix.pretixscan.scanproxy.Server.VERSION
 import eu.pretix.pretixscan.scanproxy.Server.VERSION_CODE
-import eu.pretix.pretixscan.scanproxy.db.SyncedEventEntity
 import org.json.JSONObject
 import org.slf4j.LoggerFactory
 import java.util.concurrent.locks.ReentrantLock
@@ -78,9 +77,7 @@ fun syncAllEvents(force: Boolean = false) {
                 // No permission to this event or event does not exist, do not sync it any more
                 // to keep sync from being blocked
                 LOG.warn("Removing event $failedEvent from sync because we have no permission.")
-                proxyDeps.proxyData.delete (SyncedEventEntity::class)
-                    .where (SyncedEventEntity.SLUG eq failedEvent)
-                    .get().value()
+                proxyDeps.proxyDb.syncedEventQueries.deleteBySlug(failedEvent)
             }
         }
         if (proxyDeps.configStore.lastFailedSync > 0) {

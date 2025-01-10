@@ -3,7 +3,6 @@ package eu.pretix.pretixscan.scanproxy.tests
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import eu.pretix.libpretixsync.sync.*
-import eu.pretix.pretixscan.scanproxy.db.SyncedEventEntity
 import eu.pretix.pretixscan.scanproxy.proxyDeps
 import eu.pretix.pretixscan.scanproxy.sqldelight.proxy.DownstreamDevice
 import eu.pretix.pretixscan.scanproxy.tests.test.FakeFileStorage
@@ -20,12 +19,12 @@ import java.util.*
 class ProxyApiTest : BaseDatabaseTest() {
     @Before
     fun setUpFakes() {
-        var s = SyncedEventEntity()
-        s.slug = "demo"
-        proxyDeps.proxyData.insert(s)
-        s = SyncedEventEntity()
-        s.slug = "demo2"
-        proxyDeps.proxyData.insert(s)
+        proxyDeps.proxyDb.syncedEventQueries.insert(
+            slug = "demo",
+        )
+        proxyDeps.proxyDb.syncedEventQueries.insert(
+            slug = "demo2",
+        )
         EventSyncAdapter(proxyDeps.db, "demo", "demo", proxyDeps.pretixApi, "", null).standaloneRefreshFromJSON(jsonResource("events/event1.json"))
         EventSyncAdapter(proxyDeps.db, "demo", "demo", proxyDeps.pretixApi, "", null).standaloneRefreshFromJSON(jsonResource("events/event2.json"))
         ItemSyncAdapter(proxyDeps.db, FakeFileStorage(), "demo", proxyDeps.pretixApi, "", null).standaloneRefreshFromJSON(jsonResource("items/item1.json"))
@@ -67,7 +66,7 @@ class ProxyApiTest : BaseDatabaseTest() {
         val osa2 = OrderSyncAdapter(proxyDeps.db, FakeFileStorage(), "demo2", 0, true, false, proxyDeps.pretixApi, "", null)
         osa2.standaloneRefreshFromJSON(jsonResource("orders/event2-order1.json"))
     }
-    
+
     private fun createDevice(initialized: Boolean=true): DownstreamDevice {
         val charPool: List<Char> = ('a'..'z') + ('A'..'Z') + ('0'..'9')
         val uuid = UUID.randomUUID().toString()
@@ -226,7 +225,7 @@ class ProxyApiTest : BaseDatabaseTest() {
 
     @Test
     fun `CheckEndpoint for unknown event triggers sync`() = JavalinTest.test(app) { server, client ->
-        assertThat(proxyDeps.proxyData.count(SyncedEventEntity::class).get().value(), equalTo(2))
+        assertThat(proxyDeps.proxyDb.syncedEventQueries.testCountAll().executeAsOne(), equalTo(2L))
         val device = createDevice()
         val resp = client.post("/proxyapi/v1/rpc/unknown/1/check/", mapOf(
             "ticketid" to "kfndgffgyw4tdgcacx6bb3bgemq69cxj",
@@ -239,7 +238,7 @@ class ProxyApiTest : BaseDatabaseTest() {
             it.header("Authorization", "Device ${device.api_token}")
         }
         assertThat(resp.code, equalTo(200))
-        assertThat(proxyDeps.proxyData.count(SyncedEventEntity::class).get().value(), equalTo(3))
+        assertThat(proxyDeps.proxyDb.syncedEventQueries.testCountAll().executeAsOne(), equalTo(3L))
     }
 
 
@@ -286,7 +285,7 @@ class ProxyApiTest : BaseDatabaseTest() {
 
     @Test
     fun `MultiCheckEndpoint for unknown event triggers sync`() = JavalinTest.test(app) { server, client ->
-        assertThat(proxyDeps.proxyData.count(SyncedEventEntity::class).get().value(), equalTo(2))
+        assertThat(proxyDeps.proxyDb.syncedEventQueries.testCountAll().executeAsOne(), equalTo(2L))
         val device = createDevice()
         val resp = client.post("/proxyapi/v1/rpc/check/", mapOf(
             "events_and_checkin_lists" to mapOf(
@@ -302,7 +301,7 @@ class ProxyApiTest : BaseDatabaseTest() {
             it.header("Authorization", "Device ${device.api_token}")
         }
         assertThat(resp.code, equalTo(200))
-        assertThat(proxyDeps.proxyData.count(SyncedEventEntity::class).get().value(), equalTo(3))
+        assertThat(proxyDeps.proxyDb.syncedEventQueries.testCountAll().executeAsOne(), equalTo(3L))
     }
 
 
