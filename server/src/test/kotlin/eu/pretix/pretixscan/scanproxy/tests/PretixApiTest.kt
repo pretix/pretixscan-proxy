@@ -4,9 +4,9 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import eu.pretix.libpretixsync.sync.*
 import eu.pretix.pretixscan.scanproxy.Server
-import eu.pretix.pretixscan.scanproxy.db.DownstreamDeviceEntity
 import eu.pretix.pretixscan.scanproxy.db.SyncedEventEntity
 import eu.pretix.pretixscan.scanproxy.proxyDeps
+import eu.pretix.pretixscan.scanproxy.sqldelight.proxy.DownstreamDevice
 import eu.pretix.pretixscan.scanproxy.tests.test.FakeFileStorage
 import eu.pretix.pretixscan.scanproxy.tests.test.jsonResource
 import eu.pretix.pretixscan.scanproxy.tests.utils.BaseDatabaseTest
@@ -44,25 +44,22 @@ class PretixApiTest : BaseDatabaseTest() {
         osa2.standaloneRefreshFromJSON(jsonResource("orders/event2-order1.json"))
     }
 
-    private fun createDevice(initialized: Boolean=true): DownstreamDeviceEntity {
+    private fun createDevice(initialized: Boolean=true): DownstreamDevice {
         val charPool: List<Char> = ('a'..'z') + ('A'..'Z') + ('0'..'9')
-        val d = DownstreamDeviceEntity()
-        d.uuid = UUID.randomUUID().toString()
-        d.name = "Test"
-        d.added_datetime = System.currentTimeMillis().toString()
-        if (initialized) {
-            d.api_token = (1..64)
-                .map { kotlin.random.Random.nextInt(0, charPool.size) }
-                .map(charPool::get)
-                .joinToString("")
-        } else {
-            d.init_token = (1..16)
-                .map { kotlin.random.Random.nextInt(0, charPool.size) }
-                .map(charPool::get)
-                .joinToString("")
-        }
-        proxyDeps.proxyData.insert(d)
-        return d
+        val uuid = UUID.randomUUID().toString()
+        val token = (1..64)
+            .map { kotlin.random.Random.nextInt(0, charPool.size) }
+            .map(charPool::get)
+            .joinToString("")
+
+        proxyDeps.proxyDb.downstreamDeviceQueries.insert(
+            uuid = uuid,
+            added_datetime = System.currentTimeMillis().toString(),
+            api_token = if (initialized) token else null,
+            init_token = if (!initialized) token else null,
+            name = "Test",
+        )
+        return proxyDeps.proxyDb.downstreamDeviceQueries.selectByUuid(uuid).executeAsOne()
     }
 
     @Test
@@ -128,8 +125,8 @@ class PretixApiTest : BaseDatabaseTest() {
         ))
         assertThat(resp.code, equalTo(200))
         val json = jacksonObjectMapper().readValue<MutableMap<Any, Any>>(resp.body!!.string())
-        proxyDeps.proxyData.refresh(device)
-        assertThat(json["api_token"], equalTo(device.api_token))
+        val updatedDevice = proxyDeps.proxyDb.downstreamDeviceQueries.selectByUuid(device.uuid).executeAsOne()
+        assertThat(json["api_token"], equalTo(updatedDevice.api_token))
     }
 
     @Test

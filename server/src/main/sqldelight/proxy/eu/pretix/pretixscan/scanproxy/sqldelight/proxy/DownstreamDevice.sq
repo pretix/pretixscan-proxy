@@ -5,3 +5,60 @@ CREATE TABLE DownstreamDevice (
     init_token character varying(255),
     name character varying(255)
 );
+
+selectOrderedByName:
+SELECT *
+FROM DownstreamDevice
+ORDER BY name;
+
+selectByUuid:
+SELECT *
+FROM DownstreamDevice
+WHERE uuid = ?;
+
+selectByInitToken:
+SELECT *
+FROM DownstreamDevice
+WHERE init_token = ?;
+
+selectByApiToken:
+SELECT *
+FROM DownstreamDevice
+WHERE api_token = ?;
+
+insert:
+INSERT INTO DownstreamDevice (
+    uuid,
+    added_datetime,
+    api_token,
+    init_token,
+    name
+) VALUES (
+    ?,
+    ?,
+    ?,
+    ?,
+    ?
+);
+
+updateTokens:
+UPDATE DownstreamDevice
+SET
+    init_token = ?,
+    api_token = ?
+WHERE uuid = ?;
+
+deleteByUuid:
+DELETE FROM DownstreamDevice
+WHERE uuid = ?;
+
+-- for tests only:
+testSelectByName:
+SELECT *
+FROM DownstreamDevice
+WHERE name = ?;
+
+testCountWithName:
+SELECT COUNT(*)
+FROM DownstreamDevice
+WHERE name = ?;

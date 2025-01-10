@@ -6,8 +6,8 @@ import eu.pretix.libpretixsync.api.PretixApi.ApiResponse
 import eu.pretix.libpretixsync.api.ResourceNotModified
 import eu.pretix.libpretixsync.sync.SyncManager.EventSwitchRequested
 import eu.pretix.pretixscan.scanproxy.*
-import eu.pretix.pretixscan.scanproxy.db.DownstreamDeviceEntity
 import eu.pretix.pretixscan.scanproxy.db.SyncedEventEntity
+import eu.pretix.pretixscan.scanproxy.sqldelight.proxy.DownstreamDevice
 import io.javalin.http.*
 import io.javalin.json.jsonMapper
 import org.json.JSONException
@@ -35,7 +35,7 @@ object EventSelection : Handler {
             if (resp.response.code == 200) {
                 val eventSlug = resp.data!!.getJSONObject("event").getString("slug")
                 ctx.json(resp.data!!)
-                LOG.info("Asking downstream device \"${ctx.attribute<DownstreamDeviceEntity>("device")?.name}\" to " +
+                LOG.info("Asking downstream device \"${ctx.attribute<DownstreamDevice>("device")?.name}\" to " +
                         "switch to: ${resp.data!!.toString()}")
 
                 val ev = proxyDeps.proxyData.select (SyncedEventEntity::class)
