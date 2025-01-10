@@ -1,7 +1,6 @@
 package eu.pretix.pretixscan.scanproxy.db
 
 import eu.pretix.libpretixsync.db.Migrations
-import eu.pretix.pretixscan.scanproxy.Models
 import io.requery.sql.SchemaModifier
 import io.requery.sql.TableCreationMode
 import java.sql.Connection

@@ -22,6 +22,9 @@ deleteBySlug:
 DELETE FROM SyncedEvent
 WHERE slug = ?;
 
+truncate:
+TRUNCATE SyncedEvent;
+
 -- for tests only:
 testCountAll:
 SELECT COUNT(*)

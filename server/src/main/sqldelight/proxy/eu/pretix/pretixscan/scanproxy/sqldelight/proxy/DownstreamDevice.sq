@@ -52,6 +52,9 @@ deleteByUuid:
 DELETE FROM DownstreamDevice
 WHERE uuid = ?;
 
+truncate:
+TRUNCATE DownstreamDevice;
+
 -- for tests only:
 testSelectByName:
 SELECT *
