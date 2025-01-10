@@ -4,8 +4,10 @@ import eu.pretix.libpretixsync.api.DefaultHttpClientFactory
 import eu.pretix.libpretixsync.api.HttpClientFactory
 import eu.pretix.libpretixsync.api.PretixApi
 import eu.pretix.pretixscan.scanproxy.db.Migrations
+import eu.pretix.pretixscan.scanproxy.db.createProxyDatabase
 import eu.pretix.pretixscan.scanproxy.db.createSyncDatabase
 import eu.pretix.pretixscan.scanproxy.sqldelight.sync.SyncDatabase
+import eu.pretix.pretixscan.scanproxy.sqldelight.proxy.ProxyDatabase
 import io.requery.Persistable
 import io.requery.cache.EntityCacheBuilder
 import io.requery.sql.ConfigurationBuilder
@@ -27,6 +29,7 @@ abstract class ProxyDependencies {
     abstract val syncData: EntityDataStore<Persistable>
     abstract val proxyData : KotlinEntityDataStore<Persistable>
     abstract val db: SyncDatabase
+    abstract val proxyDb: ProxyDatabase
     abstract val dataDir: String
 
     open val connectivityHelper = ConnectivityHelper(System.getProperty("pretixscan.autoOfflineMode", "off"))
@@ -49,6 +52,14 @@ abstract class ProxyDependencies {
 class ServerProxyDependencies: ProxyDependencies() {
     private val appDirs = AppDirsFactory.getInstance()!!
     override val dataDir = appDirs.getUserDataDir("pretixscanproxy", "1", "pretix")
+
+    override val proxyDb: ProxyDatabase by lazy {
+        val LOG = LoggerFactory.getLogger(Server::class.java)
+        createProxyDatabase(
+            url = System.getProperty("pretixscan.database"),
+            LOG = LOG,
+        )
+    }
 
     override val proxyData: KotlinEntityDataStore<Persistable> by lazy {
         val LOG = LoggerFactory.getLogger(Server::class.java)

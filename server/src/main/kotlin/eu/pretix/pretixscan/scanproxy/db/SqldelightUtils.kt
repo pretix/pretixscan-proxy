@@ -35,9 +35,11 @@ import eu.pretix.libpretixsync.sqldelight.Settings
 import eu.pretix.libpretixsync.sqldelight.SubEvent
 import eu.pretix.libpretixsync.sqldelight.TaxRule
 import eu.pretix.libpretixsync.sqldelight.TicketLayout
+import eu.pretix.pretixscan.scanproxy.sqldelight.proxy.ProxyDatabase
 import eu.pretix.pretixscan.scanproxy.sqldelight.sync.SyncDatabase
 import org.postgresql.ds.PGSimpleDataSource
 import org.slf4j.Logger
+import java.math.BigDecimal
 import java.sql.DriverManager
 
 fun createSyncDatabase(url: String, LOG: Logger): SyncDatabase {
@@ -179,6 +181,55 @@ fun createSyncDatabase(url: String, LOG: Logger): SyncDatabase {
             idAdapter = idAdapter,
         ),
     )
+
+    return db
+}
+
+fun createProxyDatabase(url: String, LOG: Logger): ProxyDatabase {
+    val conn = DriverManager.getConnection(url)
+    var exists = false
+    val r = conn.metaData.getTables(null, null, "_scanproxy_version", arrayOf("TABLE"))
+    while (r.next()) {
+        if (r.getString("TABLE_NAME") == "_scanproxy_version") {
+            exists = true
+            break
+        }
+    }
+
+    val dataSource = PGSimpleDataSource()
+    dataSource.setURL(url)
+    val driver = dataSource.asJdbcDriver()
+
+    if (!exists) {
+        LOG.info("Creating new proxy database.")
+        val t = object : TransacterImpl(driver) {}
+
+        t.transaction {
+            ProxyDatabase.Schema.create(driver)
+        }
+    }
+
+    val db = ProxyDatabase(driver)
+
+    val version = if (!exists) {
+        db._scanproxy_versionQueries.insertVersion(BigDecimal.valueOf(ProxyDatabase.Schema.version))
+        ProxyDatabase.Schema.version
+    } else {
+        db._scanproxy_versionQueries.selectVersion().executeAsOne().version!!.toLong()
+    }
+
+    if (version != ProxyDatabase.Schema.version) {
+        LOG.info("Migrating proxy database from version $version to ${ProxyDatabase.Schema.version}.")
+        ProxyDatabase.Schema.migrate(
+            driver = driver,
+            oldVersion = version,
+            ProxyDatabase.Schema.version,
+        )
+        db._scanproxy_versionQueries.transaction {
+            db._scanproxy_versionQueries.deleteVersion()
+            db._scanproxy_versionQueries.insertVersion(BigDecimal.valueOf(ProxyDatabase.Schema.version))
+        }
+    }
 
     return db
 }
