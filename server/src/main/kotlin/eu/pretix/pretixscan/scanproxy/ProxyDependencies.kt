@@ -27,7 +27,6 @@ fun isProxyDepsInitialized(): Boolean {
 
 abstract class ProxyDependencies {
     abstract val syncData: EntityDataStore<Persistable>
-    abstract val proxyData : KotlinEntityDataStore<Persistable>
     abstract val db: SyncDatabase
     abstract val proxyDb: ProxyDatabase
     abstract val dataDir: String
@@ -59,38 +58,6 @@ class ServerProxyDependencies: ProxyDependencies() {
             url = System.getProperty("pretixscan.database"),
             LOG = LOG,
         )
-    }
-
-    override val proxyData: KotlinEntityDataStore<Persistable> by lazy {
-        val LOG = LoggerFactory.getLogger(Server::class.java)
-
-        // TODO: Support other databases
-        val conn = DriverManager.getConnection(System.getProperty("pretixscan.database"))
-        var exists = false
-        val r = conn.metaData.getTables(null, null, "_scanproxy_version", arrayOf("TABLE"))
-        while (r.next()) {
-            if (r.getString("TABLE_NAME") == "_scanproxy_version") {
-                exists = true
-                break
-            }
-        }
-        if (!exists) {
-            LOG.info("Creating new database.")
-        }
-
-        val dataSource = PGSimpleDataSource()
-        dataSource.setURL(System.getProperty("pretixscan.database"))
-        val model = Models.DEFAULT
-        Migrations.migrate(dataSource, !exists)
-        val configuration = KotlinConfiguration(
-            dataSource = dataSource,
-            model = model,
-            cache = EntityCacheBuilder(model)
-                .useReferenceCache(false)
-                .useSerializableCache(false)
-                .build()
-        )
-        KotlinEntityDataStore(configuration = configuration)
     }
 
     override val db: SyncDatabase by lazy {
