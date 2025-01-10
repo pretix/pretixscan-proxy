@@ -8,8 +8,8 @@ import eu.pretix.libpretixsync.db.Answer
 import eu.pretix.libpretixsync.db.QuestionOption
 import eu.pretix.libpretixsync.models.db.toModel
 import eu.pretix.libpretixsync.sqldelight.SyncDatabase
-import eu.pretix.pretixscan.scanproxy.db.DownstreamDeviceEntity
 import eu.pretix.pretixscan.scanproxy.proxyDeps
+import eu.pretix.pretixscan.scanproxy.sqldelight.proxy.DownstreamDevice
 import io.javalin.http.Context
 import io.javalin.http.Handler
 import org.slf4j.LoggerFactory
@@ -88,7 +88,7 @@ object CheckEndpoint : JsonBodyHandler<CheckInput>(CheckInput::class.java) {
                     q.resolveDependency(questions)
                 }
             }
-            val device: DownstreamDeviceEntity = ctx.attribute("device")!!
+            val device: DownstreamDevice = ctx.attribute("device")!!
             LOG.info("Scanned ticket '${body.ticketid}' result '${result.type}' time '${(System.currentTimeMillis() - startedAt) / 1000f}s' device '${device.name}' provider '${acp.javaClass.simpleName}'")
             ctx.json(result)
             if (acp is OnlineCheckProvider) {
@@ -143,7 +143,7 @@ object MultiCheckEndpoint : JsonBodyHandler<MultiCheckInput>(MultiCheckInput::cl
                     q.resolveDependency(questions)
                 }
             }
-            val device: DownstreamDeviceEntity = ctx.attribute("device")!!
+            val device: DownstreamDevice = ctx.attribute("device")!!
             LOG.info("Scanned ticket '${body.ticketid}' result '${result.type}' time '${(System.currentTimeMillis() - startedAt) / 1000f}s' device '${device.name}' provider '${acp.javaClass.simpleName}'")
             ctx.json(result)
             if (acp is OnlineCheckProvider) {

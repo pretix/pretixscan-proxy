@@ -2,7 +2,6 @@ package eu.pretix.pretixscan.scanproxy.endpoints
 
 import eu.pretix.libpretixsync.setup.*
 import eu.pretix.pretixscan.scanproxy.Server.VERSION
-import eu.pretix.pretixscan.scanproxy.db.DownstreamDeviceEntity
 import eu.pretix.pretixscan.scanproxy.db.SyncedEventEntity
 import eu.pretix.pretixscan.scanproxy.proxyDeps
 import eu.pretix.pretixscan.scanproxy.syncEventList
@@ -82,7 +81,7 @@ object ConfigState : Handler {
                 "configured" to configStore.isConfigured,
                 "organizer" to configStore.organizerSlug,
                 "upstreamUrl" to configStore.apiUrl,
-                "downstreamDevices" to (proxyDeps.proxyData select (DownstreamDeviceEntity::class) orderBy (DownstreamDeviceEntity.NAME)).get().map {
+                "downstreamDevices" to proxyDeps.proxyDb.downstreamDeviceQueries.selectOrderedByName().executeAsList().map {
                     return@map mapOf(
                         "uuid" to it.uuid,
                         "added_datetime" to if (it.added_datetime.isNullOrBlank()) null else Date(it.added_datetime!!.toLong()).toString(),

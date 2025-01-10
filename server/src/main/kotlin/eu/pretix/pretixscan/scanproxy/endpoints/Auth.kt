@@ -1,7 +1,6 @@
 package eu.pretix.pretixscan.scanproxy.endpoints
 
 import eu.pretix.pretixscan.scanproxy.PretixScanConfig
-import eu.pretix.pretixscan.scanproxy.db.DownstreamDeviceEntity
 import eu.pretix.pretixscan.scanproxy.db.SyncedEventEntity
 import eu.pretix.pretixscan.scanproxy.proxyDeps
 import io.javalin.http.*
@@ -24,12 +23,8 @@ object DeviceAuth : Handler {
             throw UnauthorizedResponse("Device auth required")
         }
 
-        val result = (
-                proxyDeps.proxyData
-                        select (DownstreamDeviceEntity::class)
-                        where (DownstreamDeviceEntity.API_TOKEN.eq(auth[1]))
-                ).get()
-        val device = result.firstOrNull() ?: throw UnauthorizedResponse("Unknown device token")
+        val device = proxyDeps.proxyDb.downstreamDeviceQueries.selectByApiToken(auth[1]).executeAsOneOrNull()
+            ?: throw UnauthorizedResponse("Unknown device token")
         ctx.attribute("device", device)
     }
 }
