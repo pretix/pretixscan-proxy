@@ -35,7 +35,7 @@ import eu.pretix.libpretixsync.sqldelight.Settings
 import eu.pretix.libpretixsync.sqldelight.SubEvent
 import eu.pretix.libpretixsync.sqldelight.TaxRule
 import eu.pretix.libpretixsync.sqldelight.TicketLayout
-import eu.pretix.pretixscan.scanproxy.sqldelight.SyncDatabase
+import eu.pretix.pretixscan.scanproxy.sqldelight.sync.SyncDatabase
 import org.postgresql.ds.PGSimpleDataSource
 import org.slf4j.Logger
 import java.sql.DriverManager

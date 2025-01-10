@@ -5,7 +5,7 @@ import eu.pretix.libpretixsync.api.HttpClientFactory
 import eu.pretix.libpretixsync.api.PretixApi
 import eu.pretix.pretixscan.scanproxy.db.Migrations
 import eu.pretix.pretixscan.scanproxy.db.createSyncDatabase
-import eu.pretix.pretixscan.scanproxy.sqldelight.SyncDatabase
+import eu.pretix.pretixscan.scanproxy.sqldelight.sync.SyncDatabase
 import io.requery.Persistable
 import io.requery.cache.EntityCacheBuilder
 import io.requery.sql.ConfigurationBuilder

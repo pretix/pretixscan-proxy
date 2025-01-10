@@ -87,10 +87,11 @@ test {
 sqldelight {
     databases {
         SyncDatabase {
-            packageName = "eu.pretix.pretixscan.scanproxy.sqldelight"
+            packageName = "eu.pretix.pretixscan.scanproxy.sqldelight.sync"
             dependency(project(":libpretixsync"))
 
             dialect "app.cash.sqldelight:postgresql-dialect:$sqldelight_version"
+            srcDirs('src/main/sqldelight/sync')
         }
     }
 }
