@@ -50,7 +50,6 @@ fun syncAllEvents(force: Boolean = false) {
             proxyDeps.configStore,
             proxyDeps.pretixApi,
             DummySentryImplementation(),
-            proxyDeps.syncData,
             proxyDeps.db,
             proxyDeps.fileStorage,
             1000,
