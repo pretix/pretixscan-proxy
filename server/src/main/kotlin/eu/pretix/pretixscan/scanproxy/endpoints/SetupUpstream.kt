@@ -2,7 +2,6 @@ package eu.pretix.pretixscan.scanproxy.endpoints
 
 import eu.pretix.libpretixsync.setup.*
 import eu.pretix.pretixscan.scanproxy.Server.VERSION
-import eu.pretix.pretixscan.scanproxy.db.SyncedEventEntity
 import eu.pretix.pretixscan.scanproxy.proxyDeps
 import eu.pretix.pretixscan.scanproxy.syncEventList
 import io.javalin.http.BadRequestResponse
@@ -90,7 +89,7 @@ object ConfigState : Handler {
                         "setup" to it.api_token.isNullOrBlank()
                     )
                 }.toList(),
-                "syncedEvents" to (proxyDeps.proxyData select (SyncedEventEntity::class)).get().map {
+                "syncedEvents" to proxyDeps.proxyDb.syncedEventQueries.selectAll().executeAsList().map {
                     val localStore = proxyDeps.configStore
                     return@map mapOf(
                         "slug" to it.slug,
@@ -110,10 +109,18 @@ data class RemoveEventRequest(val slug: String)
 
 object RemoveEvent : JsonBodyHandler<RemoveEventRequest>(RemoveEventRequest::class.java) {
     override fun handle(ctx: Context, body: RemoveEventRequest) {
+        // TODO: Is the result needed?
+        val result = proxyDeps.proxyDb.transactionWithResult {
+            if (proxyDeps.proxyDb.syncedEventQueries.selectBySlug(body.slug).executeAsOneOrNull() != null) {
+                proxyDeps.proxyDb.syncedEventQueries.deleteBySlug(body.slug)
+                1
+            } else {
+                0
+            }
+        }
         ctx.json(
             mapOf(
-                "result" to (proxyDeps.proxyData delete (SyncedEventEntity::class) where (SyncedEventEntity.SLUG eq (body.slug))).get()
-                    .value()
+                "result" to result
             )
         )
     }
@@ -123,12 +130,11 @@ data class AddEventRequest(val slug: String)
 
 object AddEvent : JsonBodyHandler<AddEventRequest>(AddEventRequest::class.java) {
     override fun handle(ctx: Context, body: AddEventRequest) {
-        val ev = (proxyDeps.proxyData select (SyncedEventEntity::class) where (SyncedEventEntity.SLUG eq body.slug)).get()
-            .firstOrNull()
+        val ev = proxyDeps.proxyDb.syncedEventQueries.selectBySlug(body.slug).executeAsOneOrNull()
         if (ev == null) {
-            val s = SyncedEventEntity()
-            s.slug = body.slug
-            proxyDeps.proxyData.insert(s)
+            proxyDeps.proxyDb.syncedEventQueries.insert(
+                slug = body.slug,
+            )
         }
         ctx.json(
             mapOf(

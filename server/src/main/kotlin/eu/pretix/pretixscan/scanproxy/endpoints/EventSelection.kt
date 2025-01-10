@@ -6,7 +6,6 @@ import eu.pretix.libpretixsync.api.PretixApi.ApiResponse
 import eu.pretix.libpretixsync.api.ResourceNotModified
 import eu.pretix.libpretixsync.sync.SyncManager.EventSwitchRequested
 import eu.pretix.pretixscan.scanproxy.*
-import eu.pretix.pretixscan.scanproxy.db.SyncedEventEntity
 import eu.pretix.pretixscan.scanproxy.sqldelight.proxy.DownstreamDevice
 import io.javalin.http.*
 import io.javalin.json.jsonMapper
@@ -38,14 +37,12 @@ object EventSelection : Handler {
                 LOG.info("Asking downstream device \"${ctx.attribute<DownstreamDevice>("device")?.name}\" to " +
                         "switch to: ${resp.data!!.toString()}")
 
-                val ev = proxyDeps.proxyData.select (SyncedEventEntity::class)
-                    .where (SyncedEventEntity.SLUG eq eventSlug)
-                    .get().firstOrNull()
+                val ev = proxyDeps.proxyDb.syncedEventQueries.selectBySlug(eventSlug).executeAsOneOrNull()
                 if (ev == null) {
                     LOG.info("Adding $eventSlug to sync because it was previously not known.")
-                    val s = SyncedEventEntity()
-                    s.slug = eventSlug
-                    proxyDeps.proxyData.insert(s)
+                    proxyDeps.proxyDb.syncedEventQueries.insert(
+                        slug = eventSlug,
+                    )
                     try {
                         syncAllEvents(true)
                     } catch (e: LockedException) {

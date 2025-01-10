@@ -4,7 +4,6 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import eu.pretix.libpretixsync.sync.*
 import eu.pretix.pretixscan.scanproxy.Server
-import eu.pretix.pretixscan.scanproxy.db.SyncedEventEntity
 import eu.pretix.pretixscan.scanproxy.proxyDeps
 import eu.pretix.pretixscan.scanproxy.sqldelight.proxy.DownstreamDevice
 import eu.pretix.pretixscan.scanproxy.tests.test.FakeFileStorage
@@ -22,12 +21,12 @@ import java.util.*
 class PretixApiTest : BaseDatabaseTest() {
     @Before
     fun setUpFakes() {
-        var s = SyncedEventEntity()
-        s.slug = "demo"
-        proxyDeps.proxyData.insert(s)
-        s = SyncedEventEntity()
-        s.slug = "demo2"
-        proxyDeps.proxyData.insert(s)
+        proxyDeps.proxyDb.syncedEventQueries.insert(
+            slug = "demo",
+        )
+        proxyDeps.proxyDb.syncedEventQueries.insert(
+            slug = "demo2",
+        )
         EventSyncAdapter(proxyDeps.db, "demo", "demo", proxyDeps.pretixApi, "", null).standaloneRefreshFromJSON(jsonResource("events/event1.json"))
         EventSyncAdapter(proxyDeps.db, "demo2", "demo2", proxyDeps.pretixApi, "", null).standaloneRefreshFromJSON(jsonResource("events/event2.json"))
         ItemSyncAdapter(proxyDeps.db, FakeFileStorage(), "demo", proxyDeps.pretixApi, "", null).standaloneRefreshFromJSON(jsonResource("items/item1.json"))
@@ -198,13 +197,13 @@ class PretixApiTest : BaseDatabaseTest() {
 
     @Test
     fun `EventsEndpoint for unknown event triggers sync`() = JavalinTest.test(app) { server, client ->
-        assertThat(proxyDeps.proxyData.count(SyncedEventEntity::class).get().value(), equalTo(2))
+        assertThat(proxyDeps.proxyDb.syncedEventQueries.testCountAll().executeAsOne(), equalTo(2L))
         val device = createDevice()
         val resp = client.get("/api/v1/organizers/demo/events/unknown/") {
             it.header("Authorization", "Device ${device.api_token}")
         }
         assertThat(resp.code, equalTo(404))
-        assertThat(proxyDeps.proxyData.count(SyncedEventEntity::class).get().value(), equalTo(3))
+        assertThat(proxyDeps.proxyDb.syncedEventQueries.testCountAll().executeAsOne(), equalTo(3L))
     }
 
     @Test

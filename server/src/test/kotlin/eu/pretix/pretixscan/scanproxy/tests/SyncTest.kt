@@ -1,7 +1,6 @@
 package eu.pretix.pretixscan.scanproxy.tests
 
 import eu.pretix.libpretixsync.api.PermissionDeniedApiException
-import eu.pretix.pretixscan.scanproxy.db.SyncedEventEntity
 import eu.pretix.pretixscan.scanproxy.proxyDeps
 import eu.pretix.pretixscan.scanproxy.syncAllEvents
 import eu.pretix.pretixscan.scanproxy.tests.test.FakePretixApi
@@ -23,9 +22,9 @@ import org.junit.Test
 class SyncTest : BaseDatabaseTest() {
     @Before
     fun setUpFakes() {
-        var s = SyncedEventEntity()
-        s.slug = "demo"
-        proxyDeps.proxyData.insert(s)
+        proxyDeps.proxyDb.syncedEventQueries.insert(
+            slug = "demo",
+        )
     }
 
     private fun response(code: Int, data: JSONObject): Response {
@@ -40,7 +39,7 @@ class SyncTest : BaseDatabaseTest() {
 
     @Test
     fun `Event without permission is removed from sync`() = JavalinTest.test(app) { server, client ->
-        assertThat(proxyDeps.proxyData.count(SyncedEventEntity::class).get().value(), equalTo(1))
+        assertThat(proxyDeps.proxyDb.syncedEventQueries.testCountAll().executeAsOne(), equalTo(1L))
 
         val api = proxyDeps.pretixApi as FakePretixApi
         api.postResponses.add { // device update version
@@ -82,6 +81,6 @@ class SyncTest : BaseDatabaseTest() {
 
         syncAllEvents(true)
 
-        assertThat(proxyDeps.proxyData.count(SyncedEventEntity::class).get().value(), equalTo(0))
+        assertThat(proxyDeps.proxyDb.syncedEventQueries.testCountAll().executeAsOne(), equalTo(0L))
     }
 }
