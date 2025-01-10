@@ -102,7 +102,7 @@ sqldelight {
         ProxyDatabase {
             packageName = "eu.pretix.pretixscan.scanproxy.sqldelight.proxy"
             dialect "app.cash.sqldelight:postgresql-dialect:$sqldelight_version"
-            srcDirs('src/main/sqldelight/proxy')
+            srcDirs('src/main/sqldelight/proxy', 'src/main/sqldelight/proxymigrations')
         }
     }
 }
