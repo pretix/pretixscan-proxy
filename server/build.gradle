@@ -73,6 +73,11 @@ java {
     targetCompatibility = JavaVersion.VERSION_11
 }
 
+sourceSets {
+    // Only SyncDatabase is added automatically for some reason
+    main.kotlin.srcDirs += "build/generated/sqldelight/code/ProxyDatabase"
+}
+
 compileKotlin {
     kotlinOptions.jvmTarget = "11"
 }
@@ -92,6 +97,12 @@ sqldelight {
 
             dialect "app.cash.sqldelight:postgresql-dialect:$sqldelight_version"
             srcDirs('src/main/sqldelight/sync')
+        }
+
+        ProxyDatabase {
+            packageName = "eu.pretix.pretixscan.scanproxy.sqldelight.proxy"
+            dialect "app.cash.sqldelight:postgresql-dialect:$sqldelight_version"
+            srcDirs('src/main/sqldelight/proxy')
         }
     }
 }
