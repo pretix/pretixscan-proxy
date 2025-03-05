@@ -1,13 +1,12 @@
 package eu.pretix.pretixscan.scanproxy.endpoints
 
+import eu.pretix.libpretixsync.api.CheckInput
+import eu.pretix.libpretixsync.api.MultiCheckInput
+import eu.pretix.libpretixsync.api.SearchInput
 import eu.pretix.libpretixsync.check.AsyncCheckProvider
 import eu.pretix.libpretixsync.check.CheckException
 import eu.pretix.libpretixsync.check.OnlineCheckProvider
 import eu.pretix.libpretixsync.check.TicketCheckProvider
-import eu.pretix.libpretixsync.db.Answer
-import eu.pretix.libpretixsync.db.QuestionOption
-import eu.pretix.libpretixsync.models.db.toModel
-import eu.pretix.libpretixsync.sqldelight.SyncDatabase
 import eu.pretix.pretixscan.scanproxy.proxyDeps
 import eu.pretix.pretixscan.scanproxy.sqldelight.proxy.DownstreamDevice
 import io.javalin.http.Context
@@ -44,24 +43,6 @@ object StatusEndpoint : Handler {
         }
     }
 }
-
-data class CheckInputQuestion(
-    val server_id: Long,
-)
-class CheckInputAnswer(var question: CheckInputQuestion, var value: String, var options: List<QuestionOption>? = null) {
-    fun toAnswer(db: SyncDatabase): Answer {
-        val q = db.questionQueries.selectByServerId(question.server_id).executeAsOne().toModel()
-        return Answer(q, value, options)
-    }
-}
-data class CheckInput(
-    val ticketid: String,
-    val answers: List<CheckInputAnswer>?,
-    val ignore_unpaid: Boolean,
-    val with_badge_data: Boolean,
-    val type: String?,
-    val source_type: String?
-)
 
 object CheckEndpoint : JsonBodyHandler<CheckInput>(CheckInput::class.java) {
     override fun handle(ctx: Context, body: CheckInput) {
@@ -104,16 +85,6 @@ object CheckEndpoint : JsonBodyHandler<CheckInput>(CheckInput::class.java) {
         }
     }
 }
-
-data class MultiCheckInput(
-    val events_and_checkin_lists: Map<String, Long>,
-    val ticketid: String,
-    val answers: List<CheckInputAnswer>?,
-    val ignore_unpaid: Boolean,
-    val with_badge_data: Boolean,
-    val type: String?,
-    val source_type: String?
-)
 
 object MultiCheckEndpoint : JsonBodyHandler<MultiCheckInput>(MultiCheckInput::class.java) {
     override fun handle(ctx: Context, body: MultiCheckInput) {
@@ -159,11 +130,6 @@ object MultiCheckEndpoint : JsonBodyHandler<MultiCheckInput>(MultiCheckInput::cl
         }
     }
 }
-
-data class SearchInput(
-    val query: String,
-    val page: Int
-)
 
 object SearchEndpoint : JsonBodyHandler<SearchInput>(SearchInput::class.java) {
     override fun handle(ctx: Context, body: SearchInput) {
