@@ -10,48 +10,13 @@ import eu.pretix.pretixscan.scanproxy.db.createSyncDatabase
 import eu.pretix.pretixscan.scanproxy.sqldelight.proxy.ProxyDatabase
 import eu.pretix.pretixscan.scanproxy.sqldelight.sync.SyncDatabase
 import eu.pretix.pretixscan.scanproxy.tests.test.FakePretixApi
-import io.requery.Persistable
-import io.requery.cache.EntityCacheBuilder
-import io.requery.sql.ConfigurationBuilder
-import io.requery.sql.EntityDataStore
 import okhttp3.OkHttpClient
-import org.postgresql.ds.PGSimpleDataSource
 import org.slf4j.LoggerFactory
 import java.nio.file.Files
-import java.sql.DriverManager
 import java.util.concurrent.TimeUnit
 import kotlin.io.path.absolutePathString
 
 class TestProxyDependencies : ProxyDependencies() {
-
-    override val syncData: EntityDataStore<Persistable> by lazy {
-        val url = System.getProperty("pretixscan.database")
-
-        val conn = DriverManager.getConnection(url)
-        var exists = false
-        val r = conn.metaData.getTables(null, null, "_version", arrayOf("TABLE"))
-        while (r.next()) {
-            if (r.getString("TABLE_NAME") == "_version") {
-                exists = true
-                break
-            }
-        }
-
-        val dataSource = PGSimpleDataSource()
-        dataSource.setURL(url)
-        val model = eu.pretix.libpretixsync.Models.DEFAULT
-        eu.pretix.libpretixsync.db.Migrations.migrate(dataSource, !exists)
-        val configuration = ConfigurationBuilder(dataSource, model)
-            .setEntityCache(
-                EntityCacheBuilder(model)
-                    .useReferenceCache(false)
-                    .useSerializableCache(false)
-                    .build()
-            )
-            .build()
-
-        EntityDataStore<Persistable>(configuration)
-    }
 
     override val dataDir: String by lazy {
         Files.createTempDirectory("proxytests").absolutePathString()
