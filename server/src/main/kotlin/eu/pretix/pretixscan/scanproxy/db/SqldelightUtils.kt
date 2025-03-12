@@ -182,6 +182,26 @@ fun createSyncDatabase(url: String, LOG: Logger): SyncDatabase {
         ),
     )
 
+    val version = if (!exists) {
+        db._versionQueries.insertVersion(BigDecimal.valueOf(SyncDatabase.Schema.version))
+        SyncDatabase.Schema.version
+    } else {
+        db._versionQueries.selectVersion().executeAsOne().version!!.toLong()
+    }
+
+    if (version != SyncDatabase.Schema.version) {
+        LOG.info("Migrating sync database from version $version to ${SyncDatabase.Schema.version}.")
+        SyncDatabase.Schema.migrate(
+            driver = driver,
+            oldVersion = version,
+            SyncDatabase.Schema.version,
+        )
+        db._versionQueries.transaction {
+            db._versionQueries.deleteVersion()
+            db._versionQueries.insertVersion(BigDecimal.valueOf(SyncDatabase.Schema.version))
+        }
+    }
+
     return db
 }
 
