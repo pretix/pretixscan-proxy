@@ -1,7 +1,6 @@
 package eu.pretix.pretixscan.scanproxy.endpoints
 
 import com.fasterxml.jackson.databind.JsonMappingException
-import eu.pretix.pretixscan.scanproxy.db.SyncedEventEntity
 import eu.pretix.pretixscan.scanproxy.proxyDeps
 import io.javalin.http.BadRequestResponse
 import io.javalin.http.Context
@@ -30,13 +29,10 @@ abstract class JsonBodyHandler<T>(private val bodyClass: Class<T>) : Handler {
 
 
 fun registerEventIfNotExists(slug: String) {
-    val ev = (
-            proxyDeps.proxyData select (SyncedEventEntity::class)
-                    where (SyncedEventEntity.SLUG eq slug)
-            ).get().firstOrNull()
+    val ev = proxyDeps.proxyDb.syncedEventQueries.selectBySlug(slug).executeAsOneOrNull()
     if (ev == null) {
-        val s = SyncedEventEntity()
-        s.slug = slug
-        proxyDeps.proxyData.insert(s)
+        proxyDeps.proxyDb.syncedEventQueries.insert(
+            slug = slug,
+        )
     }
 }

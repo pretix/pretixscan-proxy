@@ -1,0 +1,17 @@
+selectJsonForDateCutoffAndNoSubEvents:
+SELECT json_data
+FROM Event
+WHERE
+    (date_to >= :cutoff OR (date_to IS NULL AND date_from >= :cutoff))
+    AND has_subevents = FALSE;
+
+-- for tests only:
+testCount:
+SELECT COUNT(*)
+FROM Event;
+
+testUpdateDateToForSlug:
+UPDATE Event
+SET
+    date_to = ?
+WHERE slug = ?;

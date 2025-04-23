@@ -1,0 +1,1 @@
+ALTER TABLE DownstreamDevice ADD added_datetime TEXT;

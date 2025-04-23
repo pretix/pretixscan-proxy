@@ -8,7 +8,6 @@ import eu.pretix.libpretixsync.sync.SyncException
 import eu.pretix.libpretixsync.sync.SyncManager
 import eu.pretix.pretixscan.scanproxy.Server.VERSION
 import eu.pretix.pretixscan.scanproxy.Server.VERSION_CODE
-import eu.pretix.pretixscan.scanproxy.db.SyncedEventEntity
 import org.json.JSONObject
 import org.slf4j.LoggerFactory
 import java.util.concurrent.locks.ReentrantLock
@@ -27,9 +26,9 @@ fun syncEventList() {
         throw UnconfiguredException()
     }
 
-    AllEventsSyncAdapter(proxyDeps.syncData, proxyDeps.fileStorage, proxyDeps.pretixApi, proxyDeps.configStore.syncCycleId, null)
+    AllEventsSyncAdapter(proxyDeps.db, proxyDeps.fileStorage, proxyDeps.pretixApi, proxyDeps.configStore.syncCycleId, null)
         .download()
-    AllSubEventsSyncAdapter(proxyDeps.syncData, proxyDeps.fileStorage, proxyDeps.pretixApi, proxyDeps.configStore.syncCycleId, null)
+    AllSubEventsSyncAdapter(proxyDeps.db, proxyDeps.fileStorage, proxyDeps.pretixApi, proxyDeps.configStore.syncCycleId, null)
         .download()
 }
 
@@ -50,7 +49,7 @@ fun syncAllEvents(force: Boolean = false) {
             proxyDeps.configStore,
             proxyDeps.pretixApi,
             DummySentryImplementation(),
-            proxyDeps.syncData,
+            proxyDeps.db,
             proxyDeps.fileStorage,
             1000,
             30000,
@@ -78,9 +77,7 @@ fun syncAllEvents(force: Boolean = false) {
                 // No permission to this event or event does not exist, do not sync it any more
                 // to keep sync from being blocked
                 LOG.warn("Removing event $failedEvent from sync because we have no permission.")
-                proxyDeps.proxyData.delete (SyncedEventEntity::class)
-                    .where (SyncedEventEntity.SLUG eq failedEvent)
-                    .get().value()
+                proxyDeps.proxyDb.syncedEventQueries.deleteBySlug(failedEvent)
             }
         }
         if (proxyDeps.configStore.lastFailedSync > 0) {

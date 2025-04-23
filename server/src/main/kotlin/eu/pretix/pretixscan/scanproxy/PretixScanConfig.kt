@@ -2,7 +2,6 @@ package eu.pretix.pretixscan.scanproxy
 
 import eu.pretix.libpretixsync.api.PretixApi
 import eu.pretix.libpretixsync.config.ConfigStore
-import eu.pretix.pretixscan.scanproxy.db.SyncedEventEntity
 import org.json.JSONObject
 import java.io.File
 import java.util.prefs.Preferences
@@ -172,7 +171,7 @@ class PretixScanConfig(private var data_dir: String) : ProxyScanConfig {
     }
 
     override fun getSynchronizedEvents(): List<String> {
-        return (proxyDeps.proxyData select (SyncedEventEntity::class)).get().map { it.slug }.toList()
+        return proxyDeps.proxyDb.syncedEventQueries.selectAll().executeAsList().map { it.slug!! }.toList()
     }
 
     override fun getSelectedSubeventForEvent(event: String?): Long? {

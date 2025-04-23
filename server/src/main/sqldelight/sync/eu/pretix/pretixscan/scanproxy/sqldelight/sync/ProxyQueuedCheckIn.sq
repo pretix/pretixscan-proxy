@@ -1,0 +1,4 @@
+countByCheckInListServerId:
+SELECT COUNT(*)
+FROM QueuedCheckIn
+WHERE checkinListId = ?;
