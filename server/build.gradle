@@ -33,13 +33,10 @@ dependencies {
     implementation "net.i2p.crypto:eddsa:$eddsa_version"
     implementation "com.google.protobuf:protobuf-javalite:$protobuf_version"
     implementation "com.squareup.okhttp3:okhttp:$okhttp_version"
-    implementation "io.requery:requery:$requery_version"
-    implementation "io.requery:requery-kotlin:$requery_version"
     implementation "joda-time:joda-time:$joda_version"
     implementation "org.json:json:$json_version"
     implementation "net.sourceforge.streamsupport:streamsupport-cfuture:$cfuture_version"
     implementation "app.cash.sqldelight:jdbc-driver:$sqldelight_version"
-    kapt "io.requery:requery-processor:$requery_version"
     kapt "javax.annotation:jsr250-api:$jsr250_version"
     implementation(project(':libpretixsync')) {
         transitive = false
