@@ -59,17 +59,8 @@ fun createSyncDatabase(url: String, LOG: Logger): SyncDatabase {
 
     if (!exists) {
         LOG.info("Creating new database.")
-        driver.execute(
-            identifier = -1,
-            sql = "CREATE TABLE _version (version numeric); INSERT INTO _version (version) VALUES (?)",
-            parameters = 1,
-        ) {
-            check(this is JdbcPreparedStatement)
-            bindLong(0, SyncDatabase.Schema.version)
-        }
 
         val t = object : TransacterImpl(driver) {}
-
         t.transaction {
             SyncDatabase.Schema.create(driver)
         }
