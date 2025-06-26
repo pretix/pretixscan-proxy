@@ -1,0 +1,18 @@
+CREATE TABLE _scanproxy_version (
+    version numeric
+);
+
+selectVersion:
+SELECT version
+FROM _scanproxy_version
+LIMIT 1;
+
+deleteVersion:
+DELETE FROM _scanproxy_version;
+
+insertVersion:
+INSERT INTO _scanproxy_version (
+    version
+) VALUES (
+    ?
+);

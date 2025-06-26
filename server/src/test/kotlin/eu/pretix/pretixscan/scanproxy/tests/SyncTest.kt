@@ -1,23 +1,9 @@
 package eu.pretix.pretixscan.scanproxy.tests
 
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
-import eu.pretix.libpretixsync.api.NotFoundApiException
 import eu.pretix.libpretixsync.api.PermissionDeniedApiException
-import eu.pretix.libpretixsync.api.ResourceNotModified
-import eu.pretix.libpretixsync.check.TicketCheckProvider
-import eu.pretix.libpretixsync.db.Event
-import eu.pretix.libpretixsync.db.Settings
-import eu.pretix.libpretixsync.db.SubEvent
-import eu.pretix.libpretixsync.sync.*
-import eu.pretix.pretixscan.scanproxy.Server
-import eu.pretix.pretixscan.scanproxy.db.DownstreamDeviceEntity
-import eu.pretix.pretixscan.scanproxy.db.SyncedEventEntity
 import eu.pretix.pretixscan.scanproxy.proxyDeps
 import eu.pretix.pretixscan.scanproxy.syncAllEvents
-import eu.pretix.pretixscan.scanproxy.tests.test.FakeFileStorage
 import eu.pretix.pretixscan.scanproxy.tests.test.FakePretixApi
-import eu.pretix.pretixscan.scanproxy.tests.test.jsonResource
 import eu.pretix.pretixscan.scanproxy.tests.utils.BaseDatabaseTest
 import io.javalin.testtools.JavalinTest
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -25,22 +11,20 @@ import okhttp3.Protocol
 import okhttp3.Request
 import okhttp3.Response
 import okhttp3.ResponseBody
-import org.hamcrest.CoreMatchers.*
+import org.hamcrest.CoreMatchers.equalTo
 import org.hamcrest.MatcherAssert.assertThat
 import org.json.JSONArray
 import org.json.JSONObject
-import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
-import java.util.*
 
 
 class SyncTest : BaseDatabaseTest() {
     @Before
     fun setUpFakes() {
-        var s = SyncedEventEntity()
-        s.slug = "demo"
-        proxyDeps.proxyData.insert(s)
+        proxyDeps.proxyDb.syncedEventQueries.insert(
+            slug = "demo",
+        )
     }
 
     private fun response(code: Int, data: JSONObject): Response {
@@ -55,7 +39,7 @@ class SyncTest : BaseDatabaseTest() {
 
     @Test
     fun `Event without permission is removed from sync`() = JavalinTest.test(app) { server, client ->
-        assertThat(proxyDeps.proxyData.count(SyncedEventEntity::class).get().value(), equalTo(1))
+        assertThat(proxyDeps.proxyDb.syncedEventQueries.testCountAll().executeAsOne(), equalTo(1L))
 
         val api = proxyDeps.pretixApi as FakePretixApi
         api.postResponses.add { // device update version
@@ -97,6 +81,6 @@ class SyncTest : BaseDatabaseTest() {
 
         syncAllEvents(true)
 
-        assertThat(proxyDeps.proxyData.count(SyncedEventEntity::class).get().value(), equalTo(0))
+        assertThat(proxyDeps.proxyDb.syncedEventQueries.testCountAll().executeAsOne(), equalTo(0L))
     }
 }
