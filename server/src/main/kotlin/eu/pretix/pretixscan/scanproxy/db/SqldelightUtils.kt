@@ -63,6 +63,13 @@ fun createSyncDatabase(url: String, LOG: Logger): SyncDatabase {
         val t = object : TransacterImpl(driver) {}
         t.transaction {
             SyncDatabase.Schema.create(driver)
+            
+            // SQLDelight does not support self-referential foreign key constraints in CREATE statements on Postgres
+            driver.execute(
+                identifier = null,
+                sql = "ALTER TABLE ReceiptLine ADD CONSTRAINT receiptline_addon_to_fkey FOREIGN KEY (addon_to) REFERENCES ReceiptLine (id) ON DELETE CASCADE;",
+                parameters = 0,
+            )
         }
     }
 
