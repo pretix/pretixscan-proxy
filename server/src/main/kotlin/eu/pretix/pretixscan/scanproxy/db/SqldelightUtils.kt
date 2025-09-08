@@ -1,6 +1,8 @@
 package eu.pretix.pretixscan.scanproxy.db
 
 import app.cash.sqldelight.TransacterImpl
+import app.cash.sqldelight.db.QueryResult
+import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.driver.jdbc.JdbcPreparedStatement
 import app.cash.sqldelight.driver.jdbc.asJdbcDriver
 import eu.pretix.libpretixsync.sqldelight.BadgeLayout
@@ -58,12 +60,18 @@ fun createSyncDatabase(url: String, LOG: Logger): SyncDatabase {
     val driver = dataSource.asJdbcDriver()
 
     if (!exists) {
-        LOG.info("Creating new database.")
+        LOG.info("Creating new sync database.")
 
         val t = object : TransacterImpl(driver) {}
         t.transaction {
             SyncDatabase.Schema.create(driver)
-            
+
+            driver.execute(
+                identifier = null,
+                sql = "CREATE TABLE _version (version numeric);",
+                parameters = 0,
+            )
+
             // SQLDelight does not support self-referential foreign key constraints in CREATE statements on Postgres
             driver.execute(
                 identifier = null,
@@ -181,10 +189,24 @@ fun createSyncDatabase(url: String, LOG: Logger): SyncDatabase {
     )
 
     val version = if (!exists) {
-        db._versionQueries.insertVersion(BigDecimal.valueOf(SyncDatabase.Schema.version))
+        writeSyncVersion(driver, SyncDatabase.Schema.version)
         SyncDatabase.Schema.version
     } else {
-        db._versionQueries.selectVersion().executeAsOne().version!!.toLong()
+        val res = driver.executeQuery(
+            identifier = null,
+            sql = "SELECT version FROM _version;",
+            mapper = { cursor ->
+                cursor.next()
+                QueryResult.Value(cursor.getLong(0))
+            },
+            parameters = 0,
+        ).value
+
+        if (res == null) {
+            throw RuntimeException("Could not read schema version")
+        }
+
+        res
     }
 
     if (version != SyncDatabase.Schema.version) {
@@ -192,15 +214,30 @@ fun createSyncDatabase(url: String, LOG: Logger): SyncDatabase {
         SyncDatabase.Schema.migrate(
             driver = driver,
             oldVersion = version,
-            SyncDatabase.Schema.version,
+            newVersion = SyncDatabase.Schema.version,
         )
-        db._versionQueries.transaction {
-            db._versionQueries.deleteVersion()
-            db._versionQueries.insertVersion(BigDecimal.valueOf(SyncDatabase.Schema.version))
-        }
+        writeSyncVersion(driver, SyncDatabase.Schema.version)
     }
 
     return db
+}
+
+private fun writeSyncVersion(driver: SqlDriver, version: Long) {
+    val t = object : TransacterImpl(driver) {}
+    t.transaction {
+        driver.execute(
+            identifier = null,
+            sql = "DELETE FROM _version;",
+            parameters = 0,
+        )
+        driver.execute(
+            identifier = null,
+            sql = "INSERT INTO _version (version) VALUES (?);",
+            parameters = 1,
+        ) {
+            bindLong(0, version)
+        }
+    }
 }
 
 fun createProxyDatabase(url: String, LOG: Logger): ProxyDatabase {
@@ -224,16 +261,36 @@ fun createProxyDatabase(url: String, LOG: Logger): ProxyDatabase {
 
         t.transaction {
             ProxyDatabase.Schema.create(driver)
+
+            driver.execute(
+                identifier = null,
+                sql = "CREATE TABLE _scanproxy_version (version numeric);",
+                parameters = 0,
+            )
         }
     }
 
     val db = ProxyDatabase(driver)
 
     val version = if (!exists) {
-        db._scanproxy_versionQueries.insertVersion(BigDecimal.valueOf(ProxyDatabase.Schema.version))
+        writeProxyVersion(driver, ProxyDatabase.Schema.version)
         ProxyDatabase.Schema.version
     } else {
-        db._scanproxy_versionQueries.selectVersion().executeAsOne().version!!.toLong()
+        val res = driver.executeQuery(
+            identifier = null,
+            sql = "SELECT version FROM _scanproxy_version;",
+            mapper = { cursor ->
+                cursor.next()
+                QueryResult.Value(cursor.getLong(0))
+            },
+            parameters = 0,
+        ).value
+
+        if (res == null) {
+            throw RuntimeException("Could not read schema version")
+        }
+
+        res
     }
 
     if (version != ProxyDatabase.Schema.version) {
@@ -241,13 +298,28 @@ fun createProxyDatabase(url: String, LOG: Logger): ProxyDatabase {
         ProxyDatabase.Schema.migrate(
             driver = driver,
             oldVersion = version,
-            ProxyDatabase.Schema.version,
+            newVersion = ProxyDatabase.Schema.version,
         )
-        db._scanproxy_versionQueries.transaction {
-            db._scanproxy_versionQueries.deleteVersion()
-            db._scanproxy_versionQueries.insertVersion(BigDecimal.valueOf(ProxyDatabase.Schema.version))
-        }
+        writeProxyVersion(driver, ProxyDatabase.Schema.version)
     }
 
     return db
+}
+
+private fun writeProxyVersion(driver: SqlDriver, version: Long) {
+    val t = object : TransacterImpl(driver) {}
+    t.transaction {
+        driver.execute(
+            identifier = null,
+            sql = "DELETE FROM _scanproxy_version;",
+            parameters = 0,
+        )
+        driver.execute(
+            identifier = null,
+            sql = "INSERT INTO _scanproxy_version (version) VALUES (?);",
+            parameters = 1,
+        ) {
+            bindLong(0, version)
+        }
+    }
 }
