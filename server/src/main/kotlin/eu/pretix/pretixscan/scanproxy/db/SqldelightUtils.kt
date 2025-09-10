@@ -17,6 +17,8 @@ import eu.pretix.libpretixsync.sqldelight.Event
 import eu.pretix.libpretixsync.sqldelight.Item
 import eu.pretix.libpretixsync.sqldelight.ItemCategory
 import eu.pretix.libpretixsync.sqldelight.MediumKeySet
+import eu.pretix.libpretixsync.sqldelight.Migrations.clearResourceSyncStatusCallback
+import eu.pretix.libpretixsync.sqldelight.Migrations.minVersionCallback
 import eu.pretix.libpretixsync.sqldelight.OrderPosition
 import eu.pretix.libpretixsync.sqldelight.Orders
 import eu.pretix.libpretixsync.sqldelight.PostgresIdAdapter
@@ -215,6 +217,10 @@ fun createSyncDatabase(url: String, LOG: Logger): SyncDatabase {
             driver = driver,
             oldVersion = version,
             newVersion = SyncDatabase.Schema.version,
+            callbacks = arrayOf(
+                minVersionCallback,
+                clearResourceSyncStatusCallback,
+            )
         )
         writeSyncVersion(driver, SyncDatabase.Schema.version)
     }
