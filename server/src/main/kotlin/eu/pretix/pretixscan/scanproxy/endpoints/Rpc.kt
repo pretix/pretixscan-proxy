@@ -1,17 +1,14 @@
 package eu.pretix.pretixscan.scanproxy.endpoints
 
+import eu.pretix.libpretixsync.api.CheckInput
+import eu.pretix.libpretixsync.api.MultiCheckInput
+import eu.pretix.libpretixsync.api.SearchInput
 import eu.pretix.libpretixsync.check.AsyncCheckProvider
 import eu.pretix.libpretixsync.check.CheckException
 import eu.pretix.libpretixsync.check.OnlineCheckProvider
 import eu.pretix.libpretixsync.check.TicketCheckProvider
-import eu.pretix.libpretixsync.db.Answer
-import eu.pretix.libpretixsync.db.Question
-import eu.pretix.libpretixsync.db.QuestionOption
-import eu.pretix.pretixscan.scanproxy.PretixScanConfig
-import eu.pretix.pretixscan.scanproxy.ProxyFileStorage
-import eu.pretix.pretixscan.scanproxy.db.DownstreamDeviceEntity
-import eu.pretix.pretixscan.scanproxy.db.SyncedEventEntity
 import eu.pretix.pretixscan.scanproxy.proxyDeps
+import eu.pretix.pretixscan.scanproxy.sqldelight.proxy.DownstreamDevice
 import io.javalin.http.Context
 import io.javalin.http.Handler
 import org.slf4j.LoggerFactory
@@ -22,13 +19,13 @@ fun getCheckProvider(): TicketCheckProvider {
     if (proxyDeps.connectivityHelper.isOffline) {
         return AsyncCheckProvider(
             proxyDeps.configStore,
-            proxyDeps.syncData,
+            proxyDeps.db,
         )
     } else {
         return OnlineCheckProvider(
             proxyDeps.configStore,
             proxyDeps.httpClientFactory,
-            proxyDeps.syncData,
+            proxyDeps.db,
             proxyDeps.fileStorage,
         )
     }
@@ -47,20 +44,6 @@ object StatusEndpoint : Handler {
     }
 }
 
-class CheckInputAnswer(var question: Question, var value: String, var options: List<QuestionOption>? = null) {
-    fun toAnswer(): Answer {
-        return Answer(question, value, options)
-    }
-}
-data class CheckInput(
-    val ticketid: String,
-    val answers: List<CheckInputAnswer>?,
-    val ignore_unpaid: Boolean,
-    val with_badge_data: Boolean,
-    val type: String?,
-    val source_type: String?
-)
-
 object CheckEndpoint : JsonBodyHandler<CheckInput>(CheckInput::class.java) {
     override fun handle(ctx: Context, body: CheckInput) {
         val LOG = LoggerFactory.getLogger("eu.pretix.pretixscan.scanproxy.endpoints.CheckEndpoint")
@@ -74,19 +57,19 @@ object CheckEndpoint : JsonBodyHandler<CheckInput>(CheckInput::class.java) {
                 mapOf(ctx.pathParam("event") to ctx.pathParam("list").toLong()),
                 body.ticketid,
                 body.source_type ?: "barcode",
-                body.answers?.map { it.toAnswer() },
+                body.answers?.map { it.toAnswer(proxyDeps.db) },
                 body.ignore_unpaid,
                 body.with_badge_data,
                 type
             )
             val requiredAnswers = result.requiredAnswers
             if (requiredAnswers != null) {
-                val questions = requiredAnswers.map { it.question }
+                val questions = requiredAnswers.map { it.question.toModel() }
                 for (q in questions) {
                     q.resolveDependency(questions)
                 }
             }
-            val device: DownstreamDeviceEntity = ctx.attribute("device")!!
+            val device: DownstreamDevice = ctx.attribute("device")!!
             LOG.info("Scanned ticket '${body.ticketid}' result '${result.type}' time '${(System.currentTimeMillis() - startedAt) / 1000f}s' device '${device.name}' provider '${acp.javaClass.simpleName}'")
             ctx.json(result)
             if (acp is OnlineCheckProvider) {
@@ -102,16 +85,6 @@ object CheckEndpoint : JsonBodyHandler<CheckInput>(CheckInput::class.java) {
         }
     }
 }
-
-data class MultiCheckInput(
-    val events_and_checkin_lists: Map<String, Long>,
-    val ticketid: String,
-    val answers: List<CheckInputAnswer>?,
-    val ignore_unpaid: Boolean,
-    val with_badge_data: Boolean,
-    val type: String?,
-    val source_type: String?
-)
 
 object MultiCheckEndpoint : JsonBodyHandler<MultiCheckInput>(MultiCheckInput::class.java) {
     override fun handle(ctx: Context, body: MultiCheckInput) {
@@ -129,19 +102,19 @@ object MultiCheckEndpoint : JsonBodyHandler<MultiCheckInput>(MultiCheckInput::cl
                 body.events_and_checkin_lists,
                 body.ticketid,
                 body.source_type ?: "barcode",
-                body.answers?.map { it.toAnswer() },
+                body.answers?.map { it.toAnswer(proxyDeps.db) },
                 body.ignore_unpaid,
                 body.with_badge_data,
                 type
             )
             val requiredAnswers = result.requiredAnswers
             if (requiredAnswers != null) {
-                val questions = requiredAnswers.map { it.question }
+                val questions = requiredAnswers.map { it.question.toModel() }
                 for (q in questions) {
                     q.resolveDependency(questions)
                 }
             }
-            val device: DownstreamDeviceEntity = ctx.attribute("device")!!
+            val device: DownstreamDevice = ctx.attribute("device")!!
             LOG.info("Scanned ticket '${body.ticketid}' result '${result.type}' time '${(System.currentTimeMillis() - startedAt) / 1000f}s' device '${device.name}' provider '${acp.javaClass.simpleName}'")
             ctx.json(result)
             if (acp is OnlineCheckProvider) {
@@ -157,11 +130,6 @@ object MultiCheckEndpoint : JsonBodyHandler<MultiCheckInput>(MultiCheckInput::cl
         }
     }
 }
-
-data class SearchInput(
-    val query: String,
-    val page: Int
-)
 
 object SearchEndpoint : JsonBodyHandler<SearchInput>(SearchInput::class.java) {
     override fun handle(ctx: Context, body: SearchInput) {

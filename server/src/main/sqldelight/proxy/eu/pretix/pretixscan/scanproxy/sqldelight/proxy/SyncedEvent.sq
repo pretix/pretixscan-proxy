@@ -1,0 +1,36 @@
+CREATE TABLE SyncedEvent (
+    slug character varying(255)
+);
+
+selectAll:
+SELECT *
+FROM SyncedEvent;
+
+selectBySlug:
+SELECT *
+FROM SyncedEvent
+WHERE slug = ?;
+
+insert:
+INSERT INTO SyncedEvent (
+    slug
+) VALUES (
+    ?
+);
+
+deleteBySlug:
+DELETE FROM SyncedEvent
+WHERE slug = ?;
+
+truncate:
+TRUNCATE SyncedEvent;
+
+-- for tests only:
+testCountAll:
+SELECT COUNT(*)
+FROM SyncedEvent;
+
+testCountWithSlug:
+SELECT COUNT(*)
+FROM SyncedEvent
+WHERE slug = ?;

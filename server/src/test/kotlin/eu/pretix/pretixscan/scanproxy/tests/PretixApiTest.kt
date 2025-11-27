@@ -2,14 +2,10 @@ package eu.pretix.pretixscan.scanproxy.tests
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import eu.pretix.libpretixsync.db.Event
-import eu.pretix.libpretixsync.db.Settings
-import eu.pretix.libpretixsync.db.SubEvent
 import eu.pretix.libpretixsync.sync.*
 import eu.pretix.pretixscan.scanproxy.Server
-import eu.pretix.pretixscan.scanproxy.db.DownstreamDeviceEntity
-import eu.pretix.pretixscan.scanproxy.db.SyncedEventEntity
 import eu.pretix.pretixscan.scanproxy.proxyDeps
+import eu.pretix.pretixscan.scanproxy.sqldelight.proxy.DownstreamDevice
 import eu.pretix.pretixscan.scanproxy.tests.test.FakeFileStorage
 import eu.pretix.pretixscan.scanproxy.tests.test.jsonResource
 import eu.pretix.pretixscan.scanproxy.tests.utils.BaseDatabaseTest
@@ -25,47 +21,44 @@ import java.util.*
 class PretixApiTest : BaseDatabaseTest() {
     @Before
     fun setUpFakes() {
-        var s = SyncedEventEntity()
-        s.slug = "demo"
-        proxyDeps.proxyData.insert(s)
-        s = SyncedEventEntity()
-        s.slug = "demo2"
-        proxyDeps.proxyData.insert(s)
-        EventSyncAdapter(proxyDeps.syncData, "demo", "demo", proxyDeps.pretixApi, "", null).standaloneRefreshFromJSON(jsonResource("events/event1.json"))
-        EventSyncAdapter(proxyDeps.syncData, "demo", "demo", proxyDeps.pretixApi, "", null).standaloneRefreshFromJSON(jsonResource("events/event2.json"))
-        ItemSyncAdapter(proxyDeps.syncData, FakeFileStorage(), "demo", proxyDeps.pretixApi, "", null).standaloneRefreshFromJSON(jsonResource("items/item1.json"))
-        ItemSyncAdapter(proxyDeps.syncData, FakeFileStorage(), "demo", proxyDeps.pretixApi, "", null).standaloneRefreshFromJSON(jsonResource("items/item2.json"))
-        ItemSyncAdapter(proxyDeps.syncData, FakeFileStorage(), "demo2", proxyDeps.pretixApi, "", null).standaloneRefreshFromJSON(jsonResource("items/event2-item3.json"))
-        CheckInListSyncAdapter(proxyDeps.syncData, FakeFileStorage(), "demo", proxyDeps.pretixApi, "", null, 0).standaloneRefreshFromJSON(
+        proxyDeps.proxyDb.syncedEventQueries.insert(
+            slug = "demo",
+        )
+        proxyDeps.proxyDb.syncedEventQueries.insert(
+            slug = "demo2",
+        )
+        EventSyncAdapter(proxyDeps.db, "demo", "demo", proxyDeps.pretixApi, "", null).standaloneRefreshFromJSON(jsonResource("events/event1.json"))
+        EventSyncAdapter(proxyDeps.db, "demo2", "demo2", proxyDeps.pretixApi, "", null).standaloneRefreshFromJSON(jsonResource("events/event2.json"))
+        ItemSyncAdapter(proxyDeps.db, FakeFileStorage(), "demo", proxyDeps.pretixApi, "", null).standaloneRefreshFromJSON(jsonResource("items/item1.json"))
+        ItemSyncAdapter(proxyDeps.db, FakeFileStorage(), "demo", proxyDeps.pretixApi, "", null).standaloneRefreshFromJSON(jsonResource("items/item2.json"))
+        ItemSyncAdapter(proxyDeps.db, FakeFileStorage(), "demo2", proxyDeps.pretixApi, "", null).standaloneRefreshFromJSON(jsonResource("items/event2-item3.json"))
+        CheckInListSyncAdapter(proxyDeps.db, FakeFileStorage(), "demo", proxyDeps.pretixApi, "", null, 0).standaloneRefreshFromJSON(
             jsonResource("checkinlists/list1.json")
         )
-        SubEventSyncAdapter(proxyDeps.syncData, "demo", "14", proxyDeps.pretixApi, "", null).standaloneRefreshFromJSON(jsonResource("subevents/subevent1.json"))
+        SubEventSyncAdapter(proxyDeps.db, "demo", "14", proxyDeps.pretixApi, "", null).standaloneRefreshFromJSON(jsonResource("subevents/subevent1.json"))
 
-        val osa = OrderSyncAdapter(proxyDeps.syncData, FakeFileStorage(), "demo", 0, true, false, proxyDeps.pretixApi, "", null)
+        val osa = OrderSyncAdapter(proxyDeps.db, FakeFileStorage(), "demo", 0, true, false, proxyDeps.pretixApi, "", null)
         osa.standaloneRefreshFromJSON(jsonResource("orders/order1.json"))
-        val osa2 = OrderSyncAdapter(proxyDeps.syncData, FakeFileStorage(), "demo2", 0, true, false, proxyDeps.pretixApi, "", null)
+        val osa2 = OrderSyncAdapter(proxyDeps.db, FakeFileStorage(), "demo2", 0, true, false, proxyDeps.pretixApi, "", null)
         osa2.standaloneRefreshFromJSON(jsonResource("orders/event2-order1.json"))
     }
 
-    private fun createDevice(initialized: Boolean=true): DownstreamDeviceEntity {
+    private fun createDevice(initialized: Boolean=true): DownstreamDevice {
         val charPool: List<Char> = ('a'..'z') + ('A'..'Z') + ('0'..'9')
-        val d = DownstreamDeviceEntity()
-        d.uuid = UUID.randomUUID().toString()
-        d.name = "Test"
-        d.added_datetime = System.currentTimeMillis().toString()
-        if (initialized) {
-            d.api_token = (1..64)
-                .map { kotlin.random.Random.nextInt(0, charPool.size) }
-                .map(charPool::get)
-                .joinToString("")
-        } else {
-            d.init_token = (1..16)
-                .map { kotlin.random.Random.nextInt(0, charPool.size) }
-                .map(charPool::get)
-                .joinToString("")
-        }
-        proxyDeps.proxyData.insert(d)
-        return d
+        val uuid = UUID.randomUUID().toString()
+        val token = (1..64)
+            .map { kotlin.random.Random.nextInt(0, charPool.size) }
+            .map(charPool::get)
+            .joinToString("")
+
+        proxyDeps.proxyDb.downstreamDeviceQueries.insert(
+            uuid = uuid,
+            added_datetime = System.currentTimeMillis().toString(),
+            api_token = if (initialized) token else null,
+            init_token = if (!initialized) token else null,
+            name = "Test",
+        )
+        return proxyDeps.proxyDb.downstreamDeviceQueries.selectByUuid(uuid).executeAsOne()
     }
 
     @Test
@@ -131,13 +124,13 @@ class PretixApiTest : BaseDatabaseTest() {
         ))
         assertThat(resp.code, equalTo(200))
         val json = jacksonObjectMapper().readValue<MutableMap<Any, Any>>(resp.body!!.string())
-        proxyDeps.proxyData.refresh(device)
-        assertThat(json["api_token"], equalTo(device.api_token))
+        val updatedDevice = proxyDeps.proxyDb.downstreamDeviceQueries.selectByUuid(device.uuid).executeAsOne()
+        assertThat(json["api_token"], equalTo(updatedDevice.api_token))
     }
 
     @Test
     fun `EventsEndpoint returns list of future events`() = JavalinTest.test(app) { server, client ->
-        assertThat(proxyDeps.syncData.count(Event::class.java).get().value(), equalTo(2))
+        assertThat(proxyDeps.db.proxyEventQueries.testCount().executeAsOne(), equalTo(2L))
         val device = createDevice()
         var resp = client.get("/api/v1/organizers/demo/events/") {
             it.header("Authorization", "Device ${device.api_token}")
@@ -147,9 +140,10 @@ class PretixApiTest : BaseDatabaseTest() {
         assertThat(json["count"], equalTo(0))
 
         // Set date to today
-        val ev1 = proxyDeps.syncData.select(Event::class.java).where(Event.SLUG.eq("demo")).get().first()
-        ev1.setDate_to(Date())
-        proxyDeps.syncData.update(ev1)
+        proxyDeps.db.proxyEventQueries.testUpdateDateToForSlug(
+            date_to = Date(),
+            slug = "demo",
+        )
 
         resp = client.get("/api/v1/organizers/demo/events/") {
             it.header("Authorization", "Device ${device.api_token}")
@@ -171,9 +165,7 @@ class PretixApiTest : BaseDatabaseTest() {
         assertThat(json["count"], equalTo(0))
 
         // Set date to today
-        val ev1 = proxyDeps.syncData.select(SubEvent::class.java).get().first()
-        ev1.setDate_to(Date())
-        proxyDeps.syncData.update(ev1)
+        proxyDeps.db.proxySubEventQueries.testUpdateFirstDateTo(Date())
 
         resp = client.get("/api/v1/organizers/demo/subevents/") {
             it.header("Authorization", "Device ${device.api_token}")
@@ -193,7 +185,7 @@ class PretixApiTest : BaseDatabaseTest() {
 
     @Test
     fun `EventsEndpoint returns event details`() = JavalinTest.test(app) { server, client ->
-        assertThat(proxyDeps.syncData.count(Event::class.java).get().value(), equalTo(2))
+        assertThat(proxyDeps.db.proxyEventQueries.testCount().executeAsOne(), equalTo(2L))
         val device = createDevice()
         val resp = client.get("/api/v1/organizers/demo/events/demo/") {
             it.header("Authorization", "Device ${device.api_token}")
@@ -205,13 +197,13 @@ class PretixApiTest : BaseDatabaseTest() {
 
     @Test
     fun `EventsEndpoint for unknown event triggers sync`() = JavalinTest.test(app) { server, client ->
-        assertThat(proxyDeps.proxyData.count(SyncedEventEntity::class).get().value(), equalTo(2))
+        assertThat(proxyDeps.proxyDb.syncedEventQueries.testCountAll().executeAsOne(), equalTo(2L))
         val device = createDevice()
         val resp = client.get("/api/v1/organizers/demo/events/unknown/") {
             it.header("Authorization", "Device ${device.api_token}")
         }
         assertThat(resp.code, equalTo(404))
-        assertThat(proxyDeps.proxyData.count(SyncedEventEntity::class).get().value(), equalTo(3))
+        assertThat(proxyDeps.proxyDb.syncedEventQueries.testCountAll().executeAsOne(), equalTo(3L))
     }
 
     @Test
@@ -271,10 +263,18 @@ class PretixApiTest : BaseDatabaseTest() {
 
     @Test
     fun `SettingsEndpoint responds with event settings`() = JavalinTest.test(app) { server, client ->
-        val s = Settings()
-        s.setSlug("demo")
-        s.setJson_data("{\"foo\": \"bar\"}")
-        proxyDeps.syncData.insert(s)
+        proxyDeps.db.settingsQueries.insert(
+            json_data = "{\"foo\": \"bar\"}",
+            address = null,
+            city = null,
+            country = null,
+            name = null,
+            pretixpos_additional_receipt_text = null,
+            slug = "demo",
+            tax_id = null,
+            vat_id = null,
+            zipcode = null,
+        )
 
         val device = createDevice()
         val resp = client.get("/api/v1/organizers/demo/events/demo/settings/") {
