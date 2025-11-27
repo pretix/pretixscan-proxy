@@ -13,6 +13,7 @@ import eu.pretix.libpretixsync.sqldelight.Cashier
 import eu.pretix.libpretixsync.sqldelight.CheckIn
 import eu.pretix.libpretixsync.sqldelight.CheckInList
 import eu.pretix.libpretixsync.sqldelight.Closing
+import eu.pretix.libpretixsync.sqldelight.Discount
 import eu.pretix.libpretixsync.sqldelight.Event
 import eu.pretix.libpretixsync.sqldelight.Item
 import eu.pretix.libpretixsync.sqldelight.ItemCategory
@@ -114,6 +115,11 @@ fun createSyncDatabase(url: String, LOG: Logger): SyncDatabase {
         ClosingAdapter = Closing.Adapter(
             idAdapter = idAdapter,
             datetimeAdapter = dateAdapter,
+        ),
+        DiscountAdapter = Discount.Adapter(
+            idAdapter = idAdapter,
+            available_fromAdapter = dateAdapter,
+            available_untilAdapter = dateAdapter,
         ),
         EventAdapter = Event.Adapter(
             idAdapter = idAdapter,
