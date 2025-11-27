@@ -5,7 +5,7 @@ plugins {
     id('app.cash.sqldelight')
     id('com.github.johnrengelman.shadow') version '7.1.2'
     id('com.palantir.git-version') version '3.0.0'
-    id('com.google.protobuf') version '0.9.4' apply false
+    id('com.google.protobuf') version '0.9.5' apply false
 }
 apply from: '../libpretixsync-repo/libpretixsync/versions.gradle'
 
