@@ -1,6 +1,7 @@
 plugins {
     id 'org.jetbrains.kotlin.jvm' version '1.9.23' apply false
     id 'org.jetbrains.kotlin.kapt' version '1.9.23' apply false
+    id 'org.cyclonedx.bom' version '3.4.1'
 }
 
 group 'eu.pretix.pretixscan'
