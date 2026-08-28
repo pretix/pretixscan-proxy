@@ -24,7 +24,6 @@ dependencies {
     // Server dependencies
     implementation "io.javalin:javalin-bundle:5.6.3"
     implementation "org.slf4j:slf4j-simple:1.7.32"
-    implementation "org.postgresql:postgresql:42.3.8"
     implementation 'net.harawata:appdirs:1.2.1'
 
     // libpretixsync dependencies
@@ -36,7 +35,7 @@ dependencies {
     implementation "joda-time:joda-time:$joda_version"
     implementation "org.json:json:$json_version"
     implementation "net.sourceforge.streamsupport:streamsupport-cfuture:$cfuture_version"
-    implementation "app.cash.sqldelight:jdbc-driver:$sqldelight_version"
+    implementation "app.cash.sqldelight:sqlite-driver:$sqldelight_version"
     kapt "javax.annotation:jsr250-api:$jsr250_version"
     implementation(project(':libpretixsync')) {
         transitive = false
@@ -92,13 +91,13 @@ sqldelight {
             packageName = "eu.pretix.pretixscan.scanproxy.sqldelight.sync"
             dependency(project(":libpretixsync"))
 
-            dialect "app.cash.sqldelight:postgresql-dialect:$sqldelight_version"
+            dialect "app.cash.sqldelight:sqlite-3-18-dialect:$sqldelight_version"
             srcDirs('src/main/sqldelight/sync')
         }
 
         ProxyDatabase {
             packageName = "eu.pretix.pretixscan.scanproxy.sqldelight.proxy"
-            dialect "app.cash.sqldelight:postgresql-dialect:$sqldelight_version"
+            dialect "app.cash.sqldelight:sqlite-3-18-dialect:$sqldelight_version"
             srcDirs('src/main/sqldelight/proxy', 'src/main/sqldelight/proxymigrations')
         }
     }

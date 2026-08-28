@@ -1,5 +1,5 @@
 CREATE TABLE SyncedEvent (
-    slug character varying(255)
+    slug text
 );
 
 selectAll:
@@ -23,7 +23,7 @@ DELETE FROM SyncedEvent
 WHERE slug = ?;
 
 truncate:
-TRUNCATE SyncedEvent;
+DELETE FROM SyncedEvent;
 
 -- for tests only:
 testCountAll:

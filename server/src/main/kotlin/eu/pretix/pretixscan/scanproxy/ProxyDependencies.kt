@@ -3,6 +3,7 @@ package eu.pretix.pretixscan.scanproxy
 import eu.pretix.libpretixsync.api.DefaultHttpClientFactory
 import eu.pretix.libpretixsync.api.HttpClientFactory
 import eu.pretix.libpretixsync.api.PretixApi
+import eu.pretix.pretixscan.scanproxy.db.JvmLocalCacheFactory
 import eu.pretix.pretixscan.scanproxy.db.createProxyDatabase
 import eu.pretix.pretixscan.scanproxy.db.createSyncDatabase
 import eu.pretix.pretixscan.scanproxy.sqldelight.proxy.ProxyDatabase
@@ -43,18 +44,10 @@ class ServerProxyDependencies: ProxyDependencies() {
     override val dataDir = appDirs.getUserDataDir("pretixscanproxy", "1", "pretix")
 
     override val proxyDb: ProxyDatabase by lazy {
-        val LOG = LoggerFactory.getLogger(Server::class.java)
-        createProxyDatabase(
-            url = System.getProperty("pretixscan.database"),
-            LOG = LOG,
-        )
+        JvmLocalCacheFactory().getProxyDataSource()
     }
 
     override val db: SyncDatabase by lazy {
-        val LOG = LoggerFactory.getLogger(Server::class.java)
-        createSyncDatabase(
-            url = System.getProperty("pretixscan.database"),
-            LOG = LOG,
-        )
+        JvmLocalCacheFactory().getSyncDataSource()
     }
 }

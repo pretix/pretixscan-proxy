@@ -1,9 +1,9 @@
 CREATE TABLE DownstreamDevice (
-    uuid character varying(255) PRIMARY KEY NOT NULL,
-    added_datetime character varying(255),
-    api_token character varying(255),
-    init_token character varying(255),
-    name character varying(255)
+    uuid text PRIMARY KEY NOT NULL,
+    added_datetime text,
+    api_token text,
+    init_token text,
+    name text
 );
 
 selectOrderedByName:
@@ -53,7 +53,7 @@ DELETE FROM DownstreamDevice
 WHERE uuid = ?;
 
 truncate:
-TRUNCATE DownstreamDevice;
+DELETE FROM DownstreamDevice;
 
 -- for tests only:
 testSelectByName:
