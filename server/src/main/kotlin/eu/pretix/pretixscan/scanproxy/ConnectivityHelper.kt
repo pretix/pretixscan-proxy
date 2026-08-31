@@ -54,15 +54,17 @@ class ConnectivityHelper(val autoOfflineMode: String) : SyncManager.CheckConnect
             else -> return
         }
 
+        // the toImmutableList call creates a copy to prevent issues with concurrent modification
+        val historyCopy = resultHistory.toMutableList()
         if (isOffline) {
-            val switchToOnline = !hardOffline && (resultHistory.size == 0 || (resultHistory.count { it == null } == 0 && resultHistory.size >= MAX_ERRORS_IN_HISTORY && resultHistory.filterNotNull().toLongArray().average() < maxDuration))
+            val switchToOnline = !hardOffline && (historyCopy.isEmpty() || (historyCopy.count { it == null } == 0 && historyCopy.size >= MAX_ERRORS_IN_HISTORY && historyCopy.filterNotNull().toLongArray().average() < maxDuration))
             if (switchToOnline) {
                 LOG.info("Switching to online mode (history: $resultHistory)")
                 isOffline = false
                 this.listeners.forEach { it.onConnectivityChanged(isOffline) }
             }
         } else {
-            val switchToOffline = hardOffline || resultHistory.count { it == null } >= MAX_ERRORS_IN_HISTORY || (resultHistory.size >= MAX_ERRORS_IN_HISTORY && resultHistory.filterNotNull().toLongArray().average() >= maxDuration)
+            val switchToOffline = hardOffline || historyCopy.count { it == null } >= MAX_ERRORS_IN_HISTORY || (historyCopy.size >= MAX_ERRORS_IN_HISTORY && historyCopy.filterNotNull().toLongArray().average() >= maxDuration)
             if (switchToOffline) {
                 LOG.info("Switching to offline mode (history: $resultHistory)")
                 isOffline = true
