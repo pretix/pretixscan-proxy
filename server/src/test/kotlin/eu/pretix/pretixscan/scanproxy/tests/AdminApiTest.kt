@@ -3,9 +3,6 @@ package eu.pretix.pretixscan.scanproxy.tests
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import eu.pretix.pretixscan.scanproxy.PretixScanConfig
-import eu.pretix.pretixscan.scanproxy.db.DownstreamDevice
-import eu.pretix.pretixscan.scanproxy.db.DownstreamDeviceEntity
-import eu.pretix.pretixscan.scanproxy.db.SyncedEventEntity
 import eu.pretix.pretixscan.scanproxy.proxyDeps
 import eu.pretix.pretixscan.scanproxy.tests.utils.BaseDatabaseTest
 import eu.pretix.pretixscan.scanproxy.tests.utils.TestConfigStore
@@ -81,8 +78,8 @@ class AdminApiTest : BaseDatabaseTest() {
             it.header("Authorization", "Basic Zm9vOmJhcg==")
         }
         assertThat(
-            proxyDeps.proxyData.count(SyncedEventEntity::class).where(SyncedEventEntity.SLUG eq "foobar").get().value(),
-            equalTo(1)
+            proxyDeps.proxyDb.syncedEventQueries.testCountWithSlug("foobar").executeAsOne(),
+            equalTo(1L)
         )
         assertThat(resp.code, equalTo(200))
 
@@ -94,8 +91,8 @@ class AdminApiTest : BaseDatabaseTest() {
             it.header("Authorization", "Basic Zm9vOmJhcg==")
         }
         assertThat(
-            proxyDeps.proxyData.count(SyncedEventEntity::class).where(SyncedEventEntity.SLUG eq "foobar").get().value(),
-            equalTo(0)
+            proxyDeps.proxyDb.syncedEventQueries.testCountWithSlug("foobar").executeAsOne(),
+            equalTo(0L)
         )
         assertThat(resp.code, equalTo(200))
     }
@@ -110,7 +107,7 @@ class AdminApiTest : BaseDatabaseTest() {
             it.header("Authorization", "Basic Zm9vOmJhcg==")
         }
 
-        val dev = proxyDeps.proxyData.select(DownstreamDevice::class).where(DownstreamDeviceEntity.NAME eq "Dev 1").get().first()
+        val dev = proxyDeps.proxyDb.downstreamDeviceQueries.testSelectByName("Dev 1").executeAsOne()
         assertThat(resp.code, equalTo(200))
         val json = jacksonObjectMapper().readValue<MutableMap<Any, Any>>(resp.body!!.string())
         assertThat(json["url"], equalTo("http://URLNOTSET"))
@@ -127,7 +124,7 @@ class AdminApiTest : BaseDatabaseTest() {
         ) {
             it.header("Authorization", "Basic Zm9vOmJhcg==")
         }
-        val dev = proxyDeps.proxyData.select(DownstreamDevice::class).where(DownstreamDeviceEntity.NAME eq "Dev 1").get().first()
+        val dev = proxyDeps.proxyDb.downstreamDeviceQueries.testSelectByName("Dev 1").executeAsOne()
         assertThat(resp.code, equalTo(200))
         val json = jacksonObjectMapper().readValue<MutableMap<Any, Any>>(resp.body!!.string())
         assertThat(json["url"], equalTo("http://URLNOTSET"))
@@ -144,7 +141,7 @@ class AdminApiTest : BaseDatabaseTest() {
         ) {
             it.header("Authorization", "Basic Zm9vOmJhcg==")
         }
-        val dev = proxyDeps.proxyData.select(DownstreamDevice::class).where(DownstreamDeviceEntity.NAME eq "Dev 1").get().first()
+        val dev = proxyDeps.proxyDb.downstreamDeviceQueries.testSelectByName("Dev 1").executeAsOne()
         assertThat(resp.code, equalTo(200))
 
         resp = client.post(
@@ -155,6 +152,6 @@ class AdminApiTest : BaseDatabaseTest() {
             it.header("Authorization", "Basic Zm9vOmJhcg==")
         }
         assertThat(resp.code, equalTo(200))
-        assertThat(proxyDeps.proxyData.count(DownstreamDevice::class).where(DownstreamDeviceEntity.NAME eq "Dev 1").get().value(), equalTo(0))
+        assertThat(proxyDeps.proxyDb.downstreamDeviceQueries.testCountWithName("Dev 1").executeAsOne(), equalTo(0L))
     }
 }

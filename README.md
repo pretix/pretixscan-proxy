@@ -44,9 +44,7 @@ and is currently mostly used in projects in close collaboration with our team.
 System requirements
 -------------------
 
-* Java 8 or newer
-
-* A PostgreSQL database
+* Java 21 or newer
 
 The API exposed by the proxy is currently supported by pretixSCAN on Android starting with version 1.0.2. and by pretixSCAN Desktop starting with version 1.1.0. Support for pretixSCAN on iOS is not planned.
 
@@ -60,7 +58,6 @@ To build the project, just use:
 Then you can run the built JAR file:
 
     java \
-        -Dpretixscan.database="jdbc:postgresql:scanproxy" \
         -Dpretixscan.baseurl="https://local.baseurl.com" \
         -Dpretixscan.adminauth="admin:admin" \
         -Dpretixscan.autoOfflineMode="off" \
@@ -74,7 +71,6 @@ Config options
 
 | Property | Description |
 |----------| --- |
-| pretixscan.database | PostgreSQL connection URL |
 | pretixscan.baseurl | Base URL the proxy will be reachable at |
 | pretixscan.adminauth | user:pass for management interface |
 | pretixscan.autoOfflineMode | ``"off"`` for "always offline", ``"on"`` for "default to online, but switch to offline after repeated errors", or ``"1s"``, ``"2s"``, ``"5s"``, ``"10s"``, ``"15s"``, ``"20s"`` for "default to online, but switch to offline after repeated errors or after average scans longer than X". Other numbers are currently not allowed. |

@@ -1,5 +1,20 @@
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        google()
+        maven {
+            url = "https://plugins.gradle.org/m2/"
+        }
+    }
+}
+
+plugins {
+    id "com.github.gmazzo.buildconfig" version "5.7.1" apply false
+}
+
+rootProject.name = 'eu.pretix.libpretixsync'
+
 rootProject.name = 'pretix-scanproxy'
 
 include ':server', ':libpretixsync'
 project(':libpretixsync').projectDir = new File('libpretixsync-repo/libpretixsync')
-project(':libpretixsync').buildFileName = 'build-postgres.gradle'

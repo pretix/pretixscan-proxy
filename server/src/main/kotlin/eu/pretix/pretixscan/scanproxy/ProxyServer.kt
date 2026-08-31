@@ -3,9 +3,9 @@ package eu.pretix.pretixscan.scanproxy
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.module.SimpleModule
 import eu.pretix.pretixscan.scanproxy.endpoints.*
-import eu.pretix.pretixscan.scanproxy.db.DownstreamDeviceEntity
 import eu.pretix.libpretixsync.serialization.JSONArraySerializer
 import eu.pretix.libpretixsync.serialization.JSONObjectSerializer
+import eu.pretix.pretixscan.scanproxy.sqldelight.proxy.DownstreamDevice
 import io.javalin.Javalin
 import io.javalin.apibuilder.ApiBuilder.*
 import io.javalin.http.staticfiles.Location
@@ -26,7 +26,7 @@ object Server {
     fun createApp(): Javalin {
         val app = Javalin.create { config ->
             config.requestLogger.http { ctx, _ ->
-                var device: DownstreamDeviceEntity? = ctx.attribute("device")
+                var device: DownstreamDevice? = ctx.attribute("device")
                 val device_name = device?.name ?: ""
                 LOG.info("[${ctx.ip()}] '${device_name}' ${ctx.method()} ${ctx.path()} -> ${ctx.status()}")
             }
@@ -126,6 +126,13 @@ object Server {
     fun main(args: Array<String>) {
         if (!isProxyDepsInitialized()) {
             proxyDeps = ServerProxyDependencies()
+        }
+
+        if (System.getProperty("pretixscan.database") != null) {
+            throw Exception(
+                "pretixSCAN Proxy has migrated from PostgreSQL to SQLite. Please remove the " +
+                        "pretixscan.database flag and port over any data manually if required."
+            )
         }
 
         val app = createApp()

@@ -1,0 +1,12 @@
+selectJsonForDateCutoff:
+SELECT json_data
+FROM SubEvent
+WHERE
+    (date_to >= :cutoff OR (date_to IS NULL AND date_from >= :cutoff));
+
+-- for tests only:
+testUpdateFirstDateTo:
+UPDATE SubEvent
+SET
+    date_to = ?
+WHERE id = (SELECT id FROM SubEvent LIMIT 1);

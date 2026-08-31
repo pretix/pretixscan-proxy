@@ -2,9 +2,10 @@ plugins {
     id('application')
     id('org.jetbrains.kotlin.jvm')
     id('org.jetbrains.kotlin.kapt')
+    id('app.cash.sqldelight')
     id('com.github.johnrengelman.shadow') version '7.1.2'
     id('com.palantir.git-version') version '3.0.0'
-    id('com.google.protobuf') version '0.9.4' apply false
+    id('com.google.protobuf') version '0.9.5' apply false
 }
 apply from: '../libpretixsync-repo/libpretixsync/versions.gradle'
 
@@ -23,7 +24,6 @@ dependencies {
     // Server dependencies
     implementation "io.javalin:javalin-bundle:5.6.3"
     implementation "org.slf4j:slf4j-simple:1.7.32"
-    implementation "org.postgresql:postgresql:42.3.8"
     implementation 'net.harawata:appdirs:1.2.1'
 
     // libpretixsync dependencies
@@ -32,12 +32,11 @@ dependencies {
     implementation "net.i2p.crypto:eddsa:$eddsa_version"
     implementation "com.google.protobuf:protobuf-javalite:$protobuf_version"
     implementation "com.squareup.okhttp3:okhttp:$okhttp_version"
-    implementation "io.requery:requery:$requery_version"
-    implementation "io.requery:requery-kotlin:$requery_version"
     implementation "joda-time:joda-time:$joda_version"
     implementation "org.json:json:$json_version"
     implementation "net.sourceforge.streamsupport:streamsupport-cfuture:$cfuture_version"
-    kapt "io.requery:requery-processor:$requery_version"
+    implementation "app.cash.sqldelight:sqlite-driver:$sqldelight_version"
+    implementation "org.xerial:sqlite-jdbc:$sqlite_jdbc_version"
     kapt "javax.annotation:jsr250-api:$jsr250_version"
     implementation(project(':libpretixsync')) {
         transitive = false
@@ -48,7 +47,6 @@ dependencies {
     testImplementation(testFixtures(project(':libpretixsync'))) {
         transitive = false
     }
-    testImplementation "org.xerial:sqlite-jdbc:$sqlite_jdbc_version"
     testImplementation "junit:junit:$junit_version"
 }
 
@@ -71,9 +69,32 @@ java {
     targetCompatibility = JavaVersion.VERSION_11
 }
 
+sourceSets {
+    // Only SyncDatabase is added automatically for some reason
+    main.kotlin.srcDirs += "build/generated/sqldelight/code/ProxyDatabase"
+}
+
 compileKotlin {
     kotlinOptions.jvmTarget = "11"
 }
 compileTestKotlin {
     kotlinOptions.jvmTarget = "11"
+}
+
+sqldelight {
+    databases {
+        SyncDatabase {
+            packageName = "eu.pretix.pretixscan.scanproxy.sqldelight.sync"
+            dependency(project(":libpretixsync"))
+
+            dialect "app.cash.sqldelight:sqlite-3-18-dialect:$sqldelight_version"
+            srcDirs('src/main/sqldelight/sync')
+        }
+
+        ProxyDatabase {
+            packageName = "eu.pretix.pretixscan.scanproxy.sqldelight.proxy"
+            dialect "app.cash.sqldelight:sqlite-3-18-dialect:$sqldelight_version"
+            srcDirs('src/main/sqldelight/proxy', 'src/main/sqldelight/proxymigrations')
+        }
+    }
 }
