@@ -4,12 +4,10 @@ import eu.pretix.libpretixsync.api.DefaultHttpClientFactory
 import eu.pretix.libpretixsync.api.HttpClientFactory
 import eu.pretix.libpretixsync.api.PretixApi
 import eu.pretix.pretixscan.scanproxy.db.JvmLocalCacheFactory
-import eu.pretix.pretixscan.scanproxy.db.createProxyDatabase
-import eu.pretix.pretixscan.scanproxy.db.createSyncDatabase
 import eu.pretix.pretixscan.scanproxy.sqldelight.proxy.ProxyDatabase
 import eu.pretix.pretixscan.scanproxy.sqldelight.sync.SyncDatabase
 import net.harawata.appdirs.AppDirsFactory
-import org.slf4j.LoggerFactory
+
 
 lateinit var proxyDeps: ProxyDependencies
 

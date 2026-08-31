@@ -8,6 +8,7 @@ import eu.pretix.libpretixsync.sqldelight.Migrations.clearResourceSyncStatusCall
 import eu.pretix.libpretixsync.sqldelight.Migrations.minVersionCallback
 import eu.pretix.libpretixsync.sqldelight.SyncDatabase
 import eu.pretix.pretixscan.scanproxy.sqldelight.proxy.ProxyDatabase
+import org.sqlite.SQLiteConfig
 import java.io.File
 import java.util.*
 import java.util.logging.Logger
@@ -35,7 +36,10 @@ class JvmLocalCacheFactory {
     private fun createSyncDriver(url: String): SqlDriver {
         val driver: SqlDriver = JdbcSqliteDriver(
             url = url,
-            properties = Properties(1).apply { put("foreign_keys", "true") },
+            properties = Properties(1).apply {
+                put(SQLiteConfig.Pragma.FOREIGN_KEYS.pragmaName, "true")
+                put(SQLiteConfig.Pragma.BUSY_TIMEOUT.pragmaName, "10000")
+            },
             schema = SyncDatabase.Schema,
             callbacks = arrayOf(
                 minVersionCallback,
@@ -48,7 +52,10 @@ class JvmLocalCacheFactory {
     private fun createProxyDriver(url: String): SqlDriver {
         val driver: SqlDriver = JdbcSqliteDriver(
             url = url,
-            properties = Properties(1).apply { put("foreign_keys", "true") },
+            properties = Properties(1).apply {
+                put(SQLiteConfig.Pragma.FOREIGN_KEYS.pragmaName, "true")
+                put(SQLiteConfig.Pragma.BUSY_TIMEOUT.pragmaName, "10000")
+            },
             schema = ProxyDatabase.Schema,
             callbacks = arrayOf(
                 minVersionCallback,

@@ -128,6 +128,13 @@ object Server {
             proxyDeps = ServerProxyDependencies()
         }
 
+        if (System.getProperty("pretixscan.database") != null) {
+            throw Exception(
+                "pretixSCAN Proxy has migrated from PostgreSQL to SQLite. Please remove the " +
+                        "pretixscan.database flag and port over any data manually if required."
+            )
+        }
+
         val app = createApp()
         val webthread = Thread {
             app.start(7000)

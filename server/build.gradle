@@ -36,6 +36,7 @@ dependencies {
     implementation "org.json:json:$json_version"
     implementation "net.sourceforge.streamsupport:streamsupport-cfuture:$cfuture_version"
     implementation "app.cash.sqldelight:sqlite-driver:$sqldelight_version"
+    implementation "org.xerial:sqlite-jdbc:$sqlite_jdbc_version"
     kapt "javax.annotation:jsr250-api:$jsr250_version"
     implementation(project(':libpretixsync')) {
         transitive = false
@@ -46,7 +47,6 @@ dependencies {
     testImplementation(testFixtures(project(':libpretixsync'))) {
         transitive = false
     }
-    testImplementation "org.xerial:sqlite-jdbc:$sqlite_jdbc_version"
     testImplementation "junit:junit:$junit_version"
 }
 
@@ -79,10 +79,6 @@ compileKotlin {
 }
 compileTestKotlin {
     kotlinOptions.jvmTarget = "11"
-}
-
-test {
-    systemProperty "pretixscan.database", System.getProperty("pretixscan.database")
 }
 
 sqldelight {

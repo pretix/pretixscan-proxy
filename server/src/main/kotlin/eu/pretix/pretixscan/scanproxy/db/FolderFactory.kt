@@ -1,25 +1,10 @@
 package eu.pretix.pretixscan.scanproxy.db
 
-import net.harawata.appdirs.AppDirsFactory
+import eu.pretix.pretixscan.scanproxy.proxyDeps
 import java.io.File
 
-fun getUserDataFolder(): String {
-    val appDirsInstance = AppDirsFactory.getInstance()!!
-    return appDirsInstance.getUserDataDir("pretixscan", "2", "pretix")
-}
-
-fun getUserCacheFolder(): String {
-    val appDirsInstance = AppDirsFactory.getInstance()!!
-    return appDirsInstance.getUserCacheDir("pretixscan", "2", "pretix")
-}
-
-fun getLogDirectory(): String {
-    val appDirsInstance = AppDirsFactory.getInstance()!!
-    return appDirsInstance.getUserLogDir("pretixscan", "2", "pretix")
-}
-
 internal fun getSyncDatabasePath(): File {
-    val dataDir = getUserDataFolder()
+    val dataDir = proxyDeps.dataDir
     // make sure the path exists so we can later create files in it
     File(dataDir).mkdirs()
     val dbFile = File("$dataDir/sync.sqlite")
@@ -27,7 +12,7 @@ internal fun getSyncDatabasePath(): File {
 }
 
 internal fun getProxyDatabasePath(): File {
-    val dataDir = getUserDataFolder()
+    val dataDir = proxyDeps.dataDir
     // make sure the path exists so we can later create files in it
     File(dataDir).mkdirs()
     val dbFile = File("$dataDir/proxy.sqlite")
@@ -35,7 +20,7 @@ internal fun getProxyDatabasePath(): File {
 }
 
 internal fun getUserDataDir(): File {
-    val dataDir = getUserDataFolder()
+    val dataDir = proxyDeps.dataDir
     // make sure the path exists so we can later create files in it
     File(dataDir).mkdirs()
     return File(dataDir)
