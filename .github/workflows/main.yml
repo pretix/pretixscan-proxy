@@ -25,7 +25,7 @@ jobs:
         run: TERM=dumb ./gradlew test jar
       - name: Store reports
         if: failure()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v7
         with:
           name: reports
           path: |
