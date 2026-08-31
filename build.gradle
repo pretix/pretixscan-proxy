@@ -3,6 +3,7 @@ plugins {
     id 'org.jetbrains.kotlin.kapt' version '2.2.21' apply false
     id 'app.cash.sqldelight' version "2.1.0" apply false
     id 'com.google.protobuf' version "0.9.5" apply false
+    id 'org.cyclonedx.bom' version '3.4.1'
 }
 
 group 'eu.pretix.pretixscan'
