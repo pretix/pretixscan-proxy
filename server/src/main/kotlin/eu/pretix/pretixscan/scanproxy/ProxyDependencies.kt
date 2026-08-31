@@ -16,8 +16,6 @@ fun isProxyDepsInitialized(): Boolean {
 }
 
 abstract class ProxyDependencies {
-    abstract val db: SyncDatabase
-    abstract val proxyDb: ProxyDatabase
     abstract val dataDir: String
 
     open val connectivityHelper = ConnectivityHelper(System.getProperty("pretixscan.autoOfflineMode", "off"))
@@ -35,17 +33,17 @@ abstract class ProxyDependencies {
     }
 
     open fun init() {}
+
+    val proxyDb: ProxyDatabase by lazy {
+        JvmLocalCacheFactory().getProxyDataSource()
+    }
+
+    val db: SyncDatabase by lazy {
+        JvmLocalCacheFactory().getSyncDataSource()
+    }
 }
 
 class ServerProxyDependencies: ProxyDependencies() {
     private val appDirs = AppDirsFactory.getInstance()!!
     override val dataDir = appDirs.getUserDataDir("pretixscanproxy", "1", "pretix")
-
-    override val proxyDb: ProxyDatabase by lazy {
-        JvmLocalCacheFactory().getProxyDataSource()
-    }
-
-    override val db: SyncDatabase by lazy {
-        JvmLocalCacheFactory().getSyncDataSource()
-    }
 }

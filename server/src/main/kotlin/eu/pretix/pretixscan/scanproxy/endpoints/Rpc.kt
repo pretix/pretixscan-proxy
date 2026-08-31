@@ -131,8 +131,13 @@ object MultiCheckEndpoint : JsonBodyHandler<MultiCheckInput>(MultiCheckInput::cl
     }
 }
 
-object SearchEndpoint : JsonBodyHandler<SearchInput>(SearchInput::class.java) {
-    override fun handle(ctx: Context, body: SearchInput) {
+data class LegacySearchInput(
+    val query: String,
+    val page: Int
+)
+
+object SearchEndpoint : JsonBodyHandler<LegacySearchInput>(LegacySearchInput::class.java) {
+    override fun handle(ctx: Context, body: LegacySearchInput) {
         val acp = getCheckProvider()
         registerEventIfNotExists(ctx.pathParam("event"))
         try {
@@ -147,14 +152,8 @@ object SearchEndpoint : JsonBodyHandler<SearchInput>(SearchInput::class.java) {
     }
 }
 
-data class MultiSearchInput(
-    val events_and_checkin_lists: Map<String, Long>,
-    val query: String,
-    val page: Int
-)
-
-object MultiSearchEndpoint : JsonBodyHandler<MultiSearchInput>(MultiSearchInput::class.java) {
-    override fun handle(ctx: Context, body: MultiSearchInput) {
+object MultiSearchEndpoint : JsonBodyHandler<SearchInput>(SearchInput::class.java) {
+    override fun handle(ctx: Context, body: SearchInput) {
         for (event in body.events_and_checkin_lists.keys) {
             registerEventIfNotExists(event)
         }

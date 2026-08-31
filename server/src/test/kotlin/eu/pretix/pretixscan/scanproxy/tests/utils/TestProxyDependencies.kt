@@ -5,13 +5,8 @@ import eu.pretix.libpretixsync.api.PretixApi
 import eu.pretix.libpretixsync.api.RateLimitInterceptor
 import eu.pretix.pretixscan.scanproxy.ProxyDependencies
 import eu.pretix.pretixscan.scanproxy.ProxyScanConfig
-import eu.pretix.pretixscan.scanproxy.db.createProxyDatabase
-import eu.pretix.pretixscan.scanproxy.db.createSyncDatabase
-import eu.pretix.pretixscan.scanproxy.sqldelight.proxy.ProxyDatabase
-import eu.pretix.pretixscan.scanproxy.sqldelight.sync.SyncDatabase
 import eu.pretix.pretixscan.scanproxy.tests.test.FakePretixApi
 import okhttp3.OkHttpClient
-import org.slf4j.LoggerFactory
 import java.nio.file.Files
 import java.util.concurrent.TimeUnit
 import kotlin.io.path.absolutePathString
@@ -47,22 +42,4 @@ class TestProxyDependencies : ProxyDependencies() {
         super.init()
         System.setProperty("pretixscan.adminauth", "foo:bar")
     }
-
-    override val proxyDb: ProxyDatabase
-        get() {
-            val LOG = LoggerFactory.getLogger(TestProxyDependencies::class.java)
-            return createProxyDatabase(
-                url = System.getProperty("pretixscan.database"),
-                LOG = LOG,
-            )
-        }
-
-    override val db: SyncDatabase
-        get() {
-            val LOG = LoggerFactory.getLogger(TestProxyDependencies::class.java)
-            return createSyncDatabase(
-                url = System.getProperty("pretixscan.database"),
-                LOG = LOG,
-            )
-        }
 }

@@ -27,15 +27,15 @@ class PretixApiTest : BaseDatabaseTest() {
         proxyDeps.proxyDb.syncedEventQueries.insert(
             slug = "demo2",
         )
-        EventSyncAdapter(proxyDeps.db, "demo", "demo", proxyDeps.pretixApi, "", null).standaloneRefreshFromJSON(jsonResource("events/event1.json"))
-        EventSyncAdapter(proxyDeps.db, "demo2", "demo2", proxyDeps.pretixApi, "", null).standaloneRefreshFromJSON(jsonResource("events/event2.json"))
+        EventSyncAdapter(proxyDeps.db, FakeFileStorage(), "demo", "demo", proxyDeps.pretixApi, "", null).standaloneRefreshFromJSON(jsonResource("events/event1.json"))
+        EventSyncAdapter(proxyDeps.db, FakeFileStorage(), "demo2", "demo2", proxyDeps.pretixApi, "", null).standaloneRefreshFromJSON(jsonResource("events/event2.json"))
         ItemSyncAdapter(proxyDeps.db, FakeFileStorage(), "demo", proxyDeps.pretixApi, "", null).standaloneRefreshFromJSON(jsonResource("items/item1.json"))
         ItemSyncAdapter(proxyDeps.db, FakeFileStorage(), "demo", proxyDeps.pretixApi, "", null).standaloneRefreshFromJSON(jsonResource("items/item2.json"))
         ItemSyncAdapter(proxyDeps.db, FakeFileStorage(), "demo2", proxyDeps.pretixApi, "", null).standaloneRefreshFromJSON(jsonResource("items/event2-item3.json"))
         CheckInListSyncAdapter(proxyDeps.db, FakeFileStorage(), "demo", proxyDeps.pretixApi, "", null, 0).standaloneRefreshFromJSON(
             jsonResource("checkinlists/list1.json")
         )
-        SubEventSyncAdapter(proxyDeps.db, "demo", "14", proxyDeps.pretixApi, "", null).standaloneRefreshFromJSON(jsonResource("subevents/subevent1.json"))
+        SubEventSyncAdapter(proxyDeps.db, FakeFileStorage(), "demo", "14", proxyDeps.pretixApi, "", null).standaloneRefreshFromJSON(jsonResource("subevents/subevent1.json"))
 
         val osa = OrderSyncAdapter(proxyDeps.db, FakeFileStorage(), "demo", 0, true, false, proxyDeps.pretixApi, "", null)
         osa.standaloneRefreshFromJSON(jsonResource("orders/order1.json"))
