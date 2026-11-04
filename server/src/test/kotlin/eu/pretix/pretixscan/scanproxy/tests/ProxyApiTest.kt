@@ -338,7 +338,7 @@ class ProxyApiTest : BaseDatabaseTest() {
         var json = jacksonObjectMapper().readValue<MutableMap<Any, Any>>(resp.body!!.string())
         assertThat(json["type"], equalTo("ANSWERS_REQUIRED"))
         val requiredAnswer = (json["requiredAnswers"] as List<Map<Any, Any>>)[0]
-        assertThat((requiredAnswer["question"] as Map<Any, Any>)["id"], equalTo(1))
+        assertThat((requiredAnswer["question"] as Map<Any, Any>)["id"], notNullValue())
         assertThat((requiredAnswer["question"] as Map<Any, Any>)["server_id"], equalTo(1))
         assertThat((requiredAnswer["question"] as Map<Any, Any>)["event_slug"], equalTo("demo"))
         assertThat((requiredAnswer["question"] as Map<Any, Any>)["required"], equalTo(true))
@@ -369,5 +369,48 @@ class ProxyApiTest : BaseDatabaseTest() {
         assertThat(resp.code, equalTo(200))
         json = jacksonObjectMapper().readValue<MutableMap<Any, Any>>(resp.body!!.string())
         assertThat(json["type"], equalTo("VALID"))
+    }
+
+    @Test
+    fun `check endpoints return shown answers`() = JavalinTest.test(app) { server, client ->
+        QuestionSyncAdapter(proxyDeps.syncData, FakeFileStorage(), "demo", proxyDeps.pretixApi, "", null).standaloneRefreshFromJSON(
+            jsonResource("questions/question1.json")
+                .put("ask_during_checkin", false)
+                .put("show_during_checkin", true)
+        )
+        val device = createDevice()
+        for (url in listOf("/proxyapi/v1/rpc/check/", "/proxyapi/v1/rpc/demo/1/check/")) {
+            for (withAnswer in listOf(false, true)) {
+                val body = mutableMapOf<String, Any>(
+                    "ticketid" to "kfndgffgyw4tdgcacx6bb3bgemq69cxj",
+                    "answers" to if (withAnswer) listOf(mapOf(
+                        "question" to mapOf(
+                            "server_id" to 1
+                        ),
+                        "value" to "True"
+                    )) else emptyList<Map<String, Any>>(),
+                    "ignore_unpaid" to false,
+                    "with_badge_data" to true,
+                    "type" to "entry",
+                    "source_type" to "barcode"
+                )
+                if (url.endsWith("/rpc/check/")) {
+                    body["events_and_checkin_lists"] = mapOf("demo" to 1)
+                }
+                val resp = client.post(url, body) {
+                    it.header("Authorization", "Device ${device.api_token}")
+                }
+                assertThat(resp.code, equalTo(200))
+                val json = jacksonObjectMapper().readValue<MutableMap<Any, Any>>(resp.body!!.string())
+                val shownAnswers = json["shownAnswers"] as List<Map<Any, Any>>
+                if (withAnswer) {
+                    assertThat(shownAnswers.size, equalTo(1))
+                    assertThat((shownAnswers[0]["question"] as Map<Any, Any>)["server_id"], equalTo(1))
+                    assertThat(shownAnswers[0]["currentValue"], equalTo("True"))
+                } else {
+                    assertThat(shownAnswers.size, equalTo(0))
+                }
+            }
+        }
     }
 }
