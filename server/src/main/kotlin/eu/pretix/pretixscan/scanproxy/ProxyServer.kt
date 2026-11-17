@@ -18,8 +18,8 @@ import java.util.concurrent.Executors
 
 
 object Server {
-    val VERSION = "2.7.2"
-    val VERSION_CODE = 20
+    val VERSION = "2.7.3"
+    val VERSION_CODE = 21
     private val LOG = LoggerFactory.getLogger(Server::class.java)
 
     fun createApp(): Javalin {
