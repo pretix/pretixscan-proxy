@@ -10,7 +10,6 @@ import io.javalin.Javalin
 import io.javalin.apibuilder.ApiBuilder.*
 import io.javalin.http.staticfiles.Location
 import io.javalin.json.JavalinJackson
-import net.harawata.appdirs.AppDirsFactory
 import org.json.JSONArray
 import org.json.JSONObject
 import org.slf4j.LoggerFactory

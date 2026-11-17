@@ -19,10 +19,13 @@ import org.hamcrest.CoreMatchers.equalTo
 import org.hamcrest.MatcherAssert.assertThat
 import org.junit.Before
 import org.junit.Test
+import java.security.SecureRandom
 import java.util.*
 
 
 class PretixApiTest : BaseDatabaseTest() {
+    val random = SecureRandom().asKotlinRandom()
+
     @Before
     fun setUpFakes() {
         var s = SyncedEventEntity()
@@ -55,12 +58,12 @@ class PretixApiTest : BaseDatabaseTest() {
         d.added_datetime = System.currentTimeMillis().toString()
         if (initialized) {
             d.api_token = (1..64)
-                .map { kotlin.random.Random.nextInt(0, charPool.size) }
+                .map { random.nextInt(0, charPool.size) }
                 .map(charPool::get)
                 .joinToString("")
         } else {
             d.init_token = (1..16)
-                .map { kotlin.random.Random.nextInt(0, charPool.size) }
+                .map { random.nextInt(0, charPool.size) }
                 .map(charPool::get)
                 .joinToString("")
         }

@@ -9,7 +9,9 @@ import eu.pretix.pretixscan.scanproxy.proxyDeps
 import io.javalin.http.Context
 import io.javalin.http.Handler
 import io.javalin.http.ServiceUnavailableResponse
+import java.security.SecureRandom
 import java.util.*
+import kotlin.random.asKotlinRandom
 
 data class SetupDownstreamInitResponse(
     val token: String,
@@ -29,12 +31,13 @@ object SetupDownstreamInit : JsonBodyHandler<SetupDownstreamInitRequest>(SetupDo
         }
 
         val baseurl = System.getProperty("pretixscan.baseurl", "http://URLNOTSET")
+        val random = SecureRandom().asKotlinRandom()
         val d = DownstreamDeviceEntity()
         d.uuid = UUID.randomUUID().toString()
         d.name = body.name
         d.added_datetime = System.currentTimeMillis().toString()
         d.init_token = "proxy=" + (1..16)
-            .map { kotlin.random.Random.nextInt(0, charPool.size) }
+            .map { random.nextInt(0, charPool.size) }
             .map(charPool::get)
             .joinToString("")
         proxyDeps.proxyData.insert(d)
@@ -57,12 +60,13 @@ object SetupDownstreamInitReady : JsonBodyHandler<SetupDownstreamInitRequest>(Se
         }
 
         val baseurl = System.getProperty("pretixscan.baseurl", "http://URLNOTSET")
+        val random = SecureRandom().asKotlinRandom()
         val d = DownstreamDeviceEntity()
         d.uuid = UUID.randomUUID().toString()
         d.name = body.name
         d.added_datetime = System.currentTimeMillis().toString()
         d.api_token = (1..64)
-            .map { kotlin.random.Random.nextInt(0, charPool.size) }
+            .map { random.nextInt(0, charPool.size) }
             .map(charPool::get)
             .joinToString("")
         proxyDeps.proxyData.insert(d)
@@ -111,8 +115,9 @@ object SetupDownstream : JsonBodyHandler<SetupDownstreamRequest>(SetupDownstream
             ctx.json(mapOf("token" to listOf("This initialization token is not known."))).status(400)
         } else {
             device.init_token = null
+            val random = SecureRandom().asKotlinRandom()
             device.api_token = (1..64)
-                .map { kotlin.random.Random.nextInt(0, charPool.size) }
+                .map { random.nextInt(0, charPool.size) }
                 .map(charPool::get)
                 .joinToString("")
             proxyDeps.proxyData.update(device)
