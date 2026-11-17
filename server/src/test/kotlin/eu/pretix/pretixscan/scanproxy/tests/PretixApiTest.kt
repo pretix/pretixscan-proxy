@@ -21,6 +21,7 @@ import org.junit.Before
 import org.junit.Test
 import java.security.SecureRandom
 import java.util.*
+import kotlin.random.asKotlinRandom
 
 
 class PretixApiTest : BaseDatabaseTest() {
